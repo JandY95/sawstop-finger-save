@@ -1,0 +1,120 @@
+이 저장소에서 작업을 시작할 때는 바로 코딩하지 말고 먼저 구현 계획만 제출한다.
+
+반드시 지킬 규칙:
+
+1. 먼저 아래 문서를 이 순서대로 읽는다.
+   - `AGENTS.md`
+   - `docs/source/sawstop_finger_save_vibe_coding_workflow_spec_final_20260409.md`
+   - `docs/source/DB_SCHEMA_AND_MAPPING.md`
+   - `docs/source/PRD.md`
+   - `docs/source/TRD.md`
+   - `docs/source/WEBFORM_UI_SPEC.md`
+   - `docs/source/IMPLEMENTATION_BREAKDOWN.md`
+   - `docs/decisions/DECISIONS_LOCK.md`
+
+1-1. 문서 해석 순서는 아래를 따른다.
+   - source of truth 순서는 `워크플로우 명세 -> DB_SCHEMA_AND_MAPPING -> PRD -> TRD -> WEBFORM_UI_SPEC -> IMPLEMENTATION_BREAKDOWN`
+   - `DECISIONS_LOCK.md`는 잠긴 항목 판단 시 우선 적용한다.
+
+2. 계획 단계에서 가장 먼저 아래를 확인한다.
+   - live schema와 문서 간 drift 가능성
+   - DB schema drift 위험
+   - relation 쓰기 경로
+   - select / multi_select allowed values
+   - rollup / formula / button을 직접 쓰는 잘못된 계획 여부
+   - write-back 대상 체크박스 영향 범위
+
+3. 범위 밖 항목을 추가하지 않는다.
+   - 문서에 없는 기능
+   - 문서에 없는 상태값
+   - 문서에 없는 속성
+   - 문서에 없는 자동화
+   - 별도 DB
+   - 임의 UI 확장
+
+4. open issue는 추측으로 닫지 않는다.
+   - 미확정 항목은 계획의 리스크나 확인 필요 항목으로 남긴다.
+   - 임의 가정으로 설계 확정처럼 쓰지 않는다.
+   - `DECISIONS_LOCK.md`에 잠긴 항목만 확정값으로 사용한다.
+
+5. 계획 승인 전에는 코드 수정 금지다.
+   - 파일 생성 금지
+   - 파일 수정 금지
+   - 리팩터링 금지
+   - 테스트를 빌미로 한 코드 변경 금지
+   - 계획 단계에서는 읽기, 비교, 영향 분석까지만 한다.
+
+6. 계획은 작은 단위로 나눈다.
+   - 한 번에 한 흐름씩 나눈다.
+   - 접수, 저장, 첨부, 관리자 업로드, write-back, UI, 검증을 섞어서 한 덩어리로 쓰지 않는다.
+   - 각 단계는 수정 대상과 검증 방법이 분리되어야 한다.
+
+7. 저장 구조 관련 판단은 아래 방어선을 먼저 적용한다.
+   - 사고 원문 source of truth는 사고 DB다.
+   - 첨부 메타데이터 source of truth는 첨부 DB다.
+   - 첨부 원본 source of truth는 R2다.
+   - relation 쓰기 경로는 첨부 DB `사고건` relation 기준으로 본다.
+   - 사고 DB `첨부 목록`은 읽기/집계 기준으로만 본다.
+
+8. 웹폼/UI 작업 계획을 세울 때는 아래를 분리해서 쓴다.
+   - UI 문구/순서/입력 UX는 `WEBFORM_UI_SPEC.md`
+   - 저장 규칙/허용값/Notion 매핑은 `DB_SCHEMA_AND_MAPPING.md`와 `TRD.md`
+   - UI 변경 계획이 저장 구조 변경처럼 보이면 잘못된 계획으로 간주한다.
+
+9. 출력 형식은 아래 순서를 반드시 따른다.
+
+목표
+- 이번 작업에서 실제로 달성하려는 범위를 1~3문장으로 적는다.
+
+수정 대상 파일
+- 수정하거나 생성할 가능성이 있는 파일만 적는다.
+- 아직 확정 전이면 `후보`라고 적는다.
+
+예상 영향 범위
+- 접수
+- 사고 DB 저장
+- 첨부/R2/Queue
+- relation/write-back
+- 관리자 업로드
+- 웹폼/UI
+- 출력/발송 준비
+- 테스트/운영 스크립트
+
+검증 방법
+- 어떤 순서로 확인할지 적는다.
+- 가능하면 명령까지 적는다.
+- schema drift / allowed values / relation / write-back 검증을 먼저 둔다.
+
+리스크
+- open issue
+- live schema 불일치 가능성
+- relation 누락 가능성
+- write-back 누락 가능성
+- UI 문서와 저장 문서 해석 충돌 가능성
+
+실행 전 확인 질문(정말 필요한 경우만)
+- 문서로 확인할 수 없고
+- 추측하면 위험하며
+- 작업을 막는 경우에만 최소 질문을 적는다.
+- 불필요하면 `없음`이라고 적는다.
+
+10. 검증 방법에는 가능하면 아래 명령을 우선 포함한다.
+
+```powershell
+node scripts/check-notion-schema.ts
+node scripts/check-allowed-values.ts
+node scripts/smoke-submit.ts
+node scripts/smoke-admin-upload.ts
+```
+
+11. 계획 문장은 짧고 단단하게 쓴다.
+   - 설명문보다 규칙문을 우선한다.
+   - 모호한 표현을 피한다.
+   - “아마”, “필요해 보이면”, “가능하면 추가” 같은 표현을 쓰지 않는다.
+
+12. 최종 계획은 아래 기준을 만족해야 한다.
+   - source of truth 순서를 어기지 않는다.
+   - 승인 전 코드 변경을 포함하지 않는다.
+   - 범위 밖 기능을 밀어 넣지 않는다.
+   - open issue를 임의로 닫지 않는다.
+   - DB schema drift / relation / allowed values를 가장 먼저 점검한다.

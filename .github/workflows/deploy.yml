@@ -1,0 +1,39 @@
+name: Deploy Cloudflare Worker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run CI verification
+        run: npm run ci
+
+      - name: Deploy with Wrangler
+        run: npm run deploy:ci
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_ACCIDENT_DB_ID: ${{ secrets.NOTION_ACCIDENT_DB_ID }}
+          NOTION_ATTACHMENT_DB_ID: ${{ secrets.NOTION_ATTACHMENT_DB_ID }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
+          # TODO: add additional production-only env vars here when they are locked.
+
+      # TODO: enable push-based deployment after branch and promotion policy are locked.

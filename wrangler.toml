@@ -1,0 +1,18 @@
+name = "sawstop-finger-save"
+main = "src/index.ts"
+compatibility_date = "2026-04-10"
+
+[[r2_buckets]]
+binding = "ATTACHMENT_BUCKET"
+bucket_name = "sawstop-attachments"
+preview_bucket_name = "sawstop-attachments"
+remote = true
+
+[[queues.producers]]
+binding = "ATTACHMENT_PROCESSING_QUEUE"
+queue = "sawstop-attachment-processing"
+
+[[queues.consumers]]
+queue = "sawstop-attachment-processing"
+max_batch_size = 1
+max_batch_timeout = 1

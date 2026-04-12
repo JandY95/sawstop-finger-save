@@ -1,0 +1,7 @@
+.codex/
+.project-state.json
+.dev.vars
+.wrangler/
+node_modules/
+*.log
+.tmp-*

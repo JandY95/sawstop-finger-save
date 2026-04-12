@@ -1,0 +1,25 @@
+{
+  "name": "sawstop-finger-save",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Minimal local harness for SawStop Finger Save verification scripts.",
+  "scripts": {
+    "check:notion-schema": "node --experimental-strip-types scripts/check-notion-schema.ts",
+    "check:allowed-values": "node --experimental-strip-types scripts/check-allowed-values.ts",
+    "smoke:submit": "node --experimental-strip-types scripts/smoke-submit.ts",
+    "smoke:admin-search": "node --experimental-strip-types scripts/smoke-admin-search.ts",
+    "smoke:admin-upload": "node --experimental-strip-types scripts/smoke-admin-upload.ts",
+    "ci": "npm run test",
+    "deploy:ci": "wrangler deploy",
+    "dev:local": "npx.cmd wrangler dev",
+    "dev:fully-local": "npx.cmd wrangler dev --local",
+    "dev:remote": "npx.cmd wrangler dev --remote",
+    "dev:recalculate-finger-photo": "node --experimental-strip-types --experimental-specifier-resolution=node scripts/recalculate-finger-photo.ts",
+    "test": "npm run check:notion-schema && npm run check:allowed-values && npm run smoke:submit && npm run smoke:admin-search && npm run smoke:admin-upload",
+    "lint": "node --check scripts/verify-gates.js",
+    "verify:gates": "node scripts/verify-gates.js --status"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0"
+  }
+}
