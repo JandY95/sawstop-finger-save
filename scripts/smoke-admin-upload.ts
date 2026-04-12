@@ -1,5 +1,6 @@
 import { handleAdminUpload } from "../src/admin/upload.ts";
 import {
+  ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
   ACCIDENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_TYPE_OPTIONS
@@ -62,6 +63,7 @@ function buildUploadRequest(pageId: string, attachmentType: string, files: File[
 async function run() {
   const originalFetch = globalThis.fetch;
   const bucketKeys: string[] = [];
+  const accidentPatchBodies: Array<Record<string, unknown>> = [];
   const env = {
     NOTION_TOKEN: "test-token",
     NOTION_ACCIDENT_DB_ID: "accident-db-id",
@@ -142,7 +144,16 @@ async function run() {
       })
     ];
 
-    globalThis.fetch = (async () => {
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/pages/page-valid") && init?.method === "PATCH") {
+        const rawBody = typeof init.body === "string" ? init.body : "{}";
+        const body = JSON.parse(rawBody) as {
+          properties?: Record<string, unknown>;
+        };
+        accidentPatchBodies.push(body.properties ?? {});
+      }
+
       const response = validFetchResponses.shift();
       if (!response) {
         throw new Error("No more mock fetch responses for valid upload");
@@ -165,6 +176,19 @@ async function run() {
     expect(validBody.successCount === 1, "valid admin upload should create 1 attachment row");
     expect(validBody.failureCount === 0, "valid admin upload should have 0 failures");
     expect(bucketKeys.length === 1, "valid admin upload should store exactly 1 file in R2");
+    expect(accidentPatchBodies.length >= 1, "valid admin upload should patch accident page");
+    expect(
+      Boolean(
+        accidentPatchBodies[0]?.[ACCIDENT_DB_PROPERTY_NAMES.attachmentUploadStatus]
+      ),
+      "valid admin upload patch should include attachment upload status"
+    );
+    expect(
+      JSON.stringify(
+        accidentPatchBodies[0]?.[ACCIDENT_DB_PREPARED_PROPERTY_NAMES.attachmentFinalCheck]
+      ) === JSON.stringify({ checkbox: false }),
+      "valid admin upload patch should reset attachment final check to false"
+    );
     console.log("PASS: admin_upload_valid");
 
     globalThis.fetch = originalFetch;

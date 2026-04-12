@@ -8,6 +8,7 @@ import {
   createAttachmentPage,
   findAttachmentPageByAttachmentId,
   recalculateAccidentHasFingerPhoto,
+  resetAccidentAttachmentFinalCheck,
   updatePageProperties
 } from "./notion";
 import { promoteTmpAttachmentToFinalR2 } from "./r2";
@@ -136,11 +137,14 @@ export async function processSubmitAttachmentPayload(
     properties: {
       [ACCIDENT_DB_PROPERTY_NAMES.attachmentUploadStatus]: {
         select: { name: finalStatus }
-      }
+      },
+      ...(successfulCount > 0 ? resetAccidentAttachmentFinalCheck() : {})
     }
   });
 
-  await recalculateAccidentHasFingerPhoto(env, payload.pageId);
+  if (successfulCount > 0) {
+    await recalculateAccidentHasFingerPhoto(env, payload.pageId);
+  }
 }
 
 export async function consumeAttachmentBatch(

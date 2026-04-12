@@ -1,4 +1,5 @@
 import {
+  ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS,
   ATTACHMENT_TYPE_OPTIONS,
@@ -337,6 +338,24 @@ export async function updatePageProperties(
   }
 }
 
+export async function updateAttachmentPageType(
+  env: WorkerEnv,
+  {
+    attachmentPageId,
+    attachmentType
+  }: {
+    attachmentPageId: string;
+    attachmentType: string;
+  }
+) {
+  await updatePageProperties(env, {
+    pageId: attachmentPageId,
+    properties: {
+      [ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]: toSelect(attachmentType)
+    }
+  });
+}
+
 export async function attachmentPageHasCurrentFingerPhoto(
   env: WorkerEnv,
   pageId: string
@@ -398,6 +417,14 @@ export async function updateAccidentHasFingerPhoto(
       `Notion update accident finger-photo flag failed: ${await readNotionError(response)}`
     );
   }
+}
+
+export function resetAccidentAttachmentFinalCheck() {
+  return {
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.attachmentFinalCheck]: {
+      checkbox: false
+    }
+  } satisfies NotionPagePropertiesPayload;
 }
 
 export async function recalculateAccidentHasFingerPhoto(

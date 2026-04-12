@@ -1,5 +1,6 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
+  ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
   ADMIN_UPLOAD_ROUTE,
@@ -83,6 +84,27 @@ export function renderAdminPage(
             <div id="upload-message" class="message"></div>
             <pre id="upload-results" class="results"></pre>
           </form>
+
+          <form id="attachment-type-update-form" class="card">
+            <h2>첨부 유형 변경</h2>
+            <p class="hint">attachmentPageId와 pageId를 직접 입력합니다.</p>
+
+            <label for="attachment-page-id">attachmentPageId</label>
+            <input id="attachment-page-id" name="attachmentPageId" type="text" placeholder="attachment page id" required />
+
+            <label for="attachment-type-page-id">pageId</label>
+            <input id="attachment-type-page-id" name="pageId" type="text" placeholder="accident page id" required />
+
+            <label for="attachment-type-update">attachmentType</label>
+            <select id="attachment-type-update" name="attachmentType" required>
+              <option value="">선택</option>
+              ${attachmentTypeOptions}
+            </select>
+
+            <button type="submit">유형 변경</button>
+
+            <div id="attachment-type-update-message" class="message"></div>
+          </form>
         </div>
       </section>
 
@@ -93,6 +115,8 @@ export function renderAdminPage(
         const uploadForm = document.getElementById("upload-form");
         const uploadMessage = document.getElementById("upload-message");
         const uploadResults = document.getElementById("upload-results");
+        const attachmentTypeUpdateForm = document.getElementById("attachment-type-update-form");
+        const attachmentTypeUpdateMessage = document.getElementById("attachment-type-update-message");
         const selectedPageIdInput = document.getElementById("selected-page-id");
         const selectedSummary = document.getElementById("selected-summary");
 
@@ -167,6 +191,32 @@ export function renderAdminPage(
             "success"
           );
           uploadResults.textContent = JSON.stringify(data.results || [], null, 2);
+        });
+
+        attachmentTypeUpdateForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const formData = new FormData(attachmentTypeUpdateForm);
+          setMessage(attachmentTypeUpdateMessage, "유형 변경 중..", "");
+
+          const response = await fetch("${ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(Object.fromEntries(formData.entries()))
+          });
+          const data = await response.json();
+
+          if (!response.ok || !data.ok) {
+            setMessage(
+              attachmentTypeUpdateMessage,
+              data.message || "유형 변경에 실패했습니다.",
+              "error"
+            );
+            return;
+          }
+
+          setMessage(attachmentTypeUpdateMessage, "유형 변경 성공", "success");
         });
       </script>
     `

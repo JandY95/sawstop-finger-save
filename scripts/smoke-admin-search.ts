@@ -39,6 +39,23 @@ async function readJson(response: Response) {
   };
 }
 
+function readAllowedStatusesFromBody(init?: RequestInit) {
+  const rawBody = typeof init?.body === "string" ? init.body : "{}";
+  const body = JSON.parse(rawBody) as {
+    filter?: {
+      or?: Array<{
+        status?: {
+          equals?: string;
+        };
+      }>;
+    };
+  };
+
+  return (body.filter?.or ?? [])
+    .map((entry) => entry.status?.equals ?? null)
+    .filter((value): value is string => Boolean(value));
+}
+
 async function run() {
   const originalFetch = globalThis.fetch;
   const env = {
@@ -46,7 +63,7 @@ async function run() {
     NOTION_ACCIDENT_DB_ID: "accident-db-id"
   } as WorkerEnv;
 
-  const mockResults = [
+  const baseResults = [
     {
       id: "page-1",
       properties: {
@@ -61,6 +78,9 @@ async function run() {
         },
         [ACCIDENT_DB_PROPERTY_NAMES.operatorName]: {
           rich_text: [{ plain_text: "Kim Minsu" }]
+        },
+        [ACCIDENT_DB_PROPERTY_NAMES.status]: {
+          status: { name: "진행중" }
         }
       }
     },
@@ -74,23 +94,34 @@ async function run() {
           phone_number: "010-9999-8888"
         },
         [ACCIDENT_DB_PROPERTY_NAMES.occurredAt]: {
-          date: { start: "2026-04-12T12:00:00+09:00" }
+          date: { start: "2026-04-12T11:00:00+09:00" }
         },
         [ACCIDENT_DB_PROPERTY_NAMES.operatorName]: {
           rich_text: [{ plain_text: "Lee Jisoo" }]
+        },
+        [ACCIDENT_DB_PROPERTY_NAMES.status]: {
+          status: { name: "완료" }
         }
       }
     }
   ];
 
-  globalThis.fetch = (async () =>
-    createMockResponse({
+  globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+    const allowedStatuses = readAllowedStatusesFromBody(init);
+    const filteredResults = baseResults.filter((result) => {
+      const statusName =
+        result.properties[ACCIDENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null;
+      return statusName !== null && allowedStatuses.includes(statusName);
+    });
+
+    return createMockResponse({
       ok: true,
       status: 200,
       jsonBody: {
-        results: mockResults
+        results: filteredResults
       }
-    })) as typeof fetch;
+    });
+  }) as typeof fetch;
 
   try {
     const receiptResponse = await handleAdminAccidentSearch(
@@ -119,6 +150,18 @@ async function run() {
       "phone search should match by partial digits"
     );
     console.log("PASS: admin_search_phone_partial");
+
+    const completedFilteredResponse = await handleAdminAccidentSearch(
+      new Request("http://localhost/admin/accidents/search?query=20260412-0002"),
+      env
+    );
+    const completedFilteredBody = await readJson(completedFilteredResponse);
+    expect(completedFilteredResponse.status === 200, "completed-state search should return 200");
+    expect(
+      completedFilteredBody.results?.length === 0,
+      "completed-state result should be excluded by status filter"
+    );
+    console.log("PASS: admin_search_excludes_completed");
 
     const emptyResultResponse = await handleAdminAccidentSearch(
       new Request("http://localhost/admin/accidents/search?query=not-found"),

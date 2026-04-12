@@ -1,6 +1,7 @@
 import type {
   ATTACHMENT_UPLOAD_STATUS,
   ATTACHMENT_DB_STATUS,
+  ATTACHMENT_SOURCE_OPTIONS,
   BLADE_TYPE_OPTIONS,
   FEED_RATE_OPTIONS,
   GLOVES_OPTIONS,
@@ -19,6 +20,7 @@ export type AttachmentUploadStatus =
   (typeof ATTACHMENT_UPLOAD_STATUS)[keyof typeof ATTACHMENT_UPLOAD_STATUS];
 export type AttachmentDbStatus =
   (typeof ATTACHMENT_DB_STATUS)[keyof typeof ATTACHMENT_DB_STATUS];
+export type AttachmentSource = (typeof ATTACHMENT_SOURCE_OPTIONS)[number];
 
 interface R2PutOptions {
   httpMetadata?: {
@@ -167,6 +169,10 @@ export type NotionStatusProperty = {
   status: { name: string };
 };
 
+export type NotionCheckboxProperty = {
+  checkbox: boolean;
+};
+
 export type NotionAccidentDbPropertyValue =
   | NotionTitleProperty
   | NotionRichTextProperty
@@ -178,7 +184,8 @@ export type NotionAccidentDbPropertyValue =
   | NotionNumberProperty
   | NotionRelationProperty
   | NotionDateProperty
-  | NotionStatusProperty;
+  | NotionStatusProperty
+  | NotionCheckboxProperty;
 
 export type NotionPagePropertiesPayload = Record<string, NotionAccidentDbPropertyValue>;
 export type NotionAccidentDbPropertiesPayload = NotionPagePropertiesPayload;
@@ -296,6 +303,21 @@ export interface AdminUploadFailureResponse {
   ok: false;
   message: string;
   results?: AdminUploadFileResult[];
+}
+
+export interface AdminUpdateAttachmentTypeRequest {
+  attachmentPageId: string;
+  pageId: string;
+  attachmentType: string;
+}
+
+export interface AdminUpdateAttachmentTypeSuccessResponse {
+  ok: true;
+}
+
+export interface AdminUpdateAttachmentTypeFailureResponse {
+  ok: false;
+  message: string;
 }
 
 export interface AdminSessionPayload {

@@ -39,8 +39,13 @@ export const ATTACHMENT_DB_PROPERTY_NAMES = {
   previewUrl: "미리보기 링크",
   thumbnailUrl: "썸네일",
   attachmentType: "첨부 유형",
+  uploadSource: "업로드 출처",
   status: "상태",
   displayOrder: "표시 순서"
+} as const;
+
+export const ACCIDENT_DB_PREPARED_PROPERTY_NAMES = {
+  attachmentFinalCheck: "첨부 최종 확인 완료"
 } as const;
 
 export const ASIA_SEOUL_TIMEZONE = "Asia/Seoul";
@@ -58,7 +63,7 @@ export const ATTACHMENT_UPLOAD_STATUS = {
 export const ATTACHMENT_DB_STATUS = {
   current: "현재",
   trash: "휴지통",
-  permanentlyDeleted: "영구삭제"
+  permanentlyDeleted: "영구 삭제"
 } as const;
 
 export const ATTACHMENT_TYPE_OPTIONS = [
@@ -66,6 +71,8 @@ export const ATTACHMENT_TYPE_OPTIONS = [
   "브레이크 카트리지 사진",
   "기타"
 ] as const;
+
+export const ATTACHMENT_SOURCE_OPTIONS = ["customer", "admin"] as const;
 
 export const PROMOTIONAL_CONSENT_OPTIONS = ["동의 (YES)", "미동의 (NO)"] as const;
 export const VISIBLE_INJURY_MARK_OPTIONS = ["예 (YES)", "아니요 (NO)"] as const;
@@ -91,8 +98,9 @@ export const NOTION_API_VERSION = "2022-06-28";
 export const SUBMIT_ROUTE = "/submit";
 export const ADMIN_ACCIDENT_SEARCH_ROUTE = "/admin/accidents/search";
 export const ADMIN_UPLOAD_ROUTE = "/admin/upload";
-// TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명/허용값은
-// 라이브 첨부 DB 스키마 확정 전까지 constants에 추가하지 않는다.
+export const ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE = "/admin/attachments/type";
+// TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명과 허용값은
+// 라이브 첨부 DB 스키마 확정 전까지 runtime write 대상으로 사용하지 않는다.
 export const ADMIN_PAGE_ROUTE = "/admin";
 export const ADMIN_LOGIN_ROUTE = "/admin/login";
 export const ADMIN_LOGOUT_ROUTE = "/admin/logout";

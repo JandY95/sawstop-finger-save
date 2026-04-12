@@ -10,6 +10,7 @@ import {
   createAttachmentPageRecord,
   getNextAttachmentDisplayOrder,
   recalculateAccidentHasFingerPhoto,
+  resetAccidentAttachmentFinalCheck,
   updatePageProperties
 } from "../notion.ts";
 import { uploadAdminAttachmentToFinalR2 } from "../r2.ts";
@@ -248,11 +249,14 @@ export async function handleAdminUpload(request: Request, env: WorkerEnv) {
       properties: {
         [ACCIDENT_DB_PROPERTY_NAMES.attachmentUploadStatus]: {
           select: { name: attachmentUploadStatus }
-        }
+        },
+        ...(successCount > 0 ? resetAccidentAttachmentFinalCheck() : {})
       }
     });
 
-    await recalculateAccidentHasFingerPhoto(env, pageId);
+    if (successCount > 0) {
+      await recalculateAccidentHasFingerPhoto(env, pageId);
+    }
 
     if (successCount <= 0) {
       return jsonResponse(

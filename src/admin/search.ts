@@ -21,6 +21,7 @@ type NotionQueryResult = {
       rich_text?: Array<{ plain_text?: string }>;
       phone_number?: string | null;
       date?: { start?: string | null } | null;
+      status?: { name?: string | null } | null;
     }
   >;
 };
@@ -104,14 +105,34 @@ async function queryRecentAccidents(env: WorkerEnv) {
     headers: getNotionHeaders(token),
     body: JSON.stringify({
       page_size: 50,
+      filter: {
+        or: [
+          {
+            property: ACCIDENT_DB_PROPERTY_NAMES.status,
+            status: {
+              equals: "접수"
+            }
+          },
+          {
+            property: ACCIDENT_DB_PROPERTY_NAMES.status,
+            status: {
+              equals: "진행중"
+            }
+          },
+          {
+            property: ACCIDENT_DB_PROPERTY_NAMES.status,
+            status: {
+              equals: "반려"
+            }
+          }
+        ]
+      },
       sorts: [
         {
           property: ACCIDENT_DB_PROPERTY_NAMES.occurredAt,
           direction: "descending"
         }
       ]
-      // TODO(open issue): 관리자 검색에서 "완료건 제외"는 라이브 상태 옵션이
-      // 확정된 뒤 서버 필터로 잠근다. 이번 배치는 추측 상태값 필터를 넣지 않는다.
     })
   });
 

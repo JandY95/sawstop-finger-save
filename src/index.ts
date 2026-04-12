@@ -1,5 +1,6 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
+  ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
   ADMIN_PAGE_ROUTE,
@@ -18,6 +19,7 @@ import {
 } from "./admin/auth";
 import { renderAdminPage } from "./admin/render";
 import { handleAdminAccidentSearch } from "./admin/search";
+import { handleAdminUpdateAttachmentType } from "./admin/update-attachment-type";
 import { handleAdminUpload } from "./admin/upload";
 import { consumeAttachmentBatch } from "./consumer";
 import { buildAccidentDbProperties } from "./mapper";
@@ -269,6 +271,15 @@ export default {
       }
 
       return handleAdminUpload(request, env);
+    }
+
+    if (request.method === "POST" && url.pathname === ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return handleAdminUpdateAttachmentType(request, env);
     }
 
     return new Response("Not Found", { status: 404 });
