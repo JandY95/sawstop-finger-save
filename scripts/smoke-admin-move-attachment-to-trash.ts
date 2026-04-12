@@ -4,6 +4,8 @@ import {
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS
 } from "../src/constants.ts";
+
+const ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME = "휴지통 이동 시각";
 import type { WorkerEnv } from "../src/types.ts";
 
 registerHooks({
@@ -179,6 +181,25 @@ async function run() {
       JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.status]) ===
         JSON.stringify({ status: { name: ATTACHMENT_DB_STATUS.trash } }),
       "attachment row patch should move status to trash"
+    );
+    const trashMovedAtProperty = attachmentPatchBodies[0]?.[
+      ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME
+    ] as
+      | {
+          date?: {
+            start?: string;
+            time_zone?: string;
+          };
+        }
+      | undefined;
+    expect(
+      typeof trashMovedAtProperty?.date?.start === "string" &&
+        trashMovedAtProperty.date.start.length > 0,
+      "attachment row patch should include trash moved at datetime"
+    );
+    expect(
+      trashMovedAtProperty?.date?.time_zone === "Asia/Seoul",
+      "attachment row patch should include Asia/Seoul timezone"
     );
     expect(accidentPatchBodies.length === 2, "accident page should be patched twice");
     expect(

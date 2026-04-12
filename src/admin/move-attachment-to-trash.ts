@@ -1,6 +1,6 @@
 import { CUSTOMER_FAILURE_MESSAGE } from "../constants.ts";
 import {
-  moveAttachmentPageToTrash,
+  moveAttachmentPageToTrashWithTimestamp,
   recalculateAccidentHasFingerPhoto,
   resetAccidentAttachmentFinalCheck,
   updatePageProperties
@@ -46,7 +46,7 @@ export async function handleAdminMoveAttachmentToTrash(
       );
     }
 
-    await moveAttachmentPageToTrash(env, { attachmentPageId });
+    await moveAttachmentPageToTrashWithTimestamp(env, { attachmentPageId });
 
     await updatePageProperties(env, {
       pageId,

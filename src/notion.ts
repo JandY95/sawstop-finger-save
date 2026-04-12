@@ -1,5 +1,6 @@
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
+  ASIA_SEOUL_TIMEZONE,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS,
   ATTACHMENT_TYPE_OPTIONS,
@@ -109,6 +110,8 @@ type RequiredStringWorkerEnvKey =
   | "NOTION_ACCIDENT_DB_ID"
   | "NOTION_ATTACHMENT_DB_ID";
 
+const ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME = "휴지통 이동 시각";
+
 function getRequiredEnv(env: WorkerEnv, name: RequiredStringWorkerEnvKey) {
   const value = env[name];
 
@@ -211,6 +214,37 @@ function toNumber(value: number) {
   return {
     number: value
   };
+}
+
+function toDateTime(start: string, timeZone: string) {
+  return {
+    date: {
+      start,
+      time_zone: timeZone
+    }
+  };
+}
+
+function getCurrentSeoulIsoDateTime() {
+  const formatter = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: ASIA_SEOUL_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(new Date());
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  ) as Record<string, string>;
+
+  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}+09:00`;
 }
 
 export function buildAttachmentId(receiptNumber: string, displayOrder: number) {
@@ -357,7 +391,7 @@ export async function updateAttachmentPageType(
   });
 }
 
-export async function moveAttachmentPageToTrash(
+export async function moveAttachmentPageToTrashWithTimestamp(
   env: WorkerEnv,
   {
     attachmentPageId
@@ -368,7 +402,11 @@ export async function moveAttachmentPageToTrash(
   await updatePageProperties(env, {
     pageId: attachmentPageId,
     properties: {
-      [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.trash)
+      [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.trash),
+      [ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME]: toDateTime(
+        getCurrentSeoulIsoDateTime(),
+        ASIA_SEOUL_TIMEZONE
+      )
     }
   });
 }
