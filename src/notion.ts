@@ -244,7 +244,7 @@ function getCurrentSeoulIsoDateTime() {
       .map((part) => [part.type, part.value])
   ) as Record<string, string>;
 
-  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}+09:00`;
+  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}`;
 }
 
 export function buildAttachmentId(receiptNumber: string, displayOrder: number) {

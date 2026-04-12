@@ -198,6 +198,10 @@ async function run() {
       "attachment row patch should include trash moved at datetime"
     );
     expect(
+      !String(trashMovedAtProperty?.date?.start).includes("+09:00"),
+      "attachment row patch should not include +09:00 offset in trash moved at datetime"
+    );
+    expect(
       trashMovedAtProperty?.date?.time_zone === "Asia/Seoul",
       "attachment row patch should include Asia/Seoul timezone"
     );
