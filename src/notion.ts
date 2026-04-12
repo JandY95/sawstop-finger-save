@@ -7,6 +7,7 @@ import {
   NOTION_API_VERSION
 } from "./constants.ts";
 import type {
+  AdminAttachmentListItem,
   CreateAttachmentPageRecordInput,
   CreateAccidentPageInput,
   NotionAttachmentDbPropertiesPayload,
@@ -523,6 +524,83 @@ export async function findAttachmentPageByAttachmentId(
     id: result.id,
     url: result.url
   };
+}
+
+export async function listAttachmentPagesByAccidentPageId(
+  env: WorkerEnv,
+  pageId: string
+): Promise<AdminAttachmentListItem[]> {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const attachmentDbId = getRequiredEnv(env, "NOTION_ATTACHMENT_DB_ID");
+  const response = await fetch(
+    `${NOTION_API_BASE_URL}/databases/${attachmentDbId}/query`,
+    {
+      method: "POST",
+      headers: getNotionHeaders(token),
+      body: JSON.stringify({
+        page_size: 100,
+        sorts: [
+          {
+            property: ATTACHMENT_DB_PROPERTY_NAMES.displayOrder,
+            direction: "ascending"
+          }
+        ],
+        filter: {
+          property: ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation,
+          relation: {
+            contains: pageId
+          }
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Notion attachment list query failed: ${await readNotionError(response)}`
+    );
+  }
+
+  const data = (await response.json()) as {
+    results?: Array<{
+      id?: string;
+      properties?: Record<
+        string,
+        {
+          rich_text?: Array<{ plain_text?: string }>;
+          select?: { name?: string | null } | null;
+          status?: { name?: string | null } | null;
+          number?: number | null;
+        }
+      >;
+    }>;
+  };
+
+  return (data.results ?? [])
+    .map((result) => {
+      if (!result.id || !result.properties) {
+        return null;
+      }
+
+      const fileName =
+        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.fileName]?.rich_text
+          ?.map((item) => item.plain_text ?? "")
+          .join("")
+          .trim() ?? "";
+
+      return {
+        attachmentPageId: result.id,
+        fileName: fileName.length > 0 ? fileName : null,
+        attachmentType:
+          result.properties[ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]?.select?.name ??
+          null,
+        status:
+          result.properties[ATTACHMENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null,
+        displayOrder:
+          result.properties[ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]?.number ?? null
+      } satisfies AdminAttachmentListItem;
+    })
+    .filter((item): item is AdminAttachmentListItem => item !== null);
 }
 
 export async function getNextAttachmentDisplayOrder(

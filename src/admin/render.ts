@@ -1,5 +1,6 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
+  ADMIN_ATTACHMENT_LIST_ROUTE,
   ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
@@ -46,7 +47,7 @@ export function renderAdminPage(
         <div class="panel-head">
           <div>
             <h1>Admin Upload</h1>
-            <p>receiptNumber 또는 phone 일부로 사고건을 찾고 파일을 업로드합니다.</p>
+            <p>receiptNumber 또는 phone 으로 사고건을 찾고 파일을 업로드합니다.</p>
           </div>
           <form method="post" action="${ADMIN_LOGOUT_ROUTE}">
             <button type="submit" class="secondary">로그아웃</button>
@@ -57,7 +58,7 @@ export function renderAdminPage(
           <form id="search-form" class="card">
             <label for="query">사고건 검색</label>
             <div class="row">
-              <input id="query" name="query" type="text" placeholder="receiptNumber 또는 phone 일부" required />
+              <input id="query" name="query" type="text" placeholder="receiptNumber 또는 phone 입력" required />
               <button type="submit">검색</button>
             </div>
             <p class="hint">완료건 제외 검색은 live status option 확정 전까지 TODO입니다.</p>
@@ -66,17 +67,17 @@ export function renderAdminPage(
           </form>
 
           <form id="upload-form" class="card">
-            <label for="selected-page-id">선택 사고건 pageId</label>
-            <input id="selected-page-id" name="pageId" type="text" placeholder="검색 결과에서 선택" readonly required />
+            <input id="selected-page-id" name="pageId" type="hidden" required />
+            <label>선택한 사고건</label>
             <div id="selected-summary" class="hint">아직 선택된 사고건이 없습니다.</div>
 
-            <label for="attachment-type">attachmentType</label>
+            <label for="attachment-type">첨부 유형</label>
             <select id="attachment-type" name="attachmentType" required>
               <option value="">선택</option>
               ${attachmentTypeOptions}
             </select>
 
-            <label for="files">files</label>
+            <label for="files">파일</label>
             <input id="files" name="files" type="file" multiple required />
 
             <button type="submit">업로드</button>
@@ -85,26 +86,12 @@ export function renderAdminPage(
             <pre id="upload-results" class="results"></pre>
           </form>
 
-          <form id="attachment-type-update-form" class="card">
-            <h2>첨부 유형 변경</h2>
-            <p class="hint">attachmentPageId와 pageId를 직접 입력합니다.</p>
-
-            <label for="attachment-page-id">attachmentPageId</label>
-            <input id="attachment-page-id" name="attachmentPageId" type="text" placeholder="attachment page id" required />
-
-            <label for="attachment-type-page-id">pageId</label>
-            <input id="attachment-type-page-id" name="pageId" type="text" placeholder="accident page id" required />
-
-            <label for="attachment-type-update">attachmentType</label>
-            <select id="attachment-type-update" name="attachmentType" required>
-              <option value="">선택</option>
-              ${attachmentTypeOptions}
-            </select>
-
-            <button type="submit">유형 변경</button>
-
-            <div id="attachment-type-update-message" class="message"></div>
-          </form>
+          <section class="card attachment-card">
+            <h2>현재 첨부 목록</h2>
+            <p class="hint">사고건을 선택하면 첨부 목록을 불러옵니다.</p>
+            <div id="attachment-list-message" class="message"></div>
+            <div id="attachment-list" class="results"></div>
+          </section>
         </div>
       </section>
 
@@ -115,8 +102,8 @@ export function renderAdminPage(
         const uploadForm = document.getElementById("upload-form");
         const uploadMessage = document.getElementById("upload-message");
         const uploadResults = document.getElementById("upload-results");
-        const attachmentTypeUpdateForm = document.getElementById("attachment-type-update-form");
-        const attachmentTypeUpdateMessage = document.getElementById("attachment-type-update-message");
+        const attachmentListMessage = document.getElementById("attachment-list-message");
+        const attachmentList = document.getElementById("attachment-list");
         const selectedPageIdInput = document.getElementById("selected-page-id");
         const selectedSummary = document.getElementById("selected-summary");
 
@@ -125,7 +112,91 @@ export function renderAdminPage(
           target.className = "message" + (tone ? " " + tone : "");
         }
 
-        function selectAccident(item) {
+        async function loadAttachments(pageId) {
+          attachmentList.innerHTML = "";
+          setMessage(attachmentListMessage, "첨부 목록 불러오는 중..", "");
+
+          const response = await fetch(
+            "${ADMIN_ATTACHMENT_LIST_ROUTE}?pageId=" + encodeURIComponent(pageId)
+          );
+          const data = await response.json();
+
+          if (!response.ok || !data.ok) {
+            setMessage(
+              attachmentListMessage,
+              data.message || "첨부 목록을 불러오지 못했습니다.",
+              "error"
+            );
+            return;
+          }
+
+          const attachments = data.attachments || [];
+          if (attachments.length === 0) {
+            setMessage(attachmentListMessage, "첨부가 없습니다.", "");
+            return;
+          }
+
+          setMessage(attachmentListMessage, "첨부 " + attachments.length + "건", "success");
+          const fragment = document.createDocumentFragment();
+
+          attachments.forEach((item) => {
+            const row = document.createElement("form");
+            row.className = "attachment-row";
+            row.innerHTML = [
+              '<div class="attachment-meta">',
+              '<strong>' + (item.fileName || "이름 없음") + '</strong>',
+              '<span>현재 유형: ' + (item.attachmentType || "-") + '</span>',
+              '<span>상태: ' + (item.status || "-") + '</span>',
+              '</div>',
+              '<div class="attachment-actions">',
+              '<select name="attachmentType" required>',
+              '<option value="">선택</option>',
+              '${attachmentTypeOptions}',
+              '</select>',
+              '<button type="submit">변경</button>',
+              '</div>',
+              '<div class="message"></div>'
+            ].join("");
+
+            row.addEventListener("submit", async (event) => {
+              event.preventDefault();
+              const messageNode = row.querySelector(".message");
+              const selectNode = row.querySelector('select[name="attachmentType"]');
+              setMessage(messageNode, "유형 변경 중..", "");
+
+              const response = await fetch("${ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE}", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  attachmentPageId: item.attachmentPageId,
+                  pageId,
+                  attachmentType: selectNode.value
+                })
+              });
+              const data = await response.json();
+
+              if (!response.ok || !data.ok) {
+                setMessage(
+                  messageNode,
+                  data.message || "유형 변경에 실패했습니다.",
+                  "error"
+                );
+                return;
+              }
+
+              setMessage(messageNode, "유형 변경 성공", "success");
+              await loadAttachments(pageId);
+            });
+
+            fragment.appendChild(row);
+          });
+
+          attachmentList.appendChild(fragment);
+        }
+
+        async function selectAccident(item) {
           selectedPageIdInput.value = item.pageId;
           selectedSummary.textContent = [
             item.receiptNumber,
@@ -133,15 +204,18 @@ export function renderAdminPage(
             item.occurredAt || "-",
             item.operatorName || "-"
           ].join(" | ");
+          await loadAttachments(item.pageId);
         }
 
         searchForm.addEventListener("submit", async (event) => {
           event.preventDefault();
           const query = new FormData(searchForm).get("query");
-          setMessage(searchMessage, "검색 중...", "");
+          setMessage(searchMessage, "검색 중..", "");
           searchResults.innerHTML = "";
 
-          const response = await fetch("${ADMIN_ACCIDENT_SEARCH_ROUTE}?query=" + encodeURIComponent(String(query || "")));
+          const response = await fetch(
+            "${ADMIN_ACCIDENT_SEARCH_ROUTE}?query=" + encodeURIComponent(String(query || ""))
+          );
           const data = await response.json();
 
           if (!response.ok || !data.ok) {
@@ -160,8 +234,15 @@ export function renderAdminPage(
             const button = document.createElement("button");
             button.type = "button";
             button.className = "result-item";
-            button.textContent = [item.receiptNumber, item.phone || "-", item.occurredAt || "-", item.operatorName || "-"].join(" | ");
-            button.addEventListener("click", () => selectAccident(item));
+            button.textContent = [
+              item.receiptNumber,
+              item.phone || "-",
+              item.occurredAt || "-",
+              item.operatorName || "-"
+            ].join(" | ");
+            button.addEventListener("click", () => {
+              void selectAccident(item);
+            });
             fragment.appendChild(button);
           });
           searchResults.appendChild(fragment);
@@ -171,7 +252,7 @@ export function renderAdminPage(
           event.preventDefault();
           const formData = new FormData(uploadForm);
           uploadResults.textContent = "";
-          setMessage(uploadMessage, "업로드 중...", "");
+          setMessage(uploadMessage, "업로드 중..", "");
 
           const response = await fetch("${ADMIN_UPLOAD_ROUTE}", {
             method: "POST",
@@ -187,36 +268,14 @@ export function renderAdminPage(
 
           setMessage(
             uploadMessage,
-            "업로드 성공: " + data.successCount + "건, 실패: " + data.failureCount + "건",
+            "업로드 성공: " + data.successCount + "건 / 실패: " + data.failureCount + "건",
             "success"
           );
           uploadResults.textContent = JSON.stringify(data.results || [], null, 2);
-        });
 
-        attachmentTypeUpdateForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const formData = new FormData(attachmentTypeUpdateForm);
-          setMessage(attachmentTypeUpdateMessage, "유형 변경 중..", "");
-
-          const response = await fetch("${ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE}", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(Object.fromEntries(formData.entries()))
-          });
-          const data = await response.json();
-
-          if (!response.ok || !data.ok) {
-            setMessage(
-              attachmentTypeUpdateMessage,
-              data.message || "유형 변경에 실패했습니다.",
-              "error"
-            );
-            return;
+          if (selectedPageIdInput.value) {
+            await loadAttachments(selectedPageIdInput.value);
           }
-
-          setMessage(attachmentTypeUpdateMessage, "유형 변경 성공", "success");
         });
       </script>
     `
@@ -290,7 +349,31 @@ export function renderAdminPage(
             border: 1px solid var(--line);
             border-radius: 16px;
           }
+          .attachment-card {
+            grid-column: 1 / -1;
+          }
+          .attachment-row {
+            display: grid;
+            gap: 10px;
+            padding: 12px;
+            background: #f8f3ea;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+          }
+          .attachment-meta {
+            display: grid;
+            gap: 4px;
+          }
+          .attachment-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+          }
+          .attachment-actions select {
+            flex: 1;
+          }
           h1 { margin: 0 0 8px; font-size: 28px; }
+          h2 { margin: 0; font-size: 20px; }
           p { margin: 0; color: var(--muted); line-height: 1.5; }
           label { font-weight: 700; }
           input, select, button, pre { font: inherit; }
@@ -344,6 +427,7 @@ export function renderAdminPage(
             .grid { grid-template-columns: 1fr; }
             .panel-head { flex-direction: column; }
             .row { flex-direction: column; }
+            .attachment-actions { flex-direction: column; align-items: stretch; }
           }
         </style>
       </head>

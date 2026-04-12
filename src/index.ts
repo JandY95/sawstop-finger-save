@@ -1,5 +1,6 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
+  ADMIN_ATTACHMENT_LIST_ROUTE,
   ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
@@ -18,6 +19,7 @@ import {
   requireAdminApiAuth
 } from "./admin/auth";
 import { renderAdminPage } from "./admin/render";
+import { handleAdminAttachmentList } from "./admin/list-attachments";
 import { handleAdminAccidentSearch } from "./admin/search";
 import { handleAdminUpdateAttachmentType } from "./admin/update-attachment-type";
 import { handleAdminUpload } from "./admin/upload";
@@ -262,6 +264,15 @@ export default {
       }
 
       return handleAdminAccidentSearch(request, env);
+    }
+
+    if (request.method === "GET" && url.pathname === ADMIN_ATTACHMENT_LIST_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return handleAdminAttachmentList(request, env);
     }
 
     if (request.method === "POST" && url.pathname === ADMIN_UPLOAD_ROUTE) {

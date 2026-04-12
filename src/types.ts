@@ -260,6 +260,28 @@ export interface AdminAccidentSearchFailureResponse {
   message: string;
 }
 
+export interface AdminAttachmentListRequest {
+  pageId: string;
+}
+
+export interface AdminAttachmentListItem {
+  attachmentPageId: string;
+  fileName: string | null;
+  attachmentType: string | null;
+  status: string | null;
+  displayOrder: number | null;
+}
+
+export interface AdminAttachmentListSuccessResponse {
+  ok: true;
+  attachments: AdminAttachmentListItem[];
+}
+
+export interface AdminAttachmentListFailureResponse {
+  ok: false;
+  message: string;
+}
+
 export interface AdminUploadRequestDraft {
   pageId: string;
   attachmentType: string;

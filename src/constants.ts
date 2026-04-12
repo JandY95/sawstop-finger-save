@@ -97,6 +97,7 @@ export const NOTION_API_BASE_URL = "https://api.notion.com/v1";
 export const NOTION_API_VERSION = "2022-06-28";
 export const SUBMIT_ROUTE = "/submit";
 export const ADMIN_ACCIDENT_SEARCH_ROUTE = "/admin/accidents/search";
+export const ADMIN_ATTACHMENT_LIST_ROUTE = "/admin/attachments/list";
 export const ADMIN_UPLOAD_ROUTE = "/admin/upload";
 export const ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE = "/admin/attachments/type";
 // TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명과 허용값은
