@@ -10,7 +10,7 @@
 2. GitHub Actions에서 `Deploy Cloudflare Worker` workflow를 수동 실행한다.
 3. workflow 안에서 `npm ci` -> `npm run ci` -> `npm run deploy:ci` 순서로 진행한다.
 
-## 필요한 GitHub Secrets
+## 필요 GitHub Secrets
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 - `NOTION_TOKEN`
@@ -27,9 +27,11 @@
 - 관리자 검색에서 완료건 제외가 반영되는지 확인
 - 관리자 업로드 후 Notion 첨부 row 생성 여부 확인
 - 관리자 업로드 후 `첨부 최종 확인 완료=false` reset 반영 확인
+- 휴지통 이동 후 `첨부 최종 확인 완료=false` reset 반영 확인
+- 복구 후 `첨부 최종 확인 완료=false` reset 반영 확인
 - consumer 처리 후 `첨부 최종 확인 완료=false` reset 반영 확인
 - 관리자 업로드 후 Cloudflare R2 객체 생성 여부 확인
 
 ## 비고
-- `wrangler.toml`의 실제 값은 이번 단계에서 변경하지 않는다.
+- `wrangler.toml` 실제 값은 이번 단계에서 변경하지 않는다.
 - 자동 배포(`push` 트리거)는 아직 활성화하지 않는다.

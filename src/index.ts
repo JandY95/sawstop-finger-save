@@ -1,6 +1,8 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
   ADMIN_ATTACHMENT_LIST_ROUTE,
+  ADMIN_ATTACHMENT_RESTORE_ROUTE,
+  ADMIN_ATTACHMENT_TRASH_ROUTE,
   ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
@@ -20,6 +22,8 @@ import {
 } from "./admin/auth";
 import { renderAdminPage } from "./admin/render";
 import { handleAdminAttachmentList } from "./admin/list-attachments";
+import { handleAdminMoveAttachmentToTrash } from "./admin/move-attachment-to-trash";
+import { handleAdminRestoreAttachment } from "./admin/restore-attachment";
 import { handleAdminAccidentSearch } from "./admin/search";
 import { handleAdminUpdateAttachmentType } from "./admin/update-attachment-type";
 import { handleAdminUpload } from "./admin/upload";
@@ -291,6 +295,24 @@ export default {
       }
 
       return handleAdminUpdateAttachmentType(request, env);
+    }
+
+    if (request.method === "POST" && url.pathname === ADMIN_ATTACHMENT_TRASH_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return handleAdminMoveAttachmentToTrash(request, env);
+    }
+
+    if (request.method === "POST" && url.pathname === ADMIN_ATTACHMENT_RESTORE_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return handleAdminRestoreAttachment(request, env);
     }
 
     return new Response("Not Found", { status: 404 });

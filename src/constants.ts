@@ -100,6 +100,8 @@ export const ADMIN_ACCIDENT_SEARCH_ROUTE = "/admin/accidents/search";
 export const ADMIN_ATTACHMENT_LIST_ROUTE = "/admin/attachments/list";
 export const ADMIN_UPLOAD_ROUTE = "/admin/upload";
 export const ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE = "/admin/attachments/type";
+export const ADMIN_ATTACHMENT_TRASH_ROUTE = "/admin/attachments/trash";
+export const ADMIN_ATTACHMENT_RESTORE_ROUTE = "/admin/attachments/restore";
 // TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명과 허용값은
 // 라이브 첨부 DB 스키마 확정 전까지 runtime write 대상으로 사용하지 않는다.
 export const ADMIN_PAGE_ROUTE = "/admin";

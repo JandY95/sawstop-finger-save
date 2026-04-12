@@ -357,6 +357,38 @@ export async function updateAttachmentPageType(
   });
 }
 
+export async function moveAttachmentPageToTrash(
+  env: WorkerEnv,
+  {
+    attachmentPageId
+  }: {
+    attachmentPageId: string;
+  }
+) {
+  await updatePageProperties(env, {
+    pageId: attachmentPageId,
+    properties: {
+      [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.trash)
+    }
+  });
+}
+
+export async function restoreAttachmentPage(
+  env: WorkerEnv,
+  {
+    attachmentPageId
+  }: {
+    attachmentPageId: string;
+  }
+) {
+  await updatePageProperties(env, {
+    pageId: attachmentPageId,
+    properties: {
+      [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.current)
+    }
+  });
+}
+
 export async function attachmentPageHasCurrentFingerPhoto(
   env: WorkerEnv,
   pageId: string

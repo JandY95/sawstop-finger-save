@@ -1,6 +1,8 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
   ADMIN_ATTACHMENT_LIST_ROUTE,
+  ADMIN_ATTACHMENT_RESTORE_ROUTE,
+  ADMIN_ATTACHMENT_TRASH_ROUTE,
   ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
@@ -154,6 +156,9 @@ export function renderAdminPage(
               '${attachmentTypeOptions}',
               '</select>',
               '<button type="submit">변경</button>',
+              (item.status === "휴지통"
+                ? '<button type="button" class="secondary restore-button">복구</button>'
+                : '<button type="button" class="secondary trash-button">휴지통 이동</button>'),
               '</div>',
               '<div class="message"></div>'
             ].join("");
@@ -189,6 +194,70 @@ export function renderAdminPage(
               setMessage(messageNode, "유형 변경 성공", "success");
               await loadAttachments(pageId);
             });
+
+            const trashButton = row.querySelector(".trash-button");
+            if (trashButton) {
+              trashButton.addEventListener("click", async () => {
+                const messageNode = row.querySelector(".message");
+                setMessage(messageNode, "휴지통 이동 중..", "");
+
+                const response = await fetch("${ADMIN_ATTACHMENT_TRASH_ROUTE}", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    attachmentPageId: item.attachmentPageId,
+                    pageId
+                  })
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.ok) {
+                  setMessage(
+                    messageNode,
+                    data.message || "휴지통 이동에 실패했습니다.",
+                    "error"
+                  );
+                  return;
+                }
+
+                setMessage(messageNode, "휴지통 이동 성공", "success");
+                await loadAttachments(pageId);
+              });
+            }
+
+            const restoreButton = row.querySelector(".restore-button");
+            if (restoreButton) {
+              restoreButton.addEventListener("click", async () => {
+                const messageNode = row.querySelector(".message");
+                setMessage(messageNode, "복구 중..", "");
+
+                const response = await fetch("${ADMIN_ATTACHMENT_RESTORE_ROUTE}", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    attachmentPageId: item.attachmentPageId,
+                    pageId
+                  })
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.ok) {
+                  setMessage(
+                    messageNode,
+                    data.message || "복구에 실패했습니다.",
+                    "error"
+                  );
+                  return;
+                }
+
+                setMessage(messageNode, "복구 성공", "success");
+                await loadAttachments(pageId);
+              });
+            }
 
             fragment.appendChild(row);
           });

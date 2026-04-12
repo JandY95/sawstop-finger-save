@@ -342,6 +342,34 @@ export interface AdminUpdateAttachmentTypeFailureResponse {
   message: string;
 }
 
+export interface AdminMoveAttachmentToTrashRequest {
+  attachmentPageId: string;
+  pageId: string;
+}
+
+export interface AdminMoveAttachmentToTrashSuccessResponse {
+  ok: true;
+}
+
+export interface AdminMoveAttachmentToTrashFailureResponse {
+  ok: false;
+  message: string;
+}
+
+export interface AdminRestoreAttachmentRequest {
+  attachmentPageId: string;
+  pageId: string;
+}
+
+export interface AdminRestoreAttachmentSuccessResponse {
+  ok: true;
+}
+
+export interface AdminRestoreAttachmentFailureResponse {
+  ok: false;
+  message: string;
+}
+
 export interface AdminSessionPayload {
   exp: number;
 }
