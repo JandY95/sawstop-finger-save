@@ -10,7 +10,7 @@
     "smoke:admin-search": "node --experimental-strip-types scripts/smoke-admin-search.ts",
     "smoke:admin-upload": "node --experimental-strip-types scripts/smoke-admin-upload.ts",
     "ci": "npm run test",
-    "deploy:ci": "npx wrangler deploy",
+    "deploy:ci": "npx.cmd wrangler deploy",
     "dev:local": "npx.cmd wrangler dev",
     "dev:fully-local": "npx.cmd wrangler dev --local",
     "dev:remote": "npx.cmd wrangler dev --remote",
