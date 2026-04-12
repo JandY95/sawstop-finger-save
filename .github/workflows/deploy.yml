@@ -32,6 +32,7 @@ jobs:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_ACCIDENT_DB_ID: ${{ secrets.NOTION_ACCIDENT_DB_ID }}
           NOTION_ATTACHMENT_DB_ID: ${{ secrets.NOTION_ATTACHMENT_DB_ID }}
+          NOTION_SETTINGS_DB_ID: ${{ secrets.NOTION_SETTINGS_DB_ID }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
           # TODO: add additional production-only env vars here when they are locked.
