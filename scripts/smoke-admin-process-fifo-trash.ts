@@ -82,6 +82,7 @@ async function run() {
   const deleteCalls: string[] = [];
   const attachmentPatchBodies: Array<Record<string, unknown>> = [];
   const accidentPatchBodies: Array<Record<string, unknown>> = [];
+  const queryBodies: Array<Record<string, unknown>> = [];
   const env = {
     NOTION_TOKEN: "test-token",
     NOTION_ACCIDENT_DB_ID: "accident-db-id",
@@ -166,6 +167,11 @@ async function run() {
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
 
+      if (init?.method === "POST" && url.endsWith("/databases/attachment-db-id/query")) {
+        const rawBody = typeof init.body === "string" ? init.body : "{}";
+        queryBodies.push(JSON.parse(rawBody) as Record<string, unknown>);
+      }
+
       if (init?.method === "PATCH" && url.endsWith("/pages/attachment-page-1")) {
         const rawBody = typeof init.body === "string" ? init.body : "{}";
         const body = JSON.parse(rawBody) as { properties?: Record<string, unknown> };
@@ -219,6 +225,130 @@ async function run() {
       "FIFO should recalculate finger-photo flag"
     );
     console.log("PASS: admin_process_fifo_trash_success");
+
+    const forcedResponses: Response[] = [
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: {
+          results: [
+            {
+              id: "attachment-page-2",
+              properties: {
+                [ATTACHMENT_DB_PROPERTY_NAMES.r2Key]: {
+                  rich_text: [{ plain_text: "attachments/receipt/future-file.jpg" }]
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]: {
+                  relation: [{ id: "accident-page-2" }]
+                },
+                [ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt]: {
+                  date: { start: "2099-04-01T08:00:00" }
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
+                  status: { name: ATTACHMENT_DB_STATUS.trash }
+                }
+              }
+            }
+          ]
+        }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { id: "attachment-page-2" }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { id: "accident-page-2" }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: {
+          results: []
+        }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { id: "accident-page-2" }
+      })
+    ];
+
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+
+      if (init?.method === "POST" && url.endsWith("/databases/attachment-db-id/query")) {
+        const rawBody = typeof init.body === "string" ? init.body : "{}";
+        queryBodies.push(JSON.parse(rawBody) as Record<string, unknown>);
+      }
+
+      if (init?.method === "PATCH" && url.endsWith("/pages/attachment-page-2")) {
+        const rawBody = typeof init.body === "string" ? init.body : "{}";
+        const body = JSON.parse(rawBody) as { properties?: Record<string, unknown> };
+        attachmentPatchBodies.push(body.properties ?? {});
+      }
+
+      if (init?.method === "PATCH" && url.endsWith("/pages/accident-page-2")) {
+        const rawBody = typeof init.body === "string" ? init.body : "{}";
+        const body = JSON.parse(rawBody) as { properties?: Record<string, unknown> };
+        accidentPatchBodies.push(body.properties ?? {});
+      }
+
+      const response = forcedResponses.shift();
+      if (!response) {
+        throw new Error("No more mock fetch responses for FIFO forced test");
+      }
+
+      return response;
+    }) as typeof fetch;
+
+    deleteCalls.length = 0;
+    attachmentPatchBodies.length = 0;
+    accidentPatchBodies.length = 0;
+    queryBodies.length = 0;
+
+    const forcedResponse = await handleAdminProcessFifoTrash(
+      buildRequest({ force: true, pageId: "accident-page-2" }),
+      env
+    );
+    const forcedBody = await readJson(forcedResponse);
+
+    expect(forcedResponse.status === 200, "Forced FIFO process should return 200");
+    expect(forcedBody.ok === true, "Forced FIFO process should return ok=true");
+    expect(forcedBody.processedCount === 1, "Forced FIFO process should handle 1 candidate");
+    expect(queryBodies.length >= 1, "Forced FIFO should issue a dedicated candidate query");
+    expect(
+      JSON.stringify(queryBodies[0]?.filter ?? {}).includes("accident-page-2"),
+      "Forced FIFO should limit candidates to selected accident page"
+    );
+    expect(
+      deleteCalls.includes("delete:attachments/receipt/future-file.jpg"),
+      "Forced FIFO should delete R2 object even when permanent delete time is in the future"
+    );
+    expect(attachmentPatchBodies.length === 1, "Forced FIFO should patch attachment row once");
+    expect(
+      JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.status]) ===
+        JSON.stringify({ status: { name: ATTACHMENT_DB_STATUS.permanentlyDeleted } }),
+      "Forced FIFO should patch attachment status to permanently deleted"
+    );
+    expect(accidentPatchBodies.length === 2, "Forced FIFO should patch accident page twice");
+    expect(
+      JSON.stringify(
+        accidentPatchBodies[0]?.[
+          ACCIDENT_DB_PREPARED_PROPERTY_NAMES.attachmentFinalCheck
+        ]
+      ) === JSON.stringify({ checkbox: false }),
+      "Forced FIFO should reset attachment final check to false"
+    );
+    expect(
+      Object.values(accidentPatchBodies[1] ?? {}).some(
+        (value) => JSON.stringify(value) === JSON.stringify({ checkbox: false })
+      ),
+      "Forced FIFO should recalculate finger-photo flag"
+    );
+    console.log("PASS: admin_process_fifo_trash_forced");
 
     globalThis.fetch = (async () =>
       createMockResponse({

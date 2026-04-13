@@ -373,7 +373,9 @@ export interface AdminRestoreAttachmentFailureResponse {
 }
 
 export interface AdminProcessFifoTrashRequest {
+  force?: boolean;
   limit?: number;
+  pageId?: string;
 }
 
 export interface AdminProcessFifoTrashResultItem {
