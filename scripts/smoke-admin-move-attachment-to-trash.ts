@@ -1,11 +1,11 @@
 import { registerHooks } from "node:module";
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
+  ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS
 } from "../src/constants.ts";
 
-const ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME = "휴지통 이동 시각";
 import type { WorkerEnv } from "../src/types.ts";
 
 registerHooks({
@@ -183,7 +183,17 @@ async function run() {
       "attachment row patch should move status to trash"
     );
     const trashMovedAtProperty = attachmentPatchBodies[0]?.[
-      ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME
+      ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt
+    ] as
+      | {
+          date?: {
+            start?: string;
+            time_zone?: string;
+          };
+        }
+      | undefined;
+    const permanentDeleteAtProperty = attachmentPatchBodies[0]?.[
+      ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt
     ] as
       | {
           date?: {
@@ -204,6 +214,15 @@ async function run() {
     expect(
       trashMovedAtProperty?.date?.time_zone === "Asia/Seoul",
       "attachment row patch should include Asia/Seoul timezone"
+    );
+    expect(
+      typeof permanentDeleteAtProperty?.date?.start === "string" &&
+        permanentDeleteAtProperty.date.start.length > 0,
+      "attachment row patch should include permanent delete at datetime"
+    );
+    expect(
+      permanentDeleteAtProperty?.date?.time_zone === "Asia/Seoul",
+      "attachment row patch should include Asia/Seoul timezone for permanent delete at"
     );
     expect(accidentPatchBodies.length === 2, "accident page should be patched twice");
     expect(

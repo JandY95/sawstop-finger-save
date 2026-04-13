@@ -1,6 +1,7 @@
 import { registerHooks } from "node:module";
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
+  ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS
 } from "../src/constants.ts";
@@ -179,6 +180,18 @@ async function run() {
       JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.status]) ===
         JSON.stringify({ status: { name: ATTACHMENT_DB_STATUS.current } }),
       "attachment row patch should restore status to current"
+    );
+    expect(
+      JSON.stringify(
+        attachmentPatchBodies[0]?.[ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt]
+      ) === JSON.stringify({ date: null }),
+      "attachment row patch should clear trash moved at"
+    );
+    expect(
+      JSON.stringify(
+        attachmentPatchBodies[0]?.[ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt]
+      ) === JSON.stringify({ date: null }),
+      "attachment row patch should clear permanent delete at"
     );
     expect(accidentPatchBodies.length === 2, "accident page should be patched twice");
     expect(

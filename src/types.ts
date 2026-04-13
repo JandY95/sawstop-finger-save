@@ -159,10 +159,12 @@ export type NotionRelationProperty = {
 };
 
 export type NotionDateProperty = {
-  date: {
-    start: string;
-    time_zone: string;
-  };
+  date:
+    | {
+        start: string;
+        time_zone: string;
+      }
+    | null;
 };
 
 export type NotionStatusProperty = {
@@ -366,6 +368,31 @@ export interface AdminRestoreAttachmentSuccessResponse {
 }
 
 export interface AdminRestoreAttachmentFailureResponse {
+  ok: false;
+  message: string;
+}
+
+export interface AdminProcessFifoTrashRequest {
+  limit?: number;
+}
+
+export interface AdminProcessFifoTrashResultItem {
+  attachmentPageId: string;
+  accidentPageId: string | null;
+  r2Key: string | null;
+  ok: boolean;
+  reason?: string;
+}
+
+export interface AdminProcessFifoTrashSuccessResponse {
+  ok: true;
+  processedCount: number;
+  skippedCount: number;
+  failedCount: number;
+  results: AdminProcessFifoTrashResultItem[];
+}
+
+export interface AdminProcessFifoTrashFailureResponse {
   ok: false;
   message: string;
 }

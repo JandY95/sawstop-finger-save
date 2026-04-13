@@ -13,6 +13,7 @@
     "smoke:admin-upload": "node --experimental-strip-types scripts/smoke-admin-upload.ts",
     "smoke:admin-list-attachments": "node --experimental-strip-types scripts/smoke-admin-list-attachments.ts",
     "smoke:admin-move-attachment-to-trash": "node --experimental-strip-types scripts/smoke-admin-move-attachment-to-trash.ts",
+    "smoke:admin-process-fifo-trash": "node --experimental-strip-types scripts/smoke-admin-process-fifo-trash.ts",
     "smoke:admin-restore-attachment": "node --experimental-strip-types scripts/smoke-admin-restore-attachment.ts",
     "smoke:admin-update-attachment-type": "node --experimental-strip-types scripts/smoke-admin-update-attachment-type.ts",
     "ci": "npm run test",
@@ -21,7 +22,7 @@
     "dev:fully-local": "npx wrangler dev --local",
     "dev:remote": "npx wrangler dev --remote",
     "dev:recalculate-finger-photo": "node --experimental-strip-types --experimental-specifier-resolution=node scripts/recalculate-finger-photo.ts",
-    "test": "npm run check:notion-schema && npm run check:allowed-values && npm run smoke:submit && npm run smoke:admin-search && npm run smoke:admin-upload && npm run smoke:admin-list-attachments && npm run smoke:admin-update-attachment-type && npm run smoke:admin-move-attachment-to-trash && npm run smoke:admin-restore-attachment",
+    "test": "npm run check:notion-schema && npm run check:allowed-values && npm run smoke:submit && npm run smoke:admin-search && npm run smoke:admin-upload && npm run smoke:admin-list-attachments && npm run smoke:admin-update-attachment-type && npm run smoke:admin-move-attachment-to-trash && npm run smoke:admin-restore-attachment && npm run smoke:admin-process-fifo-trash",
     "lint": "node --check scripts/verify-gates.js",
     "verify:gates": "node scripts/verify-gates.js --status"
   },

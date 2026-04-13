@@ -1,8 +1,10 @@
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
   ASIA_SEOUL_TIMEZONE,
+  ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS,
+  ATTACHMENT_TRASH_RETENTION_DAYS,
   ATTACHMENT_TYPE_OPTIONS,
   NOTION_API_BASE_URL,
   NOTION_API_VERSION
@@ -110,7 +112,15 @@ type RequiredStringWorkerEnvKey =
   | "NOTION_ACCIDENT_DB_ID"
   | "NOTION_ATTACHMENT_DB_ID";
 
-const ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME = "휴지통 이동 시각";
+type FifoTrashCandidate = {
+  attachmentPageId: string;
+  r2Key: string | null;
+  accidentPageId: string | null;
+  permanentDeleteAt: string | null;
+  attachmentType: string | null;
+  status: string | null;
+};
+
 
 function getRequiredEnv(env: WorkerEnv, name: RequiredStringWorkerEnvKey) {
   const value = env[name];
@@ -238,6 +248,38 @@ function getCurrentSeoulIsoDateTime() {
   });
 
   const parts = formatter.formatToParts(new Date());
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  ) as Record<string, string>;
+
+  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}`;
+}
+
+function addDaysToIsoDateTime(dateTime: string, days: number) {
+  const [datePart, timePart] = dateTime.split("T");
+  if (!datePart || !timePart) {
+    throw new Error(`Invalid ISO datetime: ${dateTime}`);
+  }
+
+  const [year, month, day] = datePart.split("-").map((value) => Number(value));
+  const [hour, minute, second] = timePart.split(":").map((value) => Number(value));
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hour - 9, minute, second));
+  utcDate.setUTCDate(utcDate.getUTCDate() + days);
+
+  const formatter = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: ASIA_SEOUL_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(utcDate);
   const values = Object.fromEntries(
     parts
       .filter((part) => part.type !== "literal")
@@ -399,12 +441,22 @@ export async function moveAttachmentPageToTrashWithTimestamp(
     attachmentPageId: string;
   }
 ) {
+  const trashMovedAt = getCurrentSeoulIsoDateTime();
+  const permanentDeleteAt = addDaysToIsoDateTime(
+    trashMovedAt,
+    ATTACHMENT_TRASH_RETENTION_DAYS
+  );
+
   await updatePageProperties(env, {
     pageId: attachmentPageId,
     properties: {
       [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.trash),
-      [ATTACHMENT_TRASH_MOVED_AT_PROPERTY_NAME]: toDateTime(
-        getCurrentSeoulIsoDateTime(),
+      [ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt]: toDateTime(
+        trashMovedAt,
+        ASIA_SEOUL_TIMEZONE
+      ),
+      [ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt]: toDateTime(
+        permanentDeleteAt,
         ASIA_SEOUL_TIMEZONE
       )
     }
@@ -422,7 +474,31 @@ export async function restoreAttachmentPage(
   await updatePageProperties(env, {
     pageId: attachmentPageId,
     properties: {
-      [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.current)
+      [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.current),
+      [ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt]: {
+        date: null
+      },
+      [ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt]: {
+        date: null
+      }
+    }
+  });
+}
+
+export async function markAttachmentPagePermanentlyDeleted(
+  env: WorkerEnv,
+  {
+    attachmentPageId
+  }: {
+    attachmentPageId: string;
+  }
+) {
+  await updatePageProperties(env, {
+    pageId: attachmentPageId,
+    properties: {
+      [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(
+        ATTACHMENT_DB_STATUS.permanentlyDeleted
+      )
     }
   });
 }
@@ -671,6 +747,92 @@ export async function listAttachmentPagesByAccidentPageId(
       } satisfies AdminAttachmentListItem;
     })
     .filter((item): item is AdminAttachmentListItem => item !== null);
+}
+
+export async function listFifoTrashCandidates(
+  env: WorkerEnv,
+  limit = 20
+): Promise<FifoTrashCandidate[]> {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const attachmentDbId = getRequiredEnv(env, "NOTION_ATTACHMENT_DB_ID");
+  const response = await fetch(
+    `${NOTION_API_BASE_URL}/databases/${attachmentDbId}/query`,
+    {
+      method: "POST",
+      headers: getNotionHeaders(token),
+      body: JSON.stringify({
+        page_size: limit,
+        filter: {
+          property: ATTACHMENT_DB_PROPERTY_NAMES.status,
+          status: {
+            equals: ATTACHMENT_DB_STATUS.trash
+          }
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Notion FIFO trash candidate query failed: ${await readNotionError(response)}`
+    );
+  }
+
+  const data = (await response.json()) as {
+    results?: Array<{
+      id?: string;
+      properties?: Record<
+        string,
+        {
+          rich_text?: Array<{ plain_text?: string }>;
+          relation?: Array<{ id?: string }>;
+          date?: { start?: string | null } | null;
+          select?: { name?: string | null } | null;
+          status?: { name?: string | null } | null;
+        }
+      >;
+    }>;
+  };
+  const now = getCurrentSeoulIsoDateTime();
+
+  return (data.results ?? [])
+    .map((result) => {
+      if (!result.id || !result.properties) {
+        return null;
+      }
+
+      const r2Key =
+        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.r2Key]?.rich_text
+          ?.map((item) => item.plain_text ?? "")
+          .join("")
+          .trim() ?? "";
+      const accidentPageId =
+        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]?.relation?.[0]?.id ??
+        null;
+      const permanentDeleteAt =
+        result.properties[ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt]?.date
+          ?.start ?? null;
+      const attachmentType =
+        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]?.select?.name ?? null;
+      const status =
+        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null;
+
+      return {
+        attachmentPageId: result.id,
+        r2Key: r2Key.length > 0 ? r2Key : null,
+        accidentPageId,
+        permanentDeleteAt,
+        attachmentType,
+        status
+      } satisfies FifoTrashCandidate;
+    })
+    .filter((candidate): candidate is FifoTrashCandidate => {
+      return (
+        candidate !== null &&
+        candidate.permanentDeleteAt !== null &&
+        candidate.permanentDeleteAt <= now
+      );
+    });
 }
 
 export async function getNextAttachmentDisplayOrder(

@@ -48,9 +48,15 @@ export const ACCIDENT_DB_PREPARED_PROPERTY_NAMES = {
   attachmentFinalCheck: "첨부 최종 확인 완료"
 } as const;
 
+export const ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES = {
+  trashMovedAt: "휴지통 이동 시각",
+  permanentDeleteAt: "영구삭제 예정 시각"
+} as const;
+
 export const ASIA_SEOUL_TIMEZONE = "Asia/Seoul";
 export const UNKNOWN_OCCURRENCE_TIME = "12:00:00";
 export const DEFAULT_BUSINESS_OR_SCHOOL_NAME = "NA";
+export const ATTACHMENT_TRASH_RETENTION_DAYS = 7;
 export const INITIAL_ACCIDENT_STATUS = "접수";
 
 export const ATTACHMENT_UPLOAD_STATUS = {
@@ -102,6 +108,7 @@ export const ADMIN_UPLOAD_ROUTE = "/admin/upload";
 export const ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE = "/admin/attachments/type";
 export const ADMIN_ATTACHMENT_TRASH_ROUTE = "/admin/attachments/trash";
 export const ADMIN_ATTACHMENT_RESTORE_ROUTE = "/admin/attachments/restore";
+export const ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE = "/admin/attachments/fifo/process";
 // TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명과 허용값은
 // 라이브 첨부 DB 스키마 확정 전까지 runtime write 대상으로 사용하지 않는다.
 export const ADMIN_PAGE_ROUTE = "/admin";

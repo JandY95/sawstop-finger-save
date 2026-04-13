@@ -1,6 +1,7 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
   ADMIN_ATTACHMENT_LIST_ROUTE,
+  ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE,
   ADMIN_ATTACHMENT_RESTORE_ROUTE,
   ADMIN_ATTACHMENT_TRASH_ROUTE,
   ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
@@ -23,6 +24,7 @@ import {
 import { renderAdminPage } from "./admin/render";
 import { handleAdminAttachmentList } from "./admin/list-attachments";
 import { handleAdminMoveAttachmentToTrash } from "./admin/move-attachment-to-trash";
+import { handleAdminProcessFifoTrash } from "./admin/process-fifo-trash";
 import { handleAdminRestoreAttachment } from "./admin/restore-attachment";
 import { handleAdminAccidentSearch } from "./admin/search";
 import { handleAdminUpdateAttachmentType } from "./admin/update-attachment-type";
@@ -313,6 +315,15 @@ export default {
       }
 
       return handleAdminRestoreAttachment(request, env);
+    }
+
+    if (request.method === "POST" && url.pathname === ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return handleAdminProcessFifoTrash(request, env);
     }
 
     return new Response("Not Found", { status: 404 });

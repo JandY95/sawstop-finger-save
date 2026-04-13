@@ -129,3 +129,19 @@ export async function uploadAdminAttachmentToFinalR2(
     finalKey
   };
 }
+
+export async function deleteFinalAttachmentFromR2(env: WorkerEnv, finalKey: string) {
+  const existingObject = await env.ATTACHMENT_BUCKET.get(finalKey);
+
+  if (!existingObject) {
+    return {
+      existed: false
+    };
+  }
+
+  await env.ATTACHMENT_BUCKET.delete(finalKey);
+
+  return {
+    existed: true
+  };
+}
