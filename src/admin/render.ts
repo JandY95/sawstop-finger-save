@@ -175,8 +175,10 @@ export function renderAdminPage(
               '</select>',
               '<button type="submit">변경</button>',
               (item.status === "휴지통"
-                ? '<button type="button" class="secondary restore-button">복구</button>'
-                : '<button type="button" class="secondary trash-button">휴지통 이동</button>'),
+  ? '<button type="button" class="secondary restore-button">복구</button>'
+  : item.status === "영구삭제"
+    ? ''
+    : '<button type="button" class="secondary trash-button">휴지통 이동</button>'),
               '</div>',
               '<div class="message"></div>'
             ].join("");
