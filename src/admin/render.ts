@@ -64,7 +64,7 @@ export function renderAdminPage(
               <input id="query" name="query" type="text" placeholder="receiptNumber 또는 phone 입력" required />
               <button type="submit">검색</button>
             </div>
-            <p class="hint">완료건 제외 검색은 live status option 확정 전까지 TODO입니다.</p>
+            <p class="hint">완료 상태 사고건은 검색 결과에서 제외됩니다.</p>
             <div id="search-message" class="message"></div>
             <div id="search-results" class="results"></div>
           </form>
@@ -101,11 +101,8 @@ export function renderAdminPage(
             <p>휴지통 상태이며 영구삭제 예정 시각이 지난 첨부를 실제 처리합니다.</p>
             <div id="fifo-message" class="message"></div>
             <div id="fifo-results" class="results"></div>
-            <div class="row">
+            <div>
               <button id="fifo-process-button" type="button">FIFO 실행</button>
-              <button id="fifo-force-button" type="button" class="secondary" disabled>
-                선택 사고건 강제 FIFO 실행
-              </button>
             </div>
           </section>
         </div>
@@ -123,7 +120,6 @@ export function renderAdminPage(
         const fifoMessage = document.getElementById("fifo-message");
         const fifoResults = document.getElementById("fifo-results");
         const fifoProcessButton = document.getElementById("fifo-process-button");
-        const fifoForceButton = document.getElementById("fifo-force-button");
         const selectedPageIdInput = document.getElementById("selected-page-id");
         const selectedSummary = document.getElementById("selected-summary");
 
@@ -291,7 +287,6 @@ export function renderAdminPage(
 
         async function selectAccident(item) {
           selectedPageIdInput.value = item.pageId;
-          fifoForceButton.disabled = false;
           selectedSummary.textContent = [
             item.receiptNumber,
             item.phone || "-",
@@ -407,56 +402,12 @@ export function renderAdminPage(
           }
         });
 
-        fifoForceButton.addEventListener("click", async () => {
-          if (!selectedPageIdInput.value) {
-            setMessage(fifoMessage, "먼저 사고건을 선택해 주세요.", "error");
-            return;
-          }
-
-          fifoResults.textContent = "";
-          setMessage(fifoMessage, "강제 FIFO 실행 중..", "");
-
-          const response = await fetch("${ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE}", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              force: true,
-              pageId: selectedPageIdInput.value
-            })
-          });
-          const data = await response.json();
-
-          if (!response.ok || !data.ok) {
-            setMessage(
-              fifoMessage,
-              data.message || "강제 FIFO 실행에 실패했습니다.",
-              "error"
-            );
-            return;
-          }
-
-          if ((data.processedCount || 0) === 0) {
-            setMessage(fifoMessage, "처리할 대상이 없습니다.", "success");
-          } else {
-            setMessage(fifoMessage, "강제 FIFO 실행 성공", "success");
-          }
-
-          fifoResults.textContent = [
-            "processedCount: " + (data.processedCount || 0),
-            "skippedCount: " + (data.skippedCount || 0),
-            "failedCount: " + (data.failedCount || 0)
-          ].join("\\n");
-
-          await loadAttachments(selectedPageIdInput.value);
-        });
       </script>
     `
     : `
       <section class="panel narrow">
         <h1>Admin Login</h1>
-        <p>최소 관리자 인증만 적용되어 있습니다. Turnstile은 TODO입니다.</p>
+        <p>비밀번호 기반 관리자 인증과 로그인 잠금만 적용되어 있습니다. Turnstile은 아직 적용되지 않았습니다.</p>
         ${message ? `<div class="message error">${escapeHtml(message)}</div>` : ""}
         <form method="post" action="${ADMIN_LOGIN_ROUTE}" class="card">
           <label for="password">비밀번호</label>
