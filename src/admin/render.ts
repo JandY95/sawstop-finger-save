@@ -169,11 +169,15 @@ export function renderAdminPage(
               '<span>상태: ' + (item.status || "-") + '</span>',
               '</div>',
               '<div class="attachment-actions">',
-              '<select name="attachmentType" required>',
-              '<option value="">선택</option>',
-              '${attachmentTypeOptions}',
-              '</select>',
-              '<button type="submit">변경</button>',
+              (item.status === "영구삭제"
+  ? ''
+  : [
+      '<select name="attachmentType" required>',
+      '<option value="">선택</option>',
+      '${attachmentTypeOptions}',
+      '</select>',
+      '<button type="submit">변경</button>'
+    ].join("")),
               (item.status === "휴지통"
   ? '<button type="button" class="secondary restore-button">복구</button>'
   : item.status === "영구삭제"
