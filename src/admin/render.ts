@@ -1,5 +1,6 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
+  ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE,
   ADMIN_ATTACHMENT_LIST_ROUTE,
   ADMIN_ATTACHMENT_RESTORE_ROUTE,
   ADMIN_ATTACHMENT_TRASH_ROUTE,
@@ -94,6 +95,16 @@ export function renderAdminPage(
             <div id="attachment-list-message" class="message"></div>
             <div id="attachment-list" class="results"></div>
           </section>
+
+          <section class="card attachment-card">
+            <h2>FIFO 실행</h2>
+            <p>휴지통 상태이며 영구삭제 예정 시각이 지난 첨부를 실제 처리합니다.</p>
+            <div id="fifo-message" class="message"></div>
+            <div id="fifo-results" class="results"></div>
+            <div>
+              <button id="fifo-process-button" type="button">FIFO 실행</button>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -106,6 +117,9 @@ export function renderAdminPage(
         const uploadResults = document.getElementById("upload-results");
         const attachmentListMessage = document.getElementById("attachment-list-message");
         const attachmentList = document.getElementById("attachment-list");
+        const fifoMessage = document.getElementById("fifo-message");
+        const fifoResults = document.getElementById("fifo-results");
+        const fifoProcessButton = document.getElementById("fifo-process-button");
         const selectedPageIdInput = document.getElementById("selected-page-id");
         const selectedSummary = document.getElementById("selected-summary");
 
@@ -341,6 +355,41 @@ export function renderAdminPage(
             "success"
           );
           uploadResults.textContent = JSON.stringify(data.results || [], null, 2);
+
+          if (selectedPageIdInput.value) {
+            await loadAttachments(selectedPageIdInput.value);
+          }
+        });
+
+        fifoProcessButton.addEventListener("click", async () => {
+          fifoResults.textContent = "";
+          setMessage(fifoMessage, "FIFO 실행 중..", "");
+
+          const response = await fetch("${ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE}", {
+            method: "POST"
+          });
+          const data = await response.json();
+
+          if (!response.ok || !data.ok) {
+            setMessage(
+              fifoMessage,
+              data.message || "FIFO 실행에 실패했습니다.",
+              "error"
+            );
+            return;
+          }
+
+          if ((data.processedCount || 0) === 0) {
+            setMessage(fifoMessage, "처리할 대상이 없습니다.", "success");
+          } else {
+            setMessage(fifoMessage, "FIFO 실행 성공", "success");
+          }
+
+          fifoResults.textContent = [
+            "processedCount: " + (data.processedCount || 0),
+            "skippedCount: " + (data.skippedCount || 0),
+            "failedCount: " + (data.failedCount || 0)
+          ].join("\\n");
 
           if (selectedPageIdInput.value) {
             await loadAttachments(selectedPageIdInput.value);
