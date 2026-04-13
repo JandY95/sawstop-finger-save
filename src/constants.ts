@@ -69,7 +69,7 @@ export const ATTACHMENT_UPLOAD_STATUS = {
 export const ATTACHMENT_DB_STATUS = {
   current: "현재",
   trash: "휴지통",
-  permanentlyDeleted: "영구 삭제"
+  permanentlyDeleted: "영구삭제"
 } as const;
 
 export const ATTACHMENT_TYPE_OPTIONS = [
