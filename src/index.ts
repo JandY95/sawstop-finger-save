@@ -15,6 +15,7 @@ import {
   CUSTOMER_SUCCESS_MESSAGE,
   SUBMIT_ROUTE
 } from "./constants";
+import { renderCustomerPage } from "./render";
 import {
   handleAdminLogin,
   handleAdminLogout,
@@ -245,6 +246,10 @@ async function handleSubmit(
 export default {
   async fetch(request: Request, env: WorkerEnv, ctx: WorkerExecutionContext) {
     const url = new URL(request.url);
+
+    if (request.method === "GET" && url.pathname === "/") {
+      return renderCustomerPage();
+    }
 
     if (request.method === "POST" && url.pathname === SUBMIT_ROUTE) {
       return handleSubmit(request, env, ctx);
