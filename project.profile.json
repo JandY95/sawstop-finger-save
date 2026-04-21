@@ -1,0 +1,7 @@
+{
+  "id": "sawstop-finger-save",
+  "name": "SawStop Finger Save",
+  "hostMode": "both",
+  "visibility": "private",
+  "currentStage": "stage-3-project-pack-bootstrap"
+}

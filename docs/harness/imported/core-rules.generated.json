@@ -1,0 +1,281 @@
+{
+  "generatedAt": "2026-04-21T09:36:51.515Z",
+  "source": "Core/machine/stage-definitions.json + Core/machine/project-defaults.json",
+  "osStages": [
+    {
+      "id": "stage-1-core-foundation",
+      "title": "Core Foundation",
+      "description": "상위 코어 정책, 레지스트리, 셀프테스트가 안정적으로 존재하는지 확인하는 단계",
+      "checks": [
+        {
+          "id": "core-policies-exist",
+          "description": "핵심 코어 정책 파일이 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "Core/docs/policies/source-of-truth-policy.md",
+            "Core/docs/policies/stage-policy.md",
+            "Core/docs/policies/overlay-policy.md",
+            "Core/docs/policies/incident-promotion-policy.md",
+            "Core/docs/policies/usage-budget-policy.md"
+          ],
+          "remediation": "Core/docs/policies 아래 핵심 정책 문서를 먼저 정리한다."
+        },
+        {
+          "id": "core-registries-exist",
+          "description": "incident / lesson / mistake 레지스트리가 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "Core/registry/incidents.json",
+            "Core/registry/lessons.json",
+            "Core/registry/mistakes.json"
+          ],
+          "remediation": "Core/registry 아래 incident / lesson / mistake 레지스트리를 생성한다."
+        },
+        {
+          "id": "core-machine-files-exist",
+          "description": "생성기용 machine 파일이 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "Core/machine/stage-definitions.json",
+            "Core/machine/project-defaults.json",
+            "Core/machine/overlay-rules.json"
+          ],
+          "remediation": "Core/machine 아래 stage / defaults / overlay machine 파일을 생성한다."
+        },
+        {
+          "id": "core-selftest-passed",
+          "description": "최근 코어 셀프테스트가 pass 상태다",
+          "type": "core_state_flag",
+          "statePath": "Core/state/os-state.json",
+          "flagPath": "lastSelfTest.passed",
+          "expected": true,
+          "remediation": "harness-os-core 루트에서 npm test 를 실행해 셀프테스트를 통과시킨다."
+        }
+      ],
+      "next": "stage-2-host-overlays"
+    },
+    {
+      "id": "stage-2-host-overlays",
+      "title": "Host Overlays",
+      "description": "Codex / Claude용 얇은 오버레이가 생성되고 하위 subtree 규칙이 분리되는 단계",
+      "checks": [
+        {
+          "id": "root-agents-exists",
+          "description": "프로젝트 루트 AGENTS.md 가 생성되었다",
+          "type": "project_paths_exist",
+          "paths": [
+            "AGENTS.md"
+          ],
+          "remediation": "node scripts/generate-host-overlays.js --project <project> 를 실행해 AGENTS.md 를 생성한다."
+        },
+        {
+          "id": "root-claude-exists",
+          "description": "프로젝트 루트 CLAUDE.md 가 생성되었다",
+          "type": "project_paths_exist",
+          "paths": [
+            "CLAUDE.md"
+          ],
+          "remediation": "node scripts/generate-host-overlays.js --project <project> 를 실행해 CLAUDE.md 를 생성한다."
+        },
+        {
+          "id": "source-subtree-overlays-exist",
+          "description": "docs/source 하위 오버레이가 생성되었다",
+          "type": "project_paths_exist",
+          "paths": [
+            "docs/source/AGENTS.md",
+            "docs/source/CLAUDE.md"
+          ],
+          "remediation": "docs/source subtree 오버레이를 다시 생성한다."
+        },
+        {
+          "id": "decisions-subtree-overlays-exist",
+          "description": "docs/decisions 하위 오버레이가 생성되었다",
+          "type": "project_paths_exist",
+          "paths": [
+            "docs/decisions/AGENTS.md",
+            "docs/decisions/CLAUDE.md"
+          ],
+          "remediation": "docs/decisions subtree 오버레이를 다시 생성한다."
+        }
+      ],
+      "next": "stage-3-project-pack-bootstrap"
+    },
+    {
+      "id": "stage-3-project-pack-bootstrap",
+      "title": "Project Pack Bootstrap",
+      "description": "프로젝트 저장소 뼈대가 생성되고 실제 입력 문서가 들어오기 시작하는 단계",
+      "checks": [
+        {
+          "id": "project-profile-exists",
+          "description": "project.profile.json 이 존재한다",
+          "type": "project_paths_exist",
+          "paths": [
+            "project.profile.json"
+          ],
+          "remediation": "new-project.js 로 프로젝트를 다시 생성하거나 project.profile.json 을 복구한다."
+        },
+        {
+          "id": "project-state-exists",
+          "description": ".project-state.json 이 존재한다",
+          "type": "project_paths_exist",
+          "paths": [
+            ".project-state.json"
+          ],
+          "remediation": ".project-state.json 을 복구하고 최소 필드를 채운다."
+        },
+        {
+          "id": "verify-gates-script-exists",
+          "description": "verify-gates 스크립트가 존재한다",
+          "type": "project_paths_exist",
+          "paths": [
+            "scripts/verify-gates.js"
+          ],
+          "remediation": "verify-gates 스크립트를 다시 생성한다."
+        },
+        {
+          "id": "real-source-docs-exist",
+          "description": "docs/source 에 실제 입력 문서가 들어 있다",
+          "type": "project_source_docs_present",
+          "minCount": 1,
+          "remediation": "workflow / PRD / TRD 같은 실제 source 문서를 docs/source 에 넣는다."
+        }
+      ],
+      "next": "stage-4-incident-learning-loop"
+    },
+    {
+      "id": "stage-4-incident-learning-loop",
+      "title": "Incident Learning Loop",
+      "description": "incident 기록, lesson/mistake 승격, imported snapshot 동기화가 도는 단계",
+      "checks": [
+        {
+          "id": "incident-scripts-exist",
+          "description": "incident / promotion / sync 스크립트가 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "scripts/post-incident.js",
+            "scripts/promote-lesson.js",
+            "scripts/sync-project.js"
+          ],
+          "remediation": "incident / promotion / sync 스크립트를 복구한다."
+        },
+        {
+          "id": "registry-scaffolding-exists",
+          "description": "코어 레지스트리 스캐폴딩이 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "Core/registry/incidents.json",
+            "Core/registry/lessons.json",
+            "Core/registry/mistakes.json"
+          ],
+          "remediation": "Core/registry 아래 incident / lesson / mistake 파일을 생성한다."
+        },
+        {
+          "id": "imported-snapshots-exist",
+          "description": "project imported snapshot 이 존재한다",
+          "type": "project_paths_exist",
+          "paths": [
+            "docs/harness/imported/core-lessons.generated.json",
+            "docs/harness/imported/core-mistakes.generated.json",
+            "docs/harness/imported/core-rules.generated.json"
+          ],
+          "remediation": "node scripts/sync-project.js --project <project> 를 실행해 imported snapshot 을 다시 동기화한다."
+        },
+        {
+          "id": "handoff-scaffolding-exists",
+          "description": "handoff 파일 뼈대가 존재한다",
+          "type": "project_paths_exist",
+          "paths": [
+            "docs/harness/handoff/latest.md"
+          ],
+          "remediation": "node scripts/write-handoff.js --project <project> --next \"...\" 로 최신 handoff 를 다시 쓴다."
+        }
+      ],
+      "next": "stage-5-ci-automation"
+    },
+    {
+      "id": "stage-5-ci-automation",
+      "title": "CI Automation",
+      "description": "재사용 워크플로와 Codex Action 같은 실행 자동화 정책이 문서화/준비되는 단계",
+      "checks": [
+        {
+          "id": "ci-runbook-exists",
+          "description": "CI 자동화 런북이 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "Core/docs/runbooks/ci-automation-runbook.md"
+          ],
+          "remediation": "CI 자동화 적용 범위와 금지 규칙을 ci-automation-runbook.md 로 문서화한다."
+        },
+        {
+          "id": "codex-action-runbook-exists",
+          "description": "Codex Action 도입 런북이 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "Core/docs/runbooks/codex-action-runbook.md"
+          ],
+          "remediation": "Codex Action 적용 조건과 runner 제약을 codex-action 런북에 정리한다."
+        },
+        {
+          "id": "reusable-workflow-template-exists",
+          "description": "재사용 워크플로 템플릿이 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "Core/templates/root/.github/workflows/reusable-core-checks.yml.template"
+          ],
+          "remediation": "GitHub reusable workflow 템플릿을 추가한다."
+        }
+      ],
+      "next": "stage-6-parity-harness"
+    },
+    {
+      "id": "stage-6-parity-harness",
+      "title": "Parity Harness",
+      "description": "scenario / replay / diff 기반 회귀 하네스가 붙는 단계",
+      "checks": [
+        {
+          "id": "parity-status-file-exists",
+          "description": "parity 상태 파일이 존재한다",
+          "type": "project_paths_exist",
+          "paths": [
+            "docs/harness/parity/PARITY_STATUS.md"
+          ],
+          "remediation": "docs/harness/parity/PARITY_STATUS.md 를 만들고 현재 parity 상태를 기록한다."
+        },
+        {
+          "id": "scenario-index-exists",
+          "description": "scenario 인덱스가 존재한다",
+          "type": "project_paths_exist",
+          "paths": [
+            "docs/harness/parity/scenario-index.yaml"
+          ],
+          "remediation": "docs/harness/parity/scenario-index.yaml 에 시나리오 인덱스를 만든다."
+        },
+        {
+          "id": "parity-runner-scripts-exist",
+          "description": "parity runner 스크립트가 존재한다",
+          "type": "core_paths_exist",
+          "paths": [
+            "scripts/run-harness-scenarios.js",
+            "scripts/compare-harness-results.js"
+          ],
+          "remediation": "scenario 실행기와 결과 비교 스크립트를 추가한다."
+        }
+      ],
+      "next": null
+    }
+  ],
+  "executionStages": {
+    "allowed": [
+      "stage4_role_split",
+      "stage1_parallel",
+      "stage6",
+      "stage7"
+    ],
+    "conceptLabels": [
+      "stage4",
+      "stage1"
+    ],
+    "source": "17_principles_generic_preserved_v1_final",
+    "notes": "OS currentStage / nextTargetStage 는 os stage 를 사용한다. 17 principles 실행 stage 는 executionStage.currentExecutionStage / nextExecutionStage 로만 기록한다."
+  }
+}
