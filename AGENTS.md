@@ -11,7 +11,10 @@ Read in this order:
 - docs/decisions/
 
 Imported snapshots:
-
+- docs/harness/imported/core-lessons.generated.md
+- docs/harness/imported/core-mistakes.generated.md
+- docs/harness/imported/core-rules.generated.md
+- docs/harness/imported/usage-budget.generated.md
 
 Rules:
 - Keep this file short.
