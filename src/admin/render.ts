@@ -179,7 +179,17 @@ export function renderAdminPage(
             .join("");
         }
 
-        async function loadAttachments(pageId) {
+        function setControlsDisabled(root, disabled) {
+          if (!root) {
+            return;
+          }
+
+          root.querySelectorAll("button, select, input").forEach((control) => {
+            control.disabled = disabled;
+          });
+        }
+
+        async function loadAttachments(pageId, loadedMessage) {
           attachmentList.innerHTML = "";
           setMessage(attachmentListMessage, "첨부 목록 불러오는 중..", "");
 
@@ -203,7 +213,11 @@ export function renderAdminPage(
             return;
           }
 
-          setMessage(attachmentListMessage, "첨부 " + attachments.length + "건", "success");
+          setMessage(
+            attachmentListMessage,
+            loadedMessage || "첨부 " + attachments.length + "건",
+            "success"
+          );
           const fragment = document.createDocumentFragment();
 
           attachments.forEach((item) => {
@@ -244,47 +258,18 @@ export function renderAdminPage(
               const messageNode = row.querySelector(".message");
               const selectNode = row.querySelector('select[name="attachmentType"]');
               setMessage(messageNode, "유형 변경 중..", "");
+              setControlsDisabled(row, true);
 
-              const response = await fetch("${ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE}", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  attachmentPageId: item.attachmentPageId,
-                  pageId,
-                  attachmentType: selectNode.value
-                })
-              });
-              const data = await response.json();
-
-              if (!response.ok || !data.ok) {
-                setMessage(
-                  messageNode,
-                  data.message || "유형 변경에 실패했습니다.",
-                  "error"
-                );
-                return;
-              }
-
-              setMessage(messageNode, "유형 변경 성공", "success");
-              await loadAttachments(pageId);
-            });
-
-            const trashButton = row.querySelector(".trash-button");
-            if (trashButton) {
-              trashButton.addEventListener("click", async () => {
-                const messageNode = row.querySelector(".message");
-                setMessage(messageNode, "휴지통 이동 중..", "");
-
-                const response = await fetch("${ADMIN_ATTACHMENT_TRASH_ROUTE}", {
+              try {
+                const response = await fetch("${ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE}", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json"
                   },
                   body: JSON.stringify({
                     attachmentPageId: item.attachmentPageId,
-                    pageId
+                    pageId,
+                    attachmentType: selectNode.value
                   })
                 });
                 const data = await response.json();
@@ -292,14 +277,53 @@ export function renderAdminPage(
                 if (!response.ok || !data.ok) {
                   setMessage(
                     messageNode,
-                    data.message || "휴지통 이동에 실패했습니다.",
+                    data.message || "유형 변경에 실패했습니다.",
                     "error"
                   );
                   return;
                 }
 
-                setMessage(messageNode, "휴지통 이동 성공", "success");
-                await loadAttachments(pageId);
+                setMessage(messageNode, "유형 변경 성공", "success");
+                await loadAttachments(pageId, "유형 변경 성공. 첨부 목록을 새로고침했습니다.");
+              } finally {
+                setControlsDisabled(row, false);
+              }
+            });
+
+            const trashButton = row.querySelector(".trash-button");
+            if (trashButton) {
+              trashButton.addEventListener("click", async () => {
+                const messageNode = row.querySelector(".message");
+                setMessage(messageNode, "휴지통 이동 중..", "");
+                setControlsDisabled(row, true);
+
+                try {
+                  const response = await fetch("${ADMIN_ATTACHMENT_TRASH_ROUTE}", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                      attachmentPageId: item.attachmentPageId,
+                      pageId
+                    })
+                  });
+                  const data = await response.json();
+
+                  if (!response.ok || !data.ok) {
+                    setMessage(
+                      messageNode,
+                      data.message || "휴지통 이동에 실패했습니다.",
+                      "error"
+                    );
+                    return;
+                  }
+
+                  setMessage(messageNode, "휴지통 이동 성공", "success");
+                  await loadAttachments(pageId, "휴지통 이동 성공. 첨부 목록을 새로고침했습니다.");
+                } finally {
+                  setControlsDisabled(row, false);
+                }
               });
             }
 
@@ -308,30 +332,35 @@ export function renderAdminPage(
               restoreButton.addEventListener("click", async () => {
                 const messageNode = row.querySelector(".message");
                 setMessage(messageNode, "복구 중..", "");
+                setControlsDisabled(row, true);
 
-                const response = await fetch("${ADMIN_ATTACHMENT_RESTORE_ROUTE}", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json"
-                  },
-                  body: JSON.stringify({
-                    attachmentPageId: item.attachmentPageId,
-                    pageId
-                  })
-                });
-                const data = await response.json();
+                try {
+                  const response = await fetch("${ADMIN_ATTACHMENT_RESTORE_ROUTE}", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                      attachmentPageId: item.attachmentPageId,
+                      pageId
+                    })
+                  });
+                  const data = await response.json();
 
-                if (!response.ok || !data.ok) {
-                  setMessage(
-                    messageNode,
-                    data.message || "복구에 실패했습니다.",
-                    "error"
-                  );
-                  return;
+                  if (!response.ok || !data.ok) {
+                    setMessage(
+                      messageNode,
+                      data.message || "복구에 실패했습니다.",
+                      "error"
+                    );
+                    return;
+                  }
+
+                  setMessage(messageNode, "복구 성공", "success");
+                  await loadAttachments(pageId, "복구 성공. 첨부 목록을 새로고침했습니다.");
+                } finally {
+                  setControlsDisabled(row, false);
                 }
-
-                setMessage(messageNode, "복구 성공", "success");
-                await loadAttachments(pageId);
               });
             }
 
@@ -360,42 +389,47 @@ export function renderAdminPage(
           const query = new FormData(searchForm).get("query");
           setMessage(searchMessage, "검색 중..", "");
           searchResults.innerHTML = "";
+          setControlsDisabled(searchForm, true);
 
-          const response = await fetch(
-            "${ADMIN_ACCIDENT_SEARCH_ROUTE}?query=" + encodeURIComponent(String(query || ""))
-          );
-          const data = await response.json();
+          try {
+            const response = await fetch(
+              "${ADMIN_ACCIDENT_SEARCH_ROUTE}?query=" + encodeURIComponent(String(query || ""))
+            );
+            const data = await response.json();
 
-          if (!response.ok || !data.ok) {
-            setMessage(searchMessage, data.message || "검색에 실패했습니다.", "error");
-            return;
-          }
+            if (!response.ok || !data.ok) {
+              setMessage(searchMessage, data.message || "검색에 실패했습니다.", "error");
+              return;
+            }
 
-          if (!data.results || data.results.length === 0) {
-            setMessage(searchMessage, "검색 결과가 없습니다.", "");
-            return;
-          }
+            if (!data.results || data.results.length === 0) {
+              setMessage(searchMessage, "검색 결과가 없습니다.", "");
+              return;
+            }
 
-          setMessage(searchMessage, "검색 결과 " + data.results.length + "건", "success");
-          const fragment = document.createDocumentFragment();
-          data.results.forEach((item) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "result-item";
-            button.innerHTML = [
-              '<span class="accident-result-title">' + renderValue(item.receiptNumber) + '</span>',
-              '<span class="accident-result-fields">',
-              '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
-              '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
-              '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
-              '</span>'
-            ].join("");
-            button.addEventListener("click", () => {
-              void selectAccident(item);
+            setMessage(searchMessage, "검색 결과 " + data.results.length + "건", "success");
+            const fragment = document.createDocumentFragment();
+            data.results.forEach((item) => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "result-item";
+              button.innerHTML = [
+                '<span class="accident-result-title">' + renderValue(item.receiptNumber) + '</span>',
+                '<span class="accident-result-fields">',
+                '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
+                '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
+                '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
+                '</span>'
+              ].join("");
+              button.addEventListener("click", () => {
+                void selectAccident(item);
+              });
+              fragment.appendChild(button);
             });
-            fragment.appendChild(button);
-          });
-          searchResults.appendChild(fragment);
+            searchResults.appendChild(fragment);
+          } finally {
+            setControlsDisabled(searchForm, false);
+          }
         });
 
         uploadForm.addEventListener("submit", async (event) => {
@@ -403,63 +437,73 @@ export function renderAdminPage(
           const formData = new FormData(uploadForm);
           uploadResults.innerHTML = "";
           setMessage(uploadMessage, "업로드 중..", "");
+          setControlsDisabled(uploadForm, true);
 
-          const response = await fetch("${ADMIN_UPLOAD_ROUTE}", {
-            method: "POST",
-            body: formData
-          });
-          const data = await response.json();
+          try {
+            const response = await fetch("${ADMIN_UPLOAD_ROUTE}", {
+              method: "POST",
+              body: formData
+            });
+            const data = await response.json();
 
-          if (!response.ok || !data.ok) {
-            setMessage(uploadMessage, data.message || "업로드에 실패했습니다.", "error");
+            if (!response.ok || !data.ok) {
+              setMessage(uploadMessage, data.message || "업로드에 실패했습니다.", "error");
+              renderUploadResults(data.results || []);
+              return;
+            }
+
+            setMessage(
+              uploadMessage,
+              "업로드 성공: " + data.successCount + "건 / 실패: " + data.failureCount + "건",
+              "success"
+            );
             renderUploadResults(data.results || []);
-            return;
-          }
 
-          setMessage(
-            uploadMessage,
-            "업로드 성공: " + data.successCount + "건 / 실패: " + data.failureCount + "건",
-            "success"
-          );
-          renderUploadResults(data.results || []);
-
-          if (selectedPageIdInput.value) {
-            await loadAttachments(selectedPageIdInput.value);
+            if (selectedPageIdInput.value) {
+              await loadAttachments(selectedPageIdInput.value);
+            }
+          } finally {
+            setControlsDisabled(uploadForm, false);
           }
         });
 
         fifoProcessButton.addEventListener("click", async () => {
           fifoResults.textContent = "";
           setMessage(fifoMessage, "FIFO 실행 중..", "");
+          fifoProcessButton.disabled = true;
 
-          const response = await fetch("${ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE}", {
-            method: "POST"
-          });
-          const data = await response.json();
+          try {
+            const response = await fetch("${ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE}", {
+              method: "POST"
+            });
+            const data = await response.json();
 
-          if (!response.ok || !data.ok) {
-            setMessage(
-              fifoMessage,
-              data.message || "FIFO 실행에 실패했습니다.",
-              "error"
-            );
-            return;
-          }
+            if (!response.ok || !data.ok) {
+              setMessage(
+                fifoMessage,
+                data.message || "FIFO 실행에 실패했습니다.",
+                "error"
+              );
+              return;
+            }
 
-          if ((data.processedCount || 0) === 0) {
-            setMessage(fifoMessage, "처리할 대상이 없습니다.", "success");
-          } else {
-            setMessage(fifoMessage, "FIFO 실행 성공", "success");
-          }
+            if ((data.processedCount || 0) === 0) {
+              setMessage(fifoMessage, "처리할 대상이 없습니다.", "success");
+            } else {
+              setMessage(fifoMessage, "FIFO 실행 성공", "success");
+            }
 
-          fifoResults.textContent = [
-            "processedCount: " + (data.processedCount || 0),
-            "skippedCount: " + (data.skippedCount || 0),
-            "failedCount: " + (data.failedCount || 0)
-          ].join("\\n");
+            fifoResults.textContent = [
+              "processedCount: " + (data.processedCount || 0),
+              "skippedCount: " + (data.skippedCount || 0),
+              "failedCount: " + (data.failedCount || 0)
+            ].join("\\n");
 
-          if (selectedPageIdInput.value) {
-            await loadAttachments(selectedPageIdInput.value);
+            if (selectedPageIdInput.value) {
+              await loadAttachments(selectedPageIdInput.value);
+            }
+          } finally {
+            fifoProcessButton.disabled = false;
           }
         });
 
@@ -690,6 +734,10 @@ export function renderAdminPage(
             font-weight: 700;
             cursor: pointer;
           }
+          button:disabled, input:disabled, select:disabled {
+            cursor: not-allowed;
+            opacity: 0.58;
+          }
           button.secondary {
             background: #ece6d8;
             color: var(--ink);
@@ -733,10 +781,22 @@ export function renderAdminPage(
           }
           .message {
             min-height: 24px;
+            padding: 8px 10px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            background: #fbf8f1;
             color: var(--muted);
           }
-          .message.error { color: var(--accent-2); }
-          .message.success { color: var(--success); }
+          .message.error {
+            border-color: rgba(159, 47, 34, 0.28);
+            background: #fff2ef;
+            color: var(--accent-2);
+          }
+          .message.success {
+            border-color: rgba(31, 111, 67, 0.26);
+            background: #eff8f2;
+            color: var(--success);
+          }
           .hint { font-size: 13px; color: var(--muted); }
           @media (max-width: 840px) {
             .grid { grid-template-columns: 1fr; }
