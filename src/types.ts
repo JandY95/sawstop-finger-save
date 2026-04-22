@@ -141,7 +141,7 @@ export type NotionEmailProperty = {
 };
 
 export type NotionSelectProperty = {
-  select: { name: string };
+  select: { name: string } | null;
 };
 
 export type NotionMultiSelectProperty = {

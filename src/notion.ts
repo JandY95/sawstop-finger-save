@@ -478,6 +478,9 @@ export async function restoreAttachmentPage(
     pageId: attachmentPageId,
     properties: {
       [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.current),
+      [ATTACHMENT_DB_PROPERTY_NAMES.deleteReason]: {
+        select: null
+      },
       [ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt]: {
         date: null
       },

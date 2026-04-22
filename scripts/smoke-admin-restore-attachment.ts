@@ -182,6 +182,11 @@ async function run() {
       "attachment row patch should restore status to current"
     );
     expect(
+      JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.deleteReason]) ===
+        JSON.stringify({ select: null }),
+      "attachment row patch should clear deletion reason"
+    );
+    expect(
       JSON.stringify(
         attachmentPatchBodies[0]?.[ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt]
       ) === JSON.stringify({ date: null }),
