@@ -61,3 +61,44 @@
 - 고객 웹폼 첨부는 첨부 DB 생성 시 `첨부 유형=null`로 저장한다.
 - 운영자는 `첨부 분류 대기` 뷰에서 수동 분류한다.
 - 관리자 보완 업로드는 업로드 시점에 유형을 즉시 선택한다.
+
+### D-08. 사고 DB `상태` 옵션
+- 사고 DB `상태` status 옵션은 아래 4개로 잠근다.
+  - `접수`
+  - `진행중`
+  - `완료`
+  - `반려`
+- 신규 접수 초기값은 `접수`다.
+- 관리자 검색에서 `완료`건은 제외한다.
+
+### D-09. 첨부 DB `상태` 옵션
+- 첨부 DB `상태` status 옵션은 아래 3개로 잠근다.
+  - `현재`
+  - `휴지통`
+  - `영구삭제`
+- 현재 첨부 판단, 휴지통 판단, FIFO 영구삭제 판단은 이 옵션명 그대로 사용한다.
+
+### D-10. 첨부 DB `삭제 사유` 속성
+- 첨부 DB 삭제 사유 property는 아래와 같이 잠근다.
+  - property 이름: `삭제 사유`
+  - type: `select`
+  - 옵션: `화질 불량` / `기타` / `불필요` / `오업로드` / `중복`
+- 삭제, 휴지통 이동, FIFO 영구삭제에서 삭제 사유를 기록할 때 위 옵션명 외 문자열을 임의로 쓰지 않는다.
+
+### D-11. 사고 페이지 본문 block 구조
+- 실제 사고 페이지 본문 block 구조는 아래 순서로 잠근다.
+  - `Report a Save (Known or Suspected Finger Contact)`
+  - `Incident Information`
+  - `People / Contact Information`
+  - `Injury Information`
+  - `Saw / Cartridge Information`
+  - `Material / Setup / Conditions`
+  - `Incident Description`
+  - `Attachments`
+  - 마지막에 `첨부(선택):` 후 빈 블록 1개
+- 이 구조는 사고 DB 페이지 본문 저장 성공 판정의 운영 기준이다.
+
+### D-12. 관리자 인증 정책
+- 관리자 인증은 Cloudflare Workers Secrets의 `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`를 사용한다.
+- 관리자 로그인은 비밀번호 로그인 + 서명된 세션 쿠키 + 로그인 실패 잠금으로 잠근다.
+- 관리자 로그인에는 현재 Turnstile을 적용하지 않는다.

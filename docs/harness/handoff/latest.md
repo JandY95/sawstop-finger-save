@@ -26,6 +26,7 @@
 - `docs/harness/parity/parity-baseline.json`을 machine source of truth로 둔다
 - `latest-run.json`, `latest-compare.json`은 generated 산출물로 보고 Git 추적 대상에서 제외한다
 - GitHub Actions `Parity Harness`도 동일 baseline 기준으로 1회 성공했다
+- OI-001~OI-005 운영 잠금 항목은 2026-04-23 확인값 기준으로 문서상 resolved 처리됐다
 
 ## This Batch Files
 
@@ -36,4 +37,4 @@
 
 ## Next One Task
 
-- deterministic parity 범위를 현재 상태로 유지할지, fixture 기반 시나리오까지 넓힐지 결정한다.
+- 잔여 open issue는 `docs/source/DB_SCHEMA_AND_MAPPING.md`의 17장 기준으로 이어서 정리한다.

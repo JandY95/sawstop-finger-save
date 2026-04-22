@@ -2,74 +2,47 @@
 
 이 문서는 "지금 당장 코딩하면 위험한 미확정 사항"만 기록한다.
 TODO 목록이 아니다.
-추측으로 닫지 않고, 확인 후 DECISIONS_LOCK.md / AGENTS.md / CODEX_ADMIN_HANDOFF.md 또는 source 문서에 승격한다.
+추측으로 닫지 않고, 확인 후 `DECISIONS_LOCK.md` / `AGENTS.md` / `CODEX_ADMIN_HANDOFF.md` 또는 source 문서에 승격한다.
 
 ## 운영 잠금 재분류 2026-04-23
 
-| ID | 운영 잠금 분류 | 현재 판단 |
-| --- | --- | --- |
-| OI-001 | live 확인 후 닫기 가능 | 사고 DB `상태` status 전체 옵션을 live에서 확인해야 닫을 수 있다. |
-| OI-002 | live 확인 후 닫기 가능 | 첨부 DB `상태` status 전체 옵션을 live에서 확인해야 닫을 수 있다. |
-| OI-003 | live 확인 후 닫기 가능 | 첨부 DB `삭제 사유` property 존재 여부, 타입, 전체 select 옵션을 live에서 확인해야 닫을 수 있다. |
-| OI-004 | live 확인 후 닫기 가능 | 실제 사고 페이지 본문 block 순서와 현재 저장 템플릿의 일치 여부를 확인해야 닫을 수 있다. |
-| OI-005 | 결정 필요 | live schema 확인 문제가 아니라 관리자 인증/잠금 운영 정책 결정이 필요하다. |
+| ID | 운영 잠금 분류 | 상태 | 닫힌 근거 |
+| --- | --- | --- | --- |
+| OI-001 | live 확인 후 닫기 가능 | resolved | 사고 DB `상태` 옵션을 `접수 / 진행중 / 완료 / 반려`로 확인하고 D-08에 잠금 |
+| OI-002 | live 확인 후 닫기 가능 | resolved | 첨부 DB `상태` 옵션을 `현재 / 휴지통 / 영구삭제`로 확인하고 D-09에 잠금 |
+| OI-003 | live 확인 후 닫기 가능 | resolved | 첨부 DB `삭제 사유` property/type/options를 확인하고 D-10에 잠금 |
+| OI-004 | live 확인 후 닫기 가능 | resolved | 실제 사고 페이지 본문 block 구조를 확인하고 D-11에 잠금 |
+| OI-005 | 운영 결정 필요 | resolved | 관리자 인증 정책을 D-12에 잠금 |
 
-### 운영자 live 체크리스트
+### 운영 잠금 완료값
 
-1. 사고 DB `상태` property의 전체 status 옵션 이름을 그대로 확인한다.
-2. 첨부 DB `상태` property의 전체 status 옵션 이름을 그대로 확인한다.
-3. 첨부 DB `삭제 사유` property의 존재 여부, 타입, 전체 select 옵션 이름을 확인한다.
-4. 실제 사고 페이지 1건의 본문 block 순서와 제목/문단 구조가 현재 템플릿과 같은지 확인한다.
-5. 관리자 인증 정책을 결정한다: 비밀번호+세션 유지 여부, 5회 실패 잠금, 15분 잠금, 8시간 세션, Turnstile 미적용/적용 여부.
-
-### 확인 후 잠금 대상
-
-- `docs/decisions/DECISIONS_LOCK.md`: 확인된 live 옵션 목록과 관리자 인증 정책을 결정 항목으로 잠근다.
-- `docs/source/DB_SCHEMA_AND_MAPPING.md`: 사고 DB status, 첨부 DB status, 삭제 사유 property/type/options, 본문 구조 기준을 반영한다.
-- `docs/decisions/OPEN_ISSUES.md`: OI-001~OI-004는 확인값 반영 후 closed 처리하고, OI-005는 운영 결정 후 closed 또는 remaining-decision으로 갱신한다.
-- 필요 시 `docs/harness/handoff/latest.md`: 잠금 완료/보류 상태만 짧게 기록한다.
+1. 사고 DB `상태`: `접수` / `진행중` / `완료` / `반려`
+2. 첨부 DB `상태`: `현재` / `휴지통` / `영구삭제`
+3. 첨부 DB `삭제 사유`: property 이름 `삭제 사유`, type `select`, 옵션 `화질 불량` / `기타` / `불필요` / `오업로드` / `중복`
+4. 사고 페이지 본문 구조: `Report a Save (Known or Suspected Finger Contact)`부터 `Attachments`까지의 확인된 heading 순서와 마지막 `첨부(선택):` 후 빈 블록 1개
+5. 관리자 인증 정책: Cloudflare Workers Secrets `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, 비밀번호 로그인, 서명된 세션 쿠키, 로그인 실패 잠금, 현재 Turnstile 미적용
 
 ## OI-001
 - 제목: 사고 DB 상태 실제 live status 옵션 전체 목록 확인 필요
-- 상태: needs-check
-- 운영 잠금 분류: live 확인 후 닫기 가능
-- 왜 미확정인지: 현재 문서와 코드에는 일부 상태만 등장하지만, live DB 전체 옵션 목록을 아직 확정 문서로 잠그지 못했다.
-- 지금 막는 이유: Codex가 새 status 값을 추측으로 추가하거나 잘못된 상태 전이를 구현할 위험이 있다.
-- 확인 방법: Notion live 사고 DB에서 상태 status 옵션 전체 목록을 직접 확인한다.
-- 풀리면 할 일: 확정 옵션을 DECISIONS_LOCK.md 또는 DB 관련 기준 문서에 반영하고, 필요하면 허용값 검증 로직을 추가한다.
+- 상태: resolved
+- 닫힌 근거: 사고 DB `상태` status 옵션은 `접수 / 진행중 / 완료 / 반려`로 확인되어 `DECISIONS_LOCK.md` D-08과 `DB_SCHEMA_AND_MAPPING.md`에 반영했다.
 
 ## OI-002
 - 제목: 첨부 DB 상태 실제 live status 옵션 전체 목록 확인 필요
-- 상태: needs-check
-- 운영 잠금 분류: live 확인 후 닫기 가능
-- 왜 미확정인지: 현재 운영 설명에는 현재, 휴지통, 영구삭제 계열 흐름이 보이지만, live DB status 옵션 전체 목록이 잠기지 않았다.
-- 지금 막는 이유: 휴지통 / 복구 / FIFO 로직에서 임의 상태명을 쓰면 운영 정합성이 깨질 수 있다.
-- 확인 방법: Notion live 첨부 DB에서 상태 status 옵션 전체 목록을 직접 확인한다.
-- 풀리면 할 일: 확정 옵션을 문서에 잠그고, 관리자 액션 및 재계산 로직과 이름을 맞춘다.
+- 상태: resolved
+- 닫힌 근거: 첨부 DB `상태` status 옵션은 `현재 / 휴지통 / 영구삭제`로 확인되어 `DECISIONS_LOCK.md` D-09와 `DB_SCHEMA_AND_MAPPING.md`에 반영했다.
 
 ## OI-003
 - 제목: 첨부 DB 삭제 사유 select 옵션 전체 목록 확인 필요
-- 상태: needs-check
-- 운영 잠금 분류: live 확인 후 닫기 가능
-- 왜 미확정인지: 삭제 / 휴지통 / FIFO 정책은 문서에 있으나, 실제 삭제 사유 select 옵션 전체 목록은 아직 잠기지 않았다.
-- 지금 막는 이유: 삭제 처리 시 임의 문자열을 쓰거나, 나중에 집계/검색 기준이 어긋날 수 있다.
-- 확인 방법: Notion live 첨부 DB에서 삭제 사유 select 옵션 전체 목록을 직접 확인한다.
-- 풀리면 할 일: 확정 옵션을 DECISIONS_LOCK.md 또는 DB 기준 문서에 반영하고, 코드에서 허용값 검증 필요 여부를 판단한다.
+- 상태: resolved
+- 닫힌 근거: 첨부 DB `삭제 사유`는 property 이름 `삭제 사유`, type `select`, 옵션 `화질 불량 / 기타 / 불필요 / 오업로드 / 중복`으로 확인되어 `DECISIONS_LOCK.md` D-10과 `DB_SCHEMA_AND_MAPPING.md`에 반영했다.
 
 ## OI-004
 - 제목: 사고 페이지 본문 저장 형식의 구체 블록 구조 확정 필요
-- 상태: open
-- 운영 잠금 분류: live 확인 후 닫기 가능
-- 왜 미확정인지: 현재 원칙은 같은 사고 페이지 본문에서 영문 리포트 관리까지는 잠겨 있으나, 실제 본문 블록 구조를 어디까지 고정할지는 문서로 완전히 잠기지 않았다.
-- 지금 막는 이유: Codex가 본문 구조를 임의로 바꾸면 기존 운영 흐름과 수동 검수 루틴이 흔들릴 수 있다.
-- 확인 방법: 현재 실제 Notion 본문 예시와 source 문서를 기준으로 최소 고정 구조를 정한다.
-- 풀리면 할 일: 본문 블록 구조를 DECISIONS_LOCK.md 또는 TRD/HANDOFF에 반영한다.
+- 상태: resolved
+- 닫힌 근거: 실제 사고 페이지 본문 block 구조가 확인되어 `DECISIONS_LOCK.md` D-11과 `DB_SCHEMA_AND_MAPPING.md`에 반영했다.
 
 ## OI-005
 - 제목: 관리자 보완 업로드 라우트 인증 / 잠금 방식 확정 필요
-- 상태: open
-- 운영 잠금 분류: 결정 필요
-- 왜 미확정인지: 현재 코드에는 관리자 업로드 라우트 인증/잠금 로직 TODO가 남아 있고, handoff에서도 운영 완료 상태로 보지 않도록 잠가 두었다.
-- 지금 막는 이유: 이 부분을 추측으로 구현하면 운영 접근 제어 정책이 흔들릴 수 있다.
-- 확인 방법: 관리자 인증 방식(예: 세션, 토큰, 비밀번호, 접근 허용 범위)과 잠금 정책을 먼저 결정한다.
-- 풀리면 할 일: 구현 후 CODEX_ADMIN_HANDOFF.md의 미완료 항목을 갱신하고, 필요하면 AGENTS/DECISIONS_LOCK에도 승격 반영한다.
+- 상태: resolved
+- 닫힌 근거: 관리자 인증 정책은 Cloudflare Workers Secrets `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, 비밀번호 로그인, 서명된 세션 쿠키, 로그인 실패 잠금, 현재 Turnstile 미적용으로 결정되어 `DECISIONS_LOCK.md` D-12와 `DB_SCHEMA_AND_MAPPING.md`에 반영했다.
