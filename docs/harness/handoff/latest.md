@@ -6,9 +6,9 @@
 - 현재 실작업 방향: `sawstop-finger-save` parity hardening / 운영 안정화
 - 현재 확인된 정합성 상태:
   - `project.profile.json`의 `currentStage`는 `stage-3-project-pack-bootstrap`
-  - 로컬 `.project-state.json`에서 `currentStage`는 stage 3로 조정됐지만, `stage-6-parity-harness` 참조는 아직 남아 있음
-  - `docs/harness/parity/PARITY_STATUS.md`는 제목만 있는 상태
-  - `docs/harness/handoff/latest.md`는 제목만 있는 상태에서 복원 시작
+  - 로컬 `.project-state.json`의 `currentStage`와 `derivedOperatingStage`는 stage 3 기준으로 정리됨
+  - 로컬 `.project-state.json`에는 `stage-6-parity-harness` 참조와 legacy parity runner 스크립트 부재 관련 blocker가 남아 있음
+  - `docs/harness/handoff/latest.md`, `docs/harness/parity/PARITY_STATUS.md`, `docs/harness/parity/scenario-index.yaml` 최소 baseline 복원 완료
 
 ## Locked
 
@@ -20,10 +20,11 @@
 
 ## Current Finding
 
-- `.project-state.json` 파일은 존재하지만 Git 추적 대상이 아니며 `.gitignore`에서 제외되고 있음
-- `.project-state.json` 안의 stage / script 기준과 현재 repo 실제 파일 구성이 일치하지 않을 가능성이 있음
-- 따라서 현재 우선순위는 parity 실작업에 들어가기 전, handoff / parity 문서의 최소 기준을 먼저 복원하는 것임
+- `.project-state.json`은 로컬 전용 ignored 파일이며 Git 추적 대상이 아님
+- tracked 문서 기준으로는 parity 관련 최소 baseline 복원이 완료됨
+- 실제 repo에는 예전 state가 참조하던 `post-incident.js`, `promote-lesson.js`, `sync-project.js`, `run-harness-scenarios.js`, `compare-harness-results.js`가 없음
+- 따라서 현재 parity는 runnable harness 단계가 아니라 문서 기준 정리 및 후속 판단 단계로 본다
 
 ## Next One Task
 
-- `docs/harness/handoff/latest.md`에 현재 기준 복원용 최소 handoff 기록을 먼저 남긴다.
+- stage-6 parity를 실제 구현 대상으로 유지할지, 문서 기준 보류 상태로 둘지 판단한다.

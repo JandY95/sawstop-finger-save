@@ -1,16 +1,20 @@
 ﻿status: bootstrap
 mode: manual
-current_scope: doc-baseline-recovery
+current_scope: doc-baseline-recovery-complete
 current_stage_reference:
   profile: stage-3-project-pack-bootstrap
-  state: local-state-refers-to-stage-6-parity-harness
+  state: local-state-retains-stage6-references
 current_risk:
   - local-state-retains-stage6-references
   - state-may-reference-nonexistent-scripts
+  - parity-runner-scripts-are-not-present-in-current-repo
 completed_this_session:
   - restored-handoff-latest-md-minimum-baseline
   - restored-parity-status-md-minimum-baseline
-next_one_task: align scenario baseline with actual tracked repo files
+  - aligned-scenario-index-wording-with-current-tracked-repo
+  - normalized-local-project-state-summary
+next_one_task: decide whether stage-6 parity remains an implementation target or a documentation-hold stage
 notes:
   - parity is not in runnable state yet
-  - current phase is document baseline recovery before real parity execution
+  - tracked parity docs are restored to baseline
+  - local project state is treated as reference-only and not as source of truth
