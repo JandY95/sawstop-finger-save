@@ -1,1 +1,16 @@
-﻿status: pending
+﻿status: bootstrap
+mode: manual
+current_scope: doc-baseline-recovery
+current_stage_reference:
+  profile: stage-3-project-pack-bootstrap
+  state: stage-6-parity-harness
+current_risk:
+  - stage-mismatch-between-profile-and-state
+  - state-may-reference-nonexistent-scripts
+completed_this_session:
+  - restored-handoff-latest-md-minimum-baseline
+  - restored-parity-status-md-minimum-baseline
+next_one_task: align scenario baseline with actual tracked repo files
+notes:
+  - parity is not in runnable state yet
+  - current phase is document baseline recovery before real parity execution
