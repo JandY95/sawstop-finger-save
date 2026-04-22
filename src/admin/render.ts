@@ -353,12 +353,14 @@ export function renderAdminPage(
             const button = document.createElement("button");
             button.type = "button";
             button.className = "result-item";
-            button.textContent = [
-              item.receiptNumber,
-              item.phone || "-",
-              item.occurredAt || "-",
-              item.operatorName || "-"
-            ].join(" | ");
+            button.innerHTML = [
+              '<span class="accident-result-title">' + renderValue(item.receiptNumber) + '</span>',
+              '<span class="accident-result-fields">',
+              '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
+              '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
+              '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
+              '</span>'
+            ].join("");
             button.addEventListener("click", () => {
               void selectAccident(item);
             });
@@ -602,6 +604,29 @@ export function renderAdminPage(
             background: #f8f3ea;
             color: var(--ink);
             border: 1px solid var(--line);
+            display: grid;
+            gap: 8px;
+          }
+          .accident-result-title {
+            font-weight: 800;
+            overflow-wrap: anywhere;
+          }
+          .accident-result-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px 12px;
+            color: var(--ink);
+            font-weight: 400;
+          }
+          .accident-result-fields span {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+          .accident-result-fields b {
+            display: block;
+            margin-bottom: 2px;
+            color: var(--muted);
+            font-size: 12px;
           }
           .results {
             display: grid;
@@ -622,6 +647,7 @@ export function renderAdminPage(
             .panel-head { flex-direction: column; }
             .row { flex-direction: column; }
             .attachment-actions { flex-direction: column; align-items: stretch; }
+            .accident-result-fields { grid-template-columns: 1fr; }
           }
         </style>
       </head>

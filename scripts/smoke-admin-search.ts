@@ -35,6 +35,8 @@ async function readJson(response: Response) {
       pageId: string;
       receiptNumber: string;
       phone: string | null;
+      occurredAt: string | null;
+      operatorName: string | null;
     }>;
   };
 }
@@ -135,6 +137,14 @@ async function run() {
     expect(
       receiptBody.results?.[0]?.receiptNumber === "20260412-0001",
       "receiptNumber search result should match receiptNumber"
+    );
+    expect(
+      receiptBody.results?.[0]?.occurredAt === "2026-04-12T12:00:00+09:00",
+      "receiptNumber search result should include occurredAt"
+    );
+    expect(
+      receiptBody.results?.[0]?.operatorName === "Kim Minsu",
+      "receiptNumber search result should include operatorName"
     );
     console.log("PASS: admin_search_receipt_number");
 
