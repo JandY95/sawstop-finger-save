@@ -436,9 +436,11 @@ export async function updateAttachmentPageType(
 export async function moveAttachmentPageToTrashWithTimestamp(
   env: WorkerEnv,
   {
-    attachmentPageId
+    attachmentPageId,
+    deletionReason
   }: {
     attachmentPageId: string;
+    deletionReason: string;
   }
 ) {
   const trashMovedAt = getCurrentSeoulIsoDateTime();
@@ -451,6 +453,7 @@ export async function moveAttachmentPageToTrashWithTimestamp(
     pageId: attachmentPageId,
     properties: {
       [ATTACHMENT_DB_PROPERTY_NAMES.status]: toStatus(ATTACHMENT_DB_STATUS.trash),
+      [ATTACHMENT_DB_PROPERTY_NAMES.deleteReason]: toSelect(deletionReason),
       [ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt]: toDateTime(
         trashMovedAt,
         ASIA_SEOUL_TIMEZONE
@@ -742,6 +745,9 @@ export async function listAttachmentPagesByAccidentPageId(
           null,
         status:
           result.properties[ATTACHMENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null,
+        deletionReason:
+          result.properties[ATTACHMENT_DB_PROPERTY_NAMES.deleteReason]?.select?.name ??
+          null,
         displayOrder:
           result.properties[ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]?.number ?? null
       } satisfies AdminAttachmentListItem;

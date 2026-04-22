@@ -13,6 +13,10 @@ const expectedGroups = [
     values: ["손가락 사진", "브레이크 카트리지 사진", "기타"]
   },
   {
+    name: "attachment_delete_reason",
+    values: ["화질 불량", "기타", "불필요", "오업로드", "중복"]
+  },
+  {
     name: "english_mode",
     values: ["완전 영문화", "규칙/공식명 영문화(번역 판단 필요 내용 원문 유지)"]
   },

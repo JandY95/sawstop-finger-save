@@ -8,6 +8,7 @@ import {
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
   ADMIN_UPLOAD_ROUTE,
+  ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_TYPE_OPTIONS
 } from "../constants";
 
@@ -40,6 +41,10 @@ export function renderAdminPage(
   const error = url.searchParams.get("error");
   const message = buildLoginMessage(error);
   const attachmentTypeOptions = ATTACHMENT_TYPE_OPTIONS.map(
+    (option) =>
+      `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`
+  ).join("");
+  const attachmentDeleteReasonOptions = ATTACHMENT_DELETE_REASON_OPTIONS.map(
     (option) =>
       `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`
   ).join("");
@@ -287,6 +292,9 @@ export function renderAdminPage(
               '<dl class="attachment-fields">',
               '<div><dt>Type</dt><dd><span class="meta-badge">' + renderValue(item.attachmentType) + '</span></dd></div>',
               '<div><dt>Status</dt><dd><span class="meta-badge">' + renderValue(item.status) + '</span></dd></div>',
+              (item.deletionReason
+                ? '<div><dt>삭제 사유</dt><dd><span class="meta-badge">' + renderValue(item.deletionReason) + '</span></dd></div>'
+                : ''),
               '</dl>',
               '</div>',
               '<div class="attachment-actions">',
@@ -303,7 +311,16 @@ export function renderAdminPage(
   ? '<button type="button" class="secondary restore-button">복구</button>'
   : item.status === "영구삭제"
     ? ''
-    : '<button type="button" class="secondary trash-button">휴지통 이동</button>'),
+    : [
+        '<label class="trash-reason-control">',
+        '<span>삭제 사유</span>',
+        '<select name="deletionReason">',
+        '<option value="">선택</option>',
+        '${attachmentDeleteReasonOptions}',
+        '</select>',
+        '</label>',
+        '<button type="button" class="secondary trash-button">휴지통 이동</button>'
+      ].join("")),
               '</div>',
               '<div class="message"></div>'
             ].join("");
@@ -348,11 +365,18 @@ export function renderAdminPage(
             const trashButton = row.querySelector(".trash-button");
             if (trashButton) {
               trashButton.addEventListener("click", async () => {
+                const messageNode = row.querySelector(".message");
+                const deletionReasonNode = row.querySelector('select[name="deletionReason"]');
+                const deletionReason = deletionReasonNode ? deletionReasonNode.value : "";
+                if (!deletionReason) {
+                  setMessage(messageNode, "삭제 사유를 선택해 주세요.", "error");
+                  return;
+                }
+
                 if (!window.confirm("이 첨부를 휴지통으로 이동할까요?")) {
                   return;
                 }
 
-                const messageNode = row.querySelector(".message");
                 setMessage(messageNode, "휴지통 이동 중..", "");
                 setControlsDisabled(row, true);
 
@@ -364,7 +388,8 @@ export function renderAdminPage(
                     },
                     body: JSON.stringify({
                       attachmentPageId: item.attachmentPageId,
-                      pageId
+                      pageId,
+                      deletionReason
                     })
                   });
                   const data = await response.json();
@@ -834,6 +859,21 @@ export function renderAdminPage(
           }
           .attachment-actions select {
             flex: 1;
+          }
+          .trash-reason-control {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex: 1;
+            min-width: 220px;
+          }
+          .trash-reason-control span {
+            flex: 0 0 auto;
+            color: var(--muted);
+            font-size: 13px;
+          }
+          .trash-reason-control select {
+            min-width: 0;
           }
           .file-summary {
             margin-top: -6px;

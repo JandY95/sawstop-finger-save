@@ -1,6 +1,7 @@
 import type {
   ATTACHMENT_UPLOAD_STATUS,
   ATTACHMENT_DB_STATUS,
+  ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_SOURCE_OPTIONS,
   BLADE_TYPE_OPTIONS,
   FEED_RATE_OPTIONS,
@@ -20,6 +21,7 @@ export type AttachmentUploadStatus =
   (typeof ATTACHMENT_UPLOAD_STATUS)[keyof typeof ATTACHMENT_UPLOAD_STATUS];
 export type AttachmentDbStatus =
   (typeof ATTACHMENT_DB_STATUS)[keyof typeof ATTACHMENT_DB_STATUS];
+export type AttachmentDeleteReason = (typeof ATTACHMENT_DELETE_REASON_OPTIONS)[number];
 export type AttachmentSource = (typeof ATTACHMENT_SOURCE_OPTIONS)[number];
 
 interface R2PutOptions {
@@ -271,6 +273,7 @@ export interface AdminAttachmentListItem {
   fileName: string | null;
   attachmentType: string | null;
   status: string | null;
+  deletionReason: string | null;
   displayOrder: number | null;
 }
 
@@ -347,6 +350,7 @@ export interface AdminUpdateAttachmentTypeFailureResponse {
 export interface AdminMoveAttachmentToTrashRequest {
   attachmentPageId: string;
   pageId: string;
+  deletionReason: string;
 }
 
 export interface AdminMoveAttachmentToTrashSuccessResponse {

@@ -41,6 +41,7 @@ export const ATTACHMENT_DB_PROPERTY_NAMES = {
   attachmentType: "첨부 유형",
   uploadSource: "업로드 출처",
   status: "상태",
+  deleteReason: "삭제 사유",
   displayOrder: "표시 순서"
 } as const;
 
@@ -76,6 +77,14 @@ export const ATTACHMENT_TYPE_OPTIONS = [
   "손가락 사진",
   "브레이크 카트리지 사진",
   "기타"
+] as const;
+
+export const ATTACHMENT_DELETE_REASON_OPTIONS = [
+  "화질 불량",
+  "기타",
+  "불필요",
+  "오업로드",
+  "중복"
 ] as const;
 
 export const ATTACHMENT_SOURCE_OPTIONS = ["customer", "admin"] as const;

@@ -1,5 +1,6 @@
 import { handleAdminAttachmentList } from "../src/admin/list-attachments.ts";
 import {
+  ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS,
   ATTACHMENT_TYPE_OPTIONS
@@ -41,6 +42,7 @@ async function readJson(response: Response) {
       fileName: string | null;
       attachmentType: string | null;
       status: string | null;
+      deletionReason: string | null;
       displayOrder: number | null;
     }>;
   };
@@ -71,6 +73,9 @@ async function run() {
                 },
                 [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
                   status: { name: ATTACHMENT_DB_STATUS.current }
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.deleteReason]: {
+                  select: { name: ATTACHMENT_DELETE_REASON_OPTIONS[0] }
                 },
                 [ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]: {
                   number: 1
@@ -103,6 +108,10 @@ async function run() {
     expect(
       attachment?.status === ATTACHMENT_DB_STATUS.current,
       "attachment list should include status"
+    );
+    expect(
+      attachment?.deletionReason === ATTACHMENT_DELETE_REASON_OPTIONS[0],
+      "attachment list should include deletionReason"
     );
     console.log("PASS: admin_list_attachments_success");
 

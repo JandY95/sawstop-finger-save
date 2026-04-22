@@ -1,6 +1,7 @@
 import { registerHooks } from "node:module";
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
+  ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS
@@ -105,7 +106,8 @@ async function run() {
     const missingPageIdResponse = await handleAdminMoveAttachmentToTrash(
       buildRequest({
         attachmentPageId: "attachment-page-1",
-        pageId: ""
+        pageId: "",
+        deletionReason: ATTACHMENT_DELETE_REASON_OPTIONS[0]
       }),
       env
     );
@@ -113,6 +115,26 @@ async function run() {
     expect(missingPageIdResponse.status === 400, "missing pageId should return 400");
     expect(missingPageIdBody.ok === false, "missing pageId should return ok=false");
     console.log("PASS: admin_move_attachment_to_trash_missing_page_id");
+
+    globalThis.fetch = originalFetch;
+    const invalidDeletionReasonResponse = await handleAdminMoveAttachmentToTrash(
+      buildRequest({
+        attachmentPageId: "attachment-page-1",
+        pageId: "accident-page-1",
+        deletionReason: "not-allowed"
+      }),
+      env
+    );
+    const invalidDeletionReasonBody = await readJson(invalidDeletionReasonResponse);
+    expect(
+      invalidDeletionReasonResponse.status === 400,
+      "invalid deletionReason should return 400"
+    );
+    expect(
+      invalidDeletionReasonBody.ok === false,
+      "invalid deletionReason should return ok=false"
+    );
+    console.log("PASS: admin_move_attachment_to_trash_invalid_deletion_reason");
 
     const mockResponses: Response[] = [
       createMockResponse({
@@ -168,7 +190,8 @@ async function run() {
     const successResponse = await handleAdminMoveAttachmentToTrash(
       buildRequest({
         attachmentPageId: "attachment-page-1",
-        pageId: "accident-page-1"
+        pageId: "accident-page-1",
+        deletionReason: ATTACHMENT_DELETE_REASON_OPTIONS[0]
       }),
       env
     );
@@ -181,6 +204,11 @@ async function run() {
       JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.status]) ===
         JSON.stringify({ status: { name: ATTACHMENT_DB_STATUS.trash } }),
       "attachment row patch should move status to trash"
+    );
+    expect(
+      JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.deleteReason]) ===
+        JSON.stringify({ select: { name: ATTACHMENT_DELETE_REASON_OPTIONS[0] } }),
+      "attachment row patch should include deletion reason"
     );
     const trashMovedAtProperty = attachmentPatchBodies[0]?.[
       ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.trashMovedAt

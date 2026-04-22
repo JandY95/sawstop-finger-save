@@ -1,6 +1,7 @@
 import { registerHooks } from "node:module";
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
+  ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS
@@ -134,6 +135,9 @@ async function run() {
                 },
                 [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
                   status: { name: ATTACHMENT_DB_STATUS.trash }
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.deleteReason]: {
+                  select: { name: ATTACHMENT_DELETE_REASON_OPTIONS[0] }
                 }
               }
             }
@@ -208,6 +212,10 @@ async function run() {
       JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.status]) ===
         JSON.stringify({ status: { name: ATTACHMENT_DB_STATUS.permanentlyDeleted } }),
       "FIFO should patch attachment status to permanently deleted"
+    );
+    expect(
+      !(ATTACHMENT_DB_PROPERTY_NAMES.deleteReason in attachmentPatchBodies[0]),
+      "FIFO should preserve existing deletion reason"
     );
     expect(accidentPatchBodies.length === 2, "FIFO should patch accident page twice");
     expect(
@@ -332,6 +340,10 @@ async function run() {
       JSON.stringify(attachmentPatchBodies[0]?.[ATTACHMENT_DB_PROPERTY_NAMES.status]) ===
         JSON.stringify({ status: { name: ATTACHMENT_DB_STATUS.permanentlyDeleted } }),
       "Forced FIFO should patch attachment status to permanently deleted"
+    );
+    expect(
+      !(ATTACHMENT_DB_PROPERTY_NAMES.deleteReason in attachmentPatchBodies[0]),
+      "Forced FIFO should preserve existing deletion reason"
     );
     expect(accidentPatchBodies.length === 2, "Forced FIFO should patch accident page twice");
     expect(

@@ -1,4 +1,7 @@
-import { CUSTOMER_FAILURE_MESSAGE } from "../constants.ts";
+import {
+  ATTACHMENT_DELETE_REASON_OPTIONS,
+  CUSTOMER_FAILURE_MESSAGE
+} from "../constants.ts";
 import {
   moveAttachmentPageToTrashWithTimestamp,
   recalculateAccidentHasFingerPhoto,
@@ -11,6 +14,12 @@ import type {
   AdminMoveAttachmentToTrashSuccessResponse,
   WorkerEnv
 } from "../types.ts";
+
+function isAllowedDeletionReason(value: string) {
+  return ATTACHMENT_DELETE_REASON_OPTIONS.includes(
+    value as (typeof ATTACHMENT_DELETE_REASON_OPTIONS)[number]
+  );
+}
 
 function jsonResponse(
   body:
@@ -35,8 +44,13 @@ export async function handleAdminMoveAttachmentToTrash(
       (await request.json()) as Partial<AdminMoveAttachmentToTrashRequest>;
     const attachmentPageId = String(body.attachmentPageId ?? "").trim();
     const pageId = String(body.pageId ?? "").trim();
+    const deletionReason = String(body.deletionReason ?? "").trim();
 
-    if (attachmentPageId.length === 0 || pageId.length === 0) {
+    if (
+      attachmentPageId.length === 0 ||
+      pageId.length === 0 ||
+      !isAllowedDeletionReason(deletionReason)
+    ) {
       return jsonResponse(
         {
           ok: false,
@@ -46,7 +60,10 @@ export async function handleAdminMoveAttachmentToTrash(
       );
     }
 
-    await moveAttachmentPageToTrashWithTimestamp(env, { attachmentPageId });
+    await moveAttachmentPageToTrashWithTimestamp(env, {
+      attachmentPageId,
+      deletionReason
+    });
 
     await updatePageProperties(env, {
       pageId,
