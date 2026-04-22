@@ -82,10 +82,12 @@ export function renderAdminPage(
 
             <label for="files">파일</label>
             <input id="files" name="files" type="file" multiple required />
+            <div id="file-summary" class="hint file-summary">선택된 파일 없음</div>
 
-            <button type="submit">업로드</button>
+            <button id="upload-submit-button" type="submit" disabled>업로드</button>
 
             <div id="upload-message" class="message"></div>
+            <div id="upload-context" class="context-line"></div>
             <div id="upload-results" class="results"></div>
           </form>
 
@@ -93,6 +95,7 @@ export function renderAdminPage(
             <h2>현재 첨부 목록</h2>
             <p class="hint">사고건을 선택하면 첨부 목록을 불러옵니다.</p>
             <div id="attachment-list-message" class="message"></div>
+            <div id="attachment-context" class="context-line"></div>
             <div id="attachment-list" class="results"></div>
           </section>
 
@@ -114,14 +117,23 @@ export function renderAdminPage(
         const searchResults = document.getElementById("search-results");
         const uploadForm = document.getElementById("upload-form");
         const uploadMessage = document.getElementById("upload-message");
+        const uploadContext = document.getElementById("upload-context");
         const uploadResults = document.getElementById("upload-results");
+        const attachmentTypeSelect = document.getElementById("attachment-type");
+        const filesInput = document.getElementById("files");
+        const fileSummary = document.getElementById("file-summary");
+        const uploadSubmitButton = document.getElementById("upload-submit-button");
         const attachmentListMessage = document.getElementById("attachment-list-message");
+        const attachmentContext = document.getElementById("attachment-context");
         const attachmentList = document.getElementById("attachment-list");
         const fifoMessage = document.getElementById("fifo-message");
         const fifoResults = document.getElementById("fifo-results");
         const fifoProcessButton = document.getElementById("fifo-process-button");
         const selectedPageIdInput = document.getElementById("selected-page-id");
         const selectedSummary = document.getElementById("selected-summary");
+        let selectedAccidentPageId = "";
+        let selectedAccidentReceiptNumber = "";
+        let uploadInFlight = false;
 
         function setMessage(target, text, tone) {
           target.textContent = text || "";
@@ -145,6 +157,10 @@ export function renderAdminPage(
           return escapeText(value);
         }
 
+        function renderEmptyState(text) {
+          return '<div class="empty-state">' + renderValue(text) + '</div>';
+        }
+
         function renderDisplayOrder(value) {
           if (typeof value !== "number") {
             return "-";
@@ -159,7 +175,7 @@ export function renderAdminPage(
 
         function renderUploadResults(results) {
           if (!Array.isArray(results) || results.length === 0) {
-            uploadResults.innerHTML = '<div class="upload-result-empty">표시할 업로드 결과가 없습니다.</div>';
+            uploadResults.innerHTML = renderEmptyState("표시할 업로드 결과가 없습니다.");
             return;
           }
 
@@ -189,6 +205,44 @@ export function renderAdminPage(
           });
         }
 
+        function updateSelectedSearchResult() {
+          searchResults.querySelectorAll(".result-item").forEach((button) => {
+            button.classList.toggle(
+              "selected",
+              button.dataset.pageId === selectedAccidentPageId
+            );
+          });
+        }
+
+        function updateSelectedContext() {
+          const text = selectedAccidentReceiptNumber
+            ? "대상 사고건: " + selectedAccidentReceiptNumber
+            : "";
+          uploadContext.textContent = text;
+          attachmentContext.textContent = text;
+        }
+
+        function updateFileSummary() {
+          const files = filesInput.files || [];
+          if (files.length === 0) {
+            fileSummary.textContent = "선택된 파일 없음";
+            return;
+          }
+
+          fileSummary.textContent =
+            files.length === 1
+              ? files[0].name
+              : files[0].name + " 외 " + (files.length - 1) + "개";
+        }
+
+        function updateUploadSubmitState() {
+          const hasAccident = Boolean(selectedPageIdInput.value);
+          const hasAttachmentType = Boolean(attachmentTypeSelect.value);
+          const hasFiles = Boolean(filesInput.files && filesInput.files.length > 0);
+          uploadSubmitButton.disabled =
+            uploadInFlight || !hasAccident || !hasAttachmentType || !hasFiles;
+        }
+
         async function loadAttachments(pageId, loadedMessage) {
           attachmentList.innerHTML = "";
           setMessage(attachmentListMessage, "첨부 목록 불러오는 중..", "");
@@ -210,6 +264,7 @@ export function renderAdminPage(
           const attachments = data.attachments || [];
           if (attachments.length === 0) {
             setMessage(attachmentListMessage, "첨부가 없습니다.", "");
+            attachmentList.innerHTML = renderEmptyState("첨부가 없습니다.");
             return;
           }
 
@@ -230,8 +285,8 @@ export function renderAdminPage(
               '<strong>' + renderValue(item.fileName) + '</strong>',
               '</div>',
               '<dl class="attachment-fields">',
-              '<div><dt>Type</dt><dd>' + renderValue(item.attachmentType) + '</dd></div>',
-              '<div><dt>Status</dt><dd>' + renderValue(item.status) + '</dd></div>',
+              '<div><dt>Type</dt><dd><span class="meta-badge">' + renderValue(item.attachmentType) + '</span></dd></div>',
+              '<div><dt>Status</dt><dd><span class="meta-badge">' + renderValue(item.status) + '</span></dd></div>',
               '</dl>',
               '</div>',
               '<div class="attachment-actions">',
@@ -293,6 +348,10 @@ export function renderAdminPage(
             const trashButton = row.querySelector(".trash-button");
             if (trashButton) {
               trashButton.addEventListener("click", async () => {
+                if (!window.confirm("이 첨부를 휴지통으로 이동할까요?")) {
+                  return;
+                }
+
                 const messageNode = row.querySelector(".message");
                 setMessage(messageNode, "휴지통 이동 중..", "");
                 setControlsDisabled(row, true);
@@ -371,6 +430,15 @@ export function renderAdminPage(
         }
 
         async function selectAccident(item) {
+          selectedAccidentPageId = item.pageId;
+          selectedAccidentReceiptNumber = item.receiptNumber || "";
+          updateSelectedSearchResult();
+          setMessage(uploadMessage, "", "");
+          uploadResults.innerHTML = "";
+          setMessage(attachmentListMessage, "", "");
+          attachmentList.innerHTML = "";
+          setMessage(fifoMessage, "", "");
+          fifoResults.textContent = "";
           selectedPageIdInput.value = item.pageId;
           selectedSummary.className = "upload-target selected";
           selectedSummary.innerHTML = [
@@ -381,6 +449,8 @@ export function renderAdminPage(
             '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
             '</span>'
           ].join("");
+          updateSelectedContext();
+          updateUploadSubmitState();
           await loadAttachments(item.pageId);
         }
 
@@ -403,7 +473,8 @@ export function renderAdminPage(
             }
 
             if (!data.results || data.results.length === 0) {
-              setMessage(searchMessage, "검색 결과가 없습니다.", "");
+              setMessage(searchMessage, "", "");
+              searchResults.innerHTML = renderEmptyState("검색 결과가 없습니다.");
               return;
             }
 
@@ -413,6 +484,10 @@ export function renderAdminPage(
               const button = document.createElement("button");
               button.type = "button";
               button.className = "result-item";
+              button.dataset.pageId = item.pageId;
+              if (item.pageId === selectedAccidentPageId) {
+                button.classList.add("selected");
+              }
               button.innerHTML = [
                 '<span class="accident-result-title">' + renderValue(item.receiptNumber) + '</span>',
                 '<span class="accident-result-fields">',
@@ -437,6 +512,8 @@ export function renderAdminPage(
           const formData = new FormData(uploadForm);
           uploadResults.innerHTML = "";
           setMessage(uploadMessage, "업로드 중..", "");
+          uploadInFlight = true;
+          updateUploadSubmitState();
           setControlsDisabled(uploadForm, true);
 
           try {
@@ -458,16 +535,27 @@ export function renderAdminPage(
               "success"
             );
             renderUploadResults(data.results || []);
+            const fileInput = uploadForm.querySelector('input[type="file"]');
+            if (fileInput) {
+              fileInput.value = "";
+            }
+            updateFileSummary();
 
             if (selectedPageIdInput.value) {
               await loadAttachments(selectedPageIdInput.value);
             }
           } finally {
+            uploadInFlight = false;
             setControlsDisabled(uploadForm, false);
+            updateUploadSubmitState();
           }
         });
 
         fifoProcessButton.addEventListener("click", async () => {
+          if (!window.confirm("FIFO를 실행해 영구삭제 예정 첨부를 처리할까요?")) {
+            return;
+          }
+
           fifoResults.textContent = "";
           setMessage(fifoMessage, "FIFO 실행 중..", "");
           fifoProcessButton.disabled = true;
@@ -506,6 +594,15 @@ export function renderAdminPage(
             fifoProcessButton.disabled = false;
           }
         });
+
+        attachmentTypeSelect.addEventListener("change", updateUploadSubmitState);
+        filesInput.addEventListener("change", () => {
+          updateFileSummary();
+          updateUploadSubmitState();
+        });
+        updateSelectedContext();
+        updateFileSummary();
+        updateUploadSubmitState();
 
       </script>
     `
@@ -646,8 +743,25 @@ export function renderAdminPage(
             margin: 0;
             overflow-wrap: anywhere;
           }
-          .upload-result-empty {
+          .empty-state {
+            padding: 14px 16px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #fbf8f1;
             color: var(--muted);
+          }
+          .context-line {
+            padding: 8px 10px;
+            border-left: 4px solid var(--accent);
+            border-radius: 10px;
+            background: #eef5fb;
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+          }
+          .context-line:empty {
+            display: none;
           }
           .attachment-row {
             display: grid;
@@ -700,6 +814,19 @@ export function renderAdminPage(
             margin: 0;
             overflow-wrap: anywhere;
           }
+          .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: 3px 8px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+          }
           .attachment-actions {
             display: flex;
             gap: 10px;
@@ -707,6 +834,10 @@ export function renderAdminPage(
           }
           .attachment-actions select {
             flex: 1;
+          }
+          .file-summary {
+            margin-top: -6px;
+            overflow-wrap: anywhere;
           }
           h1 { margin: 0 0 8px; font-size: 28px; }
           h2 { margin: 0; font-size: 20px; }
@@ -750,6 +881,11 @@ export function renderAdminPage(
             border: 1px solid var(--line);
             display: grid;
             gap: 8px;
+          }
+          .result-item.selected {
+            border-color: var(--accent);
+            background: #eef5fb;
+            box-shadow: inset 4px 0 0 var(--accent);
           }
           .accident-result-title {
             font-weight: 800;
