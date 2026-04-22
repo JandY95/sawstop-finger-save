@@ -71,8 +71,8 @@ export function renderAdminPage(
 
           <form id="upload-form" class="card">
             <input id="selected-page-id" name="pageId" type="hidden" required />
-            <label>선택한 사고건</label>
-            <div id="selected-summary" class="hint">아직 선택된 사고건이 없습니다.</div>
+            <label>첨부 업로드 대상</label>
+            <div id="selected-summary" class="upload-target hint">아직 선택된 사고건이 없습니다.</div>
 
             <label for="attachment-type">첨부 유형</label>
             <select id="attachment-type" name="attachmentType" required>
@@ -317,12 +317,15 @@ export function renderAdminPage(
 
         async function selectAccident(item) {
           selectedPageIdInput.value = item.pageId;
-          selectedSummary.textContent = [
-            item.receiptNumber,
-            item.phone || "-",
-            item.occurredAt || "-",
-            item.operatorName || "-"
-          ].join(" | ");
+          selectedSummary.className = "upload-target selected";
+          selectedSummary.innerHTML = [
+            '<span class="upload-target-title">' + renderValue(item.receiptNumber) + '</span>',
+            '<span class="upload-target-fields">',
+            '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
+            '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
+            '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
+            '</span>'
+          ].join("");
           await loadAttachments(item.pageId);
         }
 
@@ -509,6 +512,40 @@ export function renderAdminPage(
           .attachment-card {
             grid-column: 1 / -1;
           }
+          .upload-target {
+            display: grid;
+            gap: 8px;
+            min-height: 52px;
+            padding: 12px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #fbf8f1;
+          }
+          .upload-target.selected {
+            border-style: solid;
+            background: #f8f3ea;
+            color: var(--ink);
+          }
+          .upload-target-title {
+            font-weight: 800;
+            overflow-wrap: anywhere;
+          }
+          .upload-target-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px 12px;
+            font-weight: 400;
+          }
+          .upload-target-fields span {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+          .upload-target-fields b {
+            display: block;
+            margin-bottom: 2px;
+            color: var(--muted);
+            font-size: 12px;
+          }
           .attachment-row {
             display: grid;
             gap: 10px;
@@ -647,6 +684,7 @@ export function renderAdminPage(
             .panel-head { flex-direction: column; }
             .row { flex-direction: column; }
             .attachment-actions { flex-direction: column; align-items: stretch; }
+            .upload-target-fields { grid-template-columns: 1fr; }
             .accident-result-fields { grid-template-columns: 1fr; }
           }
         </style>
