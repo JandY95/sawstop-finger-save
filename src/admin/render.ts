@@ -102,7 +102,7 @@ export function renderAdminPage(
             <p class="hint">사고건을 선택하면 첨부 목록을 불러옵니다.</p>
             <div id="attachment-list-message" class="message"></div>
             <div id="attachment-context" class="context-line"></div>
-            <div id="attachment-finger-photo-status" class="finger-photo-status"></div>
+            <div id="attachment-summary" class="attachment-summary"></div>
             <div id="attachment-list" class="results"></div>
           </section>
 
@@ -132,7 +132,7 @@ export function renderAdminPage(
         const uploadSubmitButton = document.getElementById("upload-submit-button");
         const attachmentListMessage = document.getElementById("attachment-list-message");
         const attachmentContext = document.getElementById("attachment-context");
-        const attachmentFingerPhotoStatus = document.getElementById("attachment-finger-photo-status");
+        const attachmentSummary = document.getElementById("attachment-summary");
         const attachmentList = document.getElementById("attachment-list");
         const fifoMessage = document.getElementById("fifo-message");
         const fifoResults = document.getElementById("fifo-results");
@@ -193,17 +193,49 @@ export function renderAdminPage(
           return item.attachmentType === "${ATTACHMENT_TYPE_OPTIONS[0]}" && item.status === "${ATTACHMENT_DB_STATUS.current}";
         }
 
-        function setFingerPhotoStatus(hasFingerPhoto) {
-          attachmentFingerPhotoStatus.textContent = hasFingerPhoto
-            ? "손가락 사진 확보됨"
-            : "손가락 사진 없음";
-          attachmentFingerPhotoStatus.className =
-            "finger-photo-status " + (hasFingerPhoto ? "ok" : "warning");
+        function buildAttachmentSummary(attachments) {
+          return {
+            total: attachments.length,
+            current: attachments.filter((item) => item.status === "${ATTACHMENT_DB_STATUS.current}").length,
+            trash: attachments.filter((item) => item.status === "${ATTACHMENT_DB_STATUS.trash}").length,
+            pendingClassification: attachments.filter((item) =>
+              isBlankAttachmentType(item.attachmentType)
+            ).length,
+            hasCurrentFingerPhoto: attachments.some((item) =>
+              isCurrentFingerPhoto(item)
+            )
+          };
         }
 
-        function clearFingerPhotoStatus() {
-          attachmentFingerPhotoStatus.textContent = "";
-          attachmentFingerPhotoStatus.className = "finger-photo-status";
+        function renderSummaryMetric(label, value, tone) {
+          return [
+            '<div class="summary-metric' + (tone ? " " + tone : "") + '">',
+            '<span>' + renderValue(label) + '</span>',
+            '<strong>' + renderValue(value) + '</strong>',
+            '</div>'
+          ].join("");
+        }
+
+        function renderAttachmentSummary(summary) {
+          attachmentSummary.innerHTML = [
+            renderSummaryMetric("전체", summary.total, ""),
+            renderSummaryMetric("현재", summary.current, ""),
+            renderSummaryMetric("휴지통", summary.trash, ""),
+            renderSummaryMetric(
+              "분류 대기",
+              summary.pendingClassification,
+              summary.pendingClassification > 0 ? "warning" : ""
+            ),
+            renderSummaryMetric(
+              "손가락 사진",
+              summary.hasCurrentFingerPhoto ? "확보됨" : "없음",
+              summary.hasCurrentFingerPhoto ? "ok" : "warning"
+            )
+          ].join("");
+        }
+
+        function clearAttachmentSummary() {
+          attachmentSummary.innerHTML = "";
         }
 
         function renderUploadBoolean(value) {
@@ -282,7 +314,7 @@ export function renderAdminPage(
 
         async function loadAttachments(pageId, loadedMessage) {
           attachmentList.innerHTML = "";
-          clearFingerPhotoStatus();
+          clearAttachmentSummary();
           setMessage(attachmentListMessage, "첨부 목록 불러오는 중..", "");
 
           const response = await fetch(
@@ -302,27 +334,22 @@ export function renderAdminPage(
           const attachments = data.attachments || [];
           if (attachments.length === 0) {
             setMessage(attachmentListMessage, "첨부가 없습니다.", "");
-            clearFingerPhotoStatus();
+            clearAttachmentSummary();
             attachmentList.innerHTML = renderEmptyState("첨부가 없습니다.");
             return;
           }
 
-          const pendingClassificationCount = attachments.filter((item) =>
-            isBlankAttachmentType(item.attachmentType)
-          ).length;
-          const hasCurrentFingerPhoto = attachments.some((item) =>
-            isCurrentFingerPhoto(item)
-          );
-          setFingerPhotoStatus(hasCurrentFingerPhoto);
+          const summary = buildAttachmentSummary(attachments);
+          renderAttachmentSummary(summary);
           setMessage(
             attachmentListMessage,
             loadedMessage ||
               "첨부 " +
                 attachments.length +
                 "건" +
-                (pendingClassificationCount > 0
+                (summary.pendingClassification > 0
                   ? " · 분류 대기 " +
-                    pendingClassificationCount +
+                    summary.pendingClassification +
                     "건"
                   : ""),
             "success"
@@ -511,7 +538,7 @@ export function renderAdminPage(
           setMessage(uploadMessage, "", "");
           uploadResults.innerHTML = "";
           setMessage(attachmentListMessage, "", "");
-          clearFingerPhotoStatus();
+          clearAttachmentSummary();
           attachmentList.innerHTML = "";
           setMessage(fifoMessage, "", "");
           fifoResults.textContent = "";
@@ -839,28 +866,46 @@ export function renderAdminPage(
           .context-line:empty {
             display: none;
           }
-          .finger-photo-status {
-            display: inline-flex;
-            width: fit-content;
-            max-width: 100%;
-            padding: 7px 10px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 800;
-            overflow-wrap: anywhere;
+          .attachment-summary {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
           }
-          .finger-photo-status:empty {
+          .attachment-summary:empty {
             display: none;
           }
-          .finger-photo-status.ok {
+          .summary-metric {
+            min-width: 0;
+            padding: 9px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+          }
+          .summary-metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+          }
+          .summary-metric strong {
+            display: block;
+            margin-top: 3px;
+            color: var(--ink);
+            font-size: 16px;
+            overflow-wrap: anywhere;
+          }
+          .summary-metric.ok {
             border-color: #5f8a3b;
             background: #eef7e7;
+          }
+          .summary-metric.ok strong {
             color: #315b16;
           }
-          .finger-photo-status.warning {
+          .summary-metric.warning {
             border-color: #b3483f;
             background: #fff0ee;
+          }
+          .summary-metric.warning strong {
             color: #7a2119;
           }
           .attachment-row {
@@ -1062,6 +1107,7 @@ export function renderAdminPage(
             .grid { grid-template-columns: 1fr; }
             .panel-head { flex-direction: column; }
             .row { flex-direction: column; }
+            .attachment-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .attachment-actions { flex-direction: column; align-items: stretch; }
             .upload-target-fields { grid-template-columns: 1fr; }
             .upload-result-fields { grid-template-columns: 1fr; }

@@ -165,6 +165,31 @@ async function run() {
       trashedFingerAttachment?.status === ATTACHMENT_DB_STATUS.trash,
       "attachment list should preserve trashed status for current finger-photo UI"
     );
+    const attachments = successBody.attachments ?? [];
+    const currentCount = attachments.filter(
+      (item) => item.status === ATTACHMENT_DB_STATUS.current
+    ).length;
+    const trashCount = attachments.filter(
+      (item) => item.status === ATTACHMENT_DB_STATUS.trash
+    ).length;
+    const pendingClassificationCount = attachments.filter(
+      (item) => item.attachmentType === null
+    ).length;
+    const hasCurrentFingerPhoto = attachments.some(
+      (item) =>
+        item.attachmentType === ATTACHMENT_TYPE_OPTIONS[0] &&
+        item.status === ATTACHMENT_DB_STATUS.current
+    );
+    expect(currentCount === 2, "attachment list should support current count summary");
+    expect(trashCount === 1, "attachment list should support trash count summary");
+    expect(
+      pendingClassificationCount === 1,
+      "attachment list should support pending classification summary"
+    );
+    expect(
+      hasCurrentFingerPhoto === true,
+      "attachment list should support current finger-photo summary"
+    );
     console.log("PASS: admin_list_attachments_success");
 
     globalThis.fetch = originalFetch;
