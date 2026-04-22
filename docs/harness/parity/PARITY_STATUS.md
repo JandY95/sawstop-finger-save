@@ -7,7 +7,7 @@
   - `docs/harness/handoff/latest.md` 최소 handoff 복원 완료
   - `docs/harness/parity/PARITY_STATUS.md`는 지금 회차에서 최소 상태 복원 시작
   - `project.profile.json`의 `currentStage`는 `stage-3-project-pack-bootstrap`
-  - `.project-state.json`의 `currentStage`는 `stage-6-parity-harness`
+  - 로컬 `.project-state.json`에서 `currentStage`는 stage 3로 조정됐지만, `stage-6-parity-harness` 참조는 아직 남아 있음
 
 ## Current Risk
 

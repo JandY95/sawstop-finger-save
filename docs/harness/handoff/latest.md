@@ -6,7 +6,7 @@
 - 현재 실작업 방향: `sawstop-finger-save` parity hardening / 운영 안정화
 - 현재 확인된 정합성 상태:
   - `project.profile.json`의 `currentStage`는 `stage-3-project-pack-bootstrap`
-  - `.project-state.json`의 `currentStage`는 `stage-6-parity-harness`
+  - 로컬 `.project-state.json`에서 `currentStage`는 stage 3로 조정됐지만, `stage-6-parity-harness` 참조는 아직 남아 있음
   - `docs/harness/parity/PARITY_STATUS.md`는 제목만 있는 상태
   - `docs/harness/handoff/latest.md`는 제목만 있는 상태에서 복원 시작
 
