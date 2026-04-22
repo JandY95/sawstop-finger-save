@@ -86,7 +86,7 @@ export function renderAdminPage(
             <button type="submit">업로드</button>
 
             <div id="upload-message" class="message"></div>
-            <pre id="upload-results" class="results"></pre>
+            <div id="upload-results" class="results"></div>
           </form>
 
           <section class="card attachment-card">
@@ -151,6 +151,32 @@ export function renderAdminPage(
           }
 
           return escapeText(value);
+        }
+
+        function renderUploadBoolean(value) {
+          return value ? "성공" : "실패";
+        }
+
+        function renderUploadResults(results) {
+          if (!Array.isArray(results) || results.length === 0) {
+            uploadResults.innerHTML = '<div class="upload-result-empty">표시할 업로드 결과가 없습니다.</div>';
+            return;
+          }
+
+          uploadResults.innerHTML = results
+            .map((item) =>
+              [
+                '<div class="upload-result-row">',
+                '<strong>' + renderValue(item.originalFileName) + '</strong>',
+                '<dl class="upload-result-fields">',
+                '<div><dt>R2 Upload</dt><dd>' + renderUploadBoolean(Boolean(item.uploadedToR2)) + '</dd></div>',
+                '<div><dt>Attachment Page</dt><dd>' + renderUploadBoolean(Boolean(item.attachmentPageCreated)) + '</dd></div>',
+                '<div><dt>Message</dt><dd>' + renderValue(item.message) + '</dd></div>',
+                '</dl>',
+                '</div>'
+              ].join("")
+            )
+            .join("");
         }
 
         async function loadAttachments(pageId) {
@@ -375,7 +401,7 @@ export function renderAdminPage(
         uploadForm.addEventListener("submit", async (event) => {
           event.preventDefault();
           const formData = new FormData(uploadForm);
-          uploadResults.textContent = "";
+          uploadResults.innerHTML = "";
           setMessage(uploadMessage, "업로드 중..", "");
 
           const response = await fetch("${ADMIN_UPLOAD_ROUTE}", {
@@ -386,7 +412,7 @@ export function renderAdminPage(
 
           if (!response.ok || !data.ok) {
             setMessage(uploadMessage, data.message || "업로드에 실패했습니다.", "error");
-            uploadResults.textContent = JSON.stringify(data.results || [], null, 2);
+            renderUploadResults(data.results || []);
             return;
           }
 
@@ -395,7 +421,7 @@ export function renderAdminPage(
             "업로드 성공: " + data.successCount + "건 / 실패: " + data.failureCount + "건",
             "success"
           );
-          uploadResults.textContent = JSON.stringify(data.results || [], null, 2);
+          renderUploadResults(data.results || []);
 
           if (selectedPageIdInput.value) {
             await loadAttachments(selectedPageIdInput.value);
@@ -546,6 +572,39 @@ export function renderAdminPage(
             color: var(--muted);
             font-size: 12px;
           }
+          .upload-result-row {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            background: #f8f3ea;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+          }
+          .upload-result-row strong {
+            overflow-wrap: anywhere;
+          }
+          .upload-result-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px 12px;
+            margin: 0;
+          }
+          .upload-result-fields div {
+            min-width: 0;
+          }
+          .upload-result-fields dt {
+            margin: 0 0 2px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+          }
+          .upload-result-fields dd {
+            margin: 0;
+            overflow-wrap: anywhere;
+          }
+          .upload-result-empty {
+            color: var(--muted);
+          }
           .attachment-row {
             display: grid;
             gap: 10px;
@@ -685,6 +744,7 @@ export function renderAdminPage(
             .row { flex-direction: column; }
             .attachment-actions { flex-direction: column; align-items: stretch; }
             .upload-target-fields { grid-template-columns: 1fr; }
+            .upload-result-fields { grid-template-columns: 1fr; }
             .accident-result-fields { grid-template-columns: 1fr; }
           }
         </style>

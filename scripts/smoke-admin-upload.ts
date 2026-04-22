@@ -42,6 +42,7 @@ async function readJson(response: Response) {
       originalFileName: string;
       uploadedToR2: boolean;
       attachmentPageCreated: boolean;
+      message?: string;
     }>;
   };
 }
@@ -175,6 +176,18 @@ async function run() {
     expect(validBody.ok === true, "valid admin upload should return ok=true");
     expect(validBody.successCount === 1, "valid admin upload should create 1 attachment row");
     expect(validBody.failureCount === 0, "valid admin upload should have 0 failures");
+    expect(
+      validBody.results?.[0]?.originalFileName === "finger.jpg",
+      "valid admin upload result should include originalFileName"
+    );
+    expect(
+      validBody.results?.[0]?.uploadedToR2 === true,
+      "valid admin upload result should include uploadedToR2=true"
+    );
+    expect(
+      validBody.results?.[0]?.attachmentPageCreated === true,
+      "valid admin upload result should include attachmentPageCreated=true"
+    );
     expect(bucketKeys.length === 1, "valid admin upload should store exactly 1 file in R2");
     expect(accidentPatchBodies.length >= 1, "valid admin upload should patch accident page");
     expect(
