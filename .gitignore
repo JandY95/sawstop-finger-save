@@ -1,7 +1,11 @@
-.codex/
+﻿.codex/
 .project-state.json
 .dev.vars
 .wrangler/
 node_modules/
 *.log
 .tmp-*
+
+# parity generated outputs
+/docs/harness/parity/latest-run.json
+/docs/harness/parity/latest-compare.json

@@ -1,0 +1,74 @@
+﻿{
+  "version": 1,
+  "scope": "deterministic-local-harness",
+  "generatedOutputs": {
+    "latestRun": "docs/harness/parity/latest-run.json",
+    "latestCompare": "docs/harness/parity/latest-compare.json"
+  },
+  "excludedCommands": [
+    "npm run check:attachment-source-live",
+    "npm run check:fifo-trash-candidates"
+  ],
+  "scenarios": [
+    {
+      "id": "check-notion-schema",
+      "command": "npm run check:notion-schema",
+      "kind": "deterministic-check",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "check-allowed-values",
+      "command": "npm run check:allowed-values",
+      "kind": "deterministic-check",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-submit",
+      "command": "npm run smoke:submit",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-admin-search",
+      "command": "npm run smoke:admin-search",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-admin-upload",
+      "command": "npm run smoke:admin-upload",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-admin-list-attachments",
+      "command": "npm run smoke:admin-list-attachments",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-admin-update-attachment-type",
+      "command": "npm run smoke:admin-update-attachment-type",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-admin-move-attachment-to-trash",
+      "command": "npm run smoke:admin-move-attachment-to-trash",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-admin-restore-attachment",
+      "command": "npm run smoke:admin-restore-attachment",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    },
+    {
+      "id": "smoke-admin-process-fifo-trash",
+      "command": "npm run smoke:admin-process-fifo-trash",
+      "kind": "deterministic-smoke",
+      "expectedExitCode": 0
+    }
+  ]
+}

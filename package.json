@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "sawstop-finger-save",
   "private": true,
   "version": "0.0.0",
@@ -16,6 +16,9 @@
     "smoke:admin-process-fifo-trash": "node --experimental-strip-types scripts/smoke-admin-process-fifo-trash.ts",
     "smoke:admin-restore-attachment": "node --experimental-strip-types scripts/smoke-admin-restore-attachment.ts",
     "smoke:admin-update-attachment-type": "node --experimental-strip-types scripts/smoke-admin-update-attachment-type.ts",
+    "parity:run": "node --experimental-strip-types scripts/run-harness-scenarios.ts",
+    "parity:compare": "node --experimental-strip-types scripts/compare-harness-results.ts",
+    "parity": "npm run parity:run && npm run parity:compare",
     "ci": "npm run test",
     "deploy:ci": "npx wrangler deploy",
     "dev:local": "npx wrangler dev",

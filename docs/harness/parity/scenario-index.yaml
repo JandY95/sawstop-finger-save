@@ -1,20 +1,58 @@
-﻿status: bootstrap
-mode: manual
-current_scope: doc-baseline-recovery-complete
+﻿status: active
+mode: formal
+current_scope: deterministic-local-harness-implemented
 current_stage_reference:
   profile: stage-3-project-pack-bootstrap
-  state: local-state-retains-stage6-references
-current_risk:
-  - local-state-retains-stage6-references
-  - state-may-reference-nonexistent-scripts
-  - parity-runner-scripts-are-not-present-in-current-repo
-completed_this_session:
-  - restored-handoff-latest-md-minimum-baseline
-  - restored-parity-status-md-minimum-baseline
-  - aligned-scenario-index-wording-with-current-tracked-repo
-  - normalized-local-project-state-summary
-next_one_task: decide whether stage-6 parity remains an implementation target or a documentation-hold stage
+  parity_target: stage-6-parity-harness
+source_of_truth:
+  tracked_stage_file: project.profile.json
+  parity_baseline_file: docs/harness/parity/parity-baseline.json
+  latest_run_file: docs/harness/parity/latest-run.json
+  latest_compare_file: docs/harness/parity/latest-compare.json
+scenarios:
+  - id: check-notion-schema
+    command: npm run check:notion-schema
+    kind: deterministic-check
+    expected_exit: 0
+  - id: check-allowed-values
+    command: npm run check:allowed-values
+    kind: deterministic-check
+    expected_exit: 0
+  - id: smoke-submit
+    command: npm run smoke:submit
+    kind: deterministic-smoke
+    expected_exit: 0
+  - id: smoke-admin-search
+    command: npm run smoke:admin-search
+    kind: deterministic-smoke
+    expected_exit: 0
+  - id: smoke-admin-upload
+    command: npm run smoke:admin-upload
+    kind: deterministic-smoke
+    expected_exit: 0
+  - id: smoke-admin-list-attachments
+    command: npm run smoke:admin-list-attachments
+    kind: deterministic-smoke
+    expected_exit: 0
+  - id: smoke-admin-update-attachment-type
+    command: npm run smoke:admin-update-attachment-type
+    kind: deterministic-smoke
+    expected_exit: 0
+  - id: smoke-admin-move-attachment-to-trash
+    command: npm run smoke:admin-move-attachment-to-trash
+    kind: deterministic-smoke
+    expected_exit: 0
+  - id: smoke-admin-restore-attachment
+    command: npm run smoke:admin-restore-attachment
+    kind: deterministic-smoke
+    expected_exit: 0
+  - id: smoke-admin-process-fifo-trash
+    command: npm run smoke:admin-process-fifo-trash
+    kind: deterministic-smoke
+    expected_exit: 0
+excluded_from_parity:
+  - npm run check:attachment-source-live
+  - npm run check:fifo-trash-candidates
 notes:
-  - parity is not in runnable state yet
-  - tracked parity docs are restored to baseline
-  - local project state is treated as reference-only and not as source of truth
+  - parity compares deterministic local harness behavior against tracked baseline
+  - live-dependent checks remain outside parity until stable fixtures exist
