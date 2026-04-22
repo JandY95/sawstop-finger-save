@@ -4,6 +4,7 @@ import {
   ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS,
+  ACCIDENT_DB_PROPERTY_NAMES,
   ATTACHMENT_TRASH_RETENTION_DAYS,
   ATTACHMENT_TYPE_OPTIONS,
   NOTION_API_BASE_URL,
@@ -413,6 +414,42 @@ export async function updatePageProperties(
   if (!response.ok) {
     throw new Error(`Notion update page failed: ${await readNotionError(response)}`);
   }
+}
+
+export async function getAccidentPageStatus(env: WorkerEnv, pageId: string) {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const response = await fetch(`${NOTION_API_BASE_URL}/pages/${pageId}`, {
+    method: "GET",
+    headers: getNotionHeaders(token)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Notion get accident page failed: ${await readNotionError(response)}`);
+  }
+
+  const data = (await response.json()) as {
+    properties?: Record<string, { status?: { name?: string | null } | null }>;
+  };
+
+  return data.properties?.[ACCIDENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null;
+}
+
+export async function updateAccidentPageStatus(
+  env: WorkerEnv,
+  {
+    pageId,
+    status
+  }: {
+    pageId: string;
+    status: string;
+  }
+) {
+  await updatePageProperties(env, {
+    pageId,
+    properties: {
+      [ACCIDENT_DB_PROPERTY_NAMES.status]: toStatus(status)
+    }
+  });
 }
 
 export async function updateAttachmentPageType(

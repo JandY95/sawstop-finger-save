@@ -1,5 +1,6 @@
 import {
   ACCIDENT_DB_PROPERTY_NAMES,
+  ACCIDENT_STATUS,
   CUSTOMER_FAILURE_MESSAGE,
   NOTION_API_BASE_URL,
   NOTION_API_VERSION
@@ -108,21 +109,21 @@ async function queryRecentAccidents(env: WorkerEnv) {
       filter: {
         or: [
           {
-            property: ACCIDENT_DB_PROPERTY_NAMES.status,
-            status: {
-              equals: "접수"
+              property: ACCIDENT_DB_PROPERTY_NAMES.status,
+              status: {
+              equals: ACCIDENT_STATUS.received
             }
           },
           {
             property: ACCIDENT_DB_PROPERTY_NAMES.status,
             status: {
-              equals: "진행중"
+              equals: ACCIDENT_STATUS.inProgress
             }
           },
           {
             property: ACCIDENT_DB_PROPERTY_NAMES.status,
             status: {
-              equals: "반려"
+              equals: ACCIDENT_STATUS.rejected
             }
           }
         ]
@@ -163,6 +164,7 @@ function mapSearchResult(result: NotionQueryResult): AdminAccidentSearchResultIt
   return {
     pageId: result.id,
     receiptNumber,
+    status: result.properties[ACCIDENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null,
     phone: result.properties[ACCIDENT_DB_PROPERTY_NAMES.phone]?.phone_number ?? null,
     occurredAt: result.properties[ACCIDENT_DB_PROPERTY_NAMES.occurredAt]?.date?.start ?? null,
     operatorName: readPlainTextList(

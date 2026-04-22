@@ -1,4 +1,7 @@
-import { ACCIDENT_DB_PROPERTY_NAMES } from "../src/constants.ts";
+import {
+  ACCIDENT_DB_PROPERTY_NAMES,
+  ACCIDENT_STATUS
+} from "../src/constants.ts";
 import { handleAdminAccidentSearch } from "../src/admin/search.ts";
 import type { WorkerEnv } from "../src/types.ts";
 
@@ -34,6 +37,7 @@ async function readJson(response: Response) {
     results?: Array<{
       pageId: string;
       receiptNumber: string;
+      status: string | null;
       phone: string | null;
       occurredAt: string | null;
       operatorName: string | null;
@@ -82,7 +86,7 @@ async function run() {
           rich_text: [{ plain_text: "Kim Minsu" }]
         },
         [ACCIDENT_DB_PROPERTY_NAMES.status]: {
-          status: { name: "진행중" }
+          status: { name: ACCIDENT_STATUS.inProgress }
         }
       }
     },
@@ -102,7 +106,7 @@ async function run() {
           rich_text: [{ plain_text: "Lee Jisoo" }]
         },
         [ACCIDENT_DB_PROPERTY_NAMES.status]: {
-          status: { name: "완료" }
+          status: { name: ACCIDENT_STATUS.complete }
         }
       }
     }
@@ -137,6 +141,10 @@ async function run() {
     expect(
       receiptBody.results?.[0]?.receiptNumber === "20260412-0001",
       "receiptNumber search result should match receiptNumber"
+    );
+    expect(
+      receiptBody.results?.[0]?.status === ACCIDENT_STATUS.inProgress,
+      "receiptNumber search result should include status"
     );
     expect(
       receiptBody.results?.[0]?.occurredAt === "2026-04-12T12:00:00+09:00",

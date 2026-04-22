@@ -1,5 +1,6 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
+  ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE,
   ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE,
   ADMIN_ATTACHMENT_LIST_ROUTE,
   ADMIN_ATTACHMENT_RESTORE_ROUTE,
@@ -8,6 +9,7 @@ import {
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
   ADMIN_UPLOAD_ROUTE,
+  ACCIDENT_STATUS,
   ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_DB_STATUS,
   ATTACHMENT_TYPE_OPTIONS
@@ -141,6 +143,9 @@ export function renderAdminPage(
         const selectedSummary = document.getElementById("selected-summary");
         let selectedAccidentPageId = "";
         let selectedAccidentReceiptNumber = "";
+        let selectedAccidentStatus = "";
+        let selectedAccidentItem = null;
+        let currentSearchQuery = "";
         let uploadInFlight = false;
 
         function setMessage(target, text, tone) {
@@ -289,6 +294,83 @@ export function renderAdminPage(
             : "";
           uploadContext.textContent = text;
           attachmentContext.textContent = text;
+        }
+
+        function getAllowedStatusTransitions(status) {
+          if (status === "${ACCIDENT_STATUS.received}") {
+            return [
+              { toStatus: "${ACCIDENT_STATUS.inProgress}", label: "진행중으로 변경" },
+              { toStatus: "${ACCIDENT_STATUS.rejected}", label: "반려로 변경" }
+            ];
+          }
+
+          if (status === "${ACCIDENT_STATUS.inProgress}") {
+            return [
+              { toStatus: "${ACCIDENT_STATUS.complete}", label: "완료로 변경" }
+            ];
+          }
+
+          return [];
+        }
+
+        function renderStatusControls(item) {
+          const transitions = getAllowedStatusTransitions(item.status);
+          if (transitions.length === 0) {
+            return "";
+          }
+
+          return [
+            '<span class="status-actions">',
+            transitions
+              .map((transition) =>
+                '<button type="button" class="secondary accident-status-button" data-to-status="' +
+                renderValue(transition.toStatus) +
+                '">' +
+                renderValue(transition.label) +
+                '</button>'
+              )
+              .join(""),
+            '</span>'
+          ].join("");
+        }
+
+        function bindSelectedStatusControls() {
+          selectedSummary.querySelectorAll(".accident-status-button").forEach((button) => {
+            button.addEventListener("click", () => {
+              void updateSelectedAccidentStatus(button.dataset.toStatus || "");
+            });
+          });
+        }
+
+        function renderSelectedSummary(item) {
+          selectedSummary.className = "upload-target selected";
+          selectedSummary.innerHTML = [
+            '<span class="upload-target-title">' + renderValue(item.receiptNumber) + '</span>',
+            '<span class="upload-target-fields">',
+            '<span><b>Status</b>' + renderValue(item.status) + '</span>',
+            '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
+            '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
+            '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
+            '</span>',
+            renderStatusControls(item)
+          ].join("");
+          bindSelectedStatusControls();
+        }
+
+        function clearSelectedAccident() {
+          selectedAccidentPageId = "";
+          selectedAccidentReceiptNumber = "";
+          selectedAccidentStatus = "";
+          selectedAccidentItem = null;
+          selectedPageIdInput.value = "";
+          selectedSummary.className = "upload-target hint";
+          selectedSummary.textContent = "아직 선택된 사고건이 없습니다.";
+          updateSelectedSearchResult();
+          updateSelectedContext();
+          updateUploadSubmitState();
+          setMessage(attachmentListMessage, "", "");
+          clearAttachmentSummary();
+          attachmentList.innerHTML = "";
         }
 
         function updateFileSummary() {
@@ -534,6 +616,8 @@ export function renderAdminPage(
         async function selectAccident(item) {
           selectedAccidentPageId = item.pageId;
           selectedAccidentReceiptNumber = item.receiptNumber || "";
+          selectedAccidentStatus = item.status || "";
+          selectedAccidentItem = { ...item };
           updateSelectedSearchResult();
           setMessage(uploadMessage, "", "");
           uploadResults.innerHTML = "";
@@ -543,30 +627,56 @@ export function renderAdminPage(
           setMessage(fifoMessage, "", "");
           fifoResults.textContent = "";
           selectedPageIdInput.value = item.pageId;
-          selectedSummary.className = "upload-target selected";
-          selectedSummary.innerHTML = [
-            '<span class="upload-target-title">' + renderValue(item.receiptNumber) + '</span>',
-            '<span class="upload-target-fields">',
-            '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
-            '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
-            '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
-            '</span>'
-          ].join("");
+          renderSelectedSummary(selectedAccidentItem);
           updateSelectedContext();
           updateUploadSubmitState();
           await loadAttachments(item.pageId);
         }
 
-        searchForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const query = new FormData(searchForm).get("query");
+        function renderSearchResults(results) {
+          if (!results || results.length === 0) {
+            setMessage(searchMessage, "", "");
+            searchResults.innerHTML = renderEmptyState("검색 결과가 없습니다.");
+            return;
+          }
+
+          setMessage(searchMessage, "검색 결과 " + results.length + "건", "success");
+          const fragment = document.createDocumentFragment();
+          results.forEach((item) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "result-item";
+            button.dataset.pageId = item.pageId;
+            if (item.pageId === selectedAccidentPageId) {
+              button.classList.add("selected");
+            }
+            button.innerHTML = [
+              '<span class="accident-result-title">' + renderValue(item.receiptNumber) + '</span>',
+              '<span class="accident-result-fields">',
+              '<span><b>Status</b>' + renderValue(item.status) + '</span>',
+              '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
+              '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
+              '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
+              '</span>'
+            ].join("");
+            button.addEventListener("click", () => {
+              void selectAccident(item);
+            });
+            fragment.appendChild(button);
+          });
+          searchResults.innerHTML = "";
+          searchResults.appendChild(fragment);
+        }
+
+        async function runSearch(query, message) {
+          currentSearchQuery = String(query || "");
           setMessage(searchMessage, "검색 중..", "");
           searchResults.innerHTML = "";
           setControlsDisabled(searchForm, true);
 
           try {
             const response = await fetch(
-              "${ADMIN_ACCIDENT_SEARCH_ROUTE}?query=" + encodeURIComponent(String(query || ""))
+              "${ADMIN_ACCIDENT_SEARCH_ROUTE}?query=" + encodeURIComponent(currentSearchQuery)
             );
             const data = await response.json();
 
@@ -575,39 +685,64 @@ export function renderAdminPage(
               return;
             }
 
-            if (!data.results || data.results.length === 0) {
-              setMessage(searchMessage, "", "");
-              searchResults.innerHTML = renderEmptyState("검색 결과가 없습니다.");
-              return;
+            renderSearchResults(data.results || []);
+            if (message && data.results && data.results.length > 0) {
+              setMessage(searchMessage, message, "success");
             }
-
-            setMessage(searchMessage, "검색 결과 " + data.results.length + "건", "success");
-            const fragment = document.createDocumentFragment();
-            data.results.forEach((item) => {
-              const button = document.createElement("button");
-              button.type = "button";
-              button.className = "result-item";
-              button.dataset.pageId = item.pageId;
-              if (item.pageId === selectedAccidentPageId) {
-                button.classList.add("selected");
-              }
-              button.innerHTML = [
-                '<span class="accident-result-title">' + renderValue(item.receiptNumber) + '</span>',
-                '<span class="accident-result-fields">',
-                '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
-                '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
-                '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
-                '</span>'
-              ].join("");
-              button.addEventListener("click", () => {
-                void selectAccident(item);
-              });
-              fragment.appendChild(button);
-            });
-            searchResults.appendChild(fragment);
           } finally {
             setControlsDisabled(searchForm, false);
           }
+        }
+
+        async function updateSelectedAccidentStatus(toStatus) {
+          if (!selectedAccidentItem || !toStatus) {
+            return;
+          }
+
+          setMessage(uploadMessage, "상태 변경 중..", "");
+
+          const response = await fetch("${ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              pageId: selectedAccidentItem.pageId,
+              fromStatus: selectedAccidentStatus,
+              toStatus
+            })
+          });
+          const data = await response.json();
+
+          if (!response.ok || !data.ok) {
+            setMessage(uploadMessage, data.message || "상태 변경에 실패했습니다.", "error");
+            return;
+          }
+
+          setMessage(uploadMessage, "상태 변경 성공", "success");
+
+          if (toStatus === "${ACCIDENT_STATUS.complete}") {
+            clearSelectedAccident();
+          } else {
+            selectedAccidentStatus = toStatus;
+            selectedAccidentItem = {
+              ...selectedAccidentItem,
+              status: toStatus
+            };
+            renderSelectedSummary(selectedAccidentItem);
+          }
+
+          if (currentSearchQuery) {
+            await runSearch(currentSearchQuery, "상태 변경 성공. 검색 결과를 새로고침했습니다.");
+          } else {
+            updateSelectedSearchResult();
+          }
+        }
+
+        searchForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const query = new FormData(searchForm).get("query");
+          await runSearch(String(query || ""));
         });
 
         uploadForm.addEventListener("submit", async (event) => {
