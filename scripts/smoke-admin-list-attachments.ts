@@ -98,6 +98,23 @@ async function run() {
                   number: 2
                 }
               }
+            },
+            {
+              id: "attachment-page-3",
+              properties: {
+                [ATTACHMENT_DB_PROPERTY_NAMES.fileName]: {
+                  rich_text: [{ plain_text: "trashed-finger.jpg" }]
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]: {
+                  select: { name: ATTACHMENT_TYPE_OPTIONS[0] }
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
+                  status: { name: ATTACHMENT_DB_STATUS.trash }
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]: {
+                  number: 3
+                }
+              }
             }
           ]
         }
@@ -110,9 +127,10 @@ async function run() {
     const successBody = await readJson(successResponse);
     expect(successResponse.status === 200, "attachment list should return 200");
     expect(successBody.ok === true, "attachment list should return ok=true");
-    expect((successBody.attachments?.length ?? 0) === 2, "attachment list should return 2 rows");
+    expect((successBody.attachments?.length ?? 0) === 3, "attachment list should return 3 rows");
     const attachment = successBody.attachments?.[0];
     const pendingAttachment = successBody.attachments?.[1];
+    const trashedFingerAttachment = successBody.attachments?.[2];
     expect(
       attachment?.attachmentPageId === "attachment-page-1",
       "attachment list should include attachmentPageId"
@@ -138,6 +156,14 @@ async function run() {
     expect(
       pendingAttachment?.attachmentType === null,
       "attachment list should preserve null attachmentType for classification pending UI"
+    );
+    expect(
+      trashedFingerAttachment?.attachmentType === ATTACHMENT_TYPE_OPTIONS[0],
+      "attachment list should include trashed finger photo type"
+    );
+    expect(
+      trashedFingerAttachment?.status === ATTACHMENT_DB_STATUS.trash,
+      "attachment list should preserve trashed status for current finger-photo UI"
     );
     console.log("PASS: admin_list_attachments_success");
 

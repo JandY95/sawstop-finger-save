@@ -9,6 +9,7 @@ import {
   ADMIN_LOGOUT_ROUTE,
   ADMIN_UPLOAD_ROUTE,
   ATTACHMENT_DELETE_REASON_OPTIONS,
+  ATTACHMENT_DB_STATUS,
   ATTACHMENT_TYPE_OPTIONS
 } from "../constants";
 
@@ -101,6 +102,7 @@ export function renderAdminPage(
             <p class="hint">사고건을 선택하면 첨부 목록을 불러옵니다.</p>
             <div id="attachment-list-message" class="message"></div>
             <div id="attachment-context" class="context-line"></div>
+            <div id="attachment-finger-photo-status" class="finger-photo-status"></div>
             <div id="attachment-list" class="results"></div>
           </section>
 
@@ -130,6 +132,7 @@ export function renderAdminPage(
         const uploadSubmitButton = document.getElementById("upload-submit-button");
         const attachmentListMessage = document.getElementById("attachment-list-message");
         const attachmentContext = document.getElementById("attachment-context");
+        const attachmentFingerPhotoStatus = document.getElementById("attachment-finger-photo-status");
         const attachmentList = document.getElementById("attachment-list");
         const fifoMessage = document.getElementById("fifo-message");
         const fifoResults = document.getElementById("fifo-results");
@@ -184,6 +187,23 @@ export function renderAdminPage(
           }
 
           return '<span class="meta-badge">' + renderValue(value) + '</span>';
+        }
+
+        function isCurrentFingerPhoto(item) {
+          return item.attachmentType === "${ATTACHMENT_TYPE_OPTIONS[0]}" && item.status === "${ATTACHMENT_DB_STATUS.current}";
+        }
+
+        function setFingerPhotoStatus(hasFingerPhoto) {
+          attachmentFingerPhotoStatus.textContent = hasFingerPhoto
+            ? "손가락 사진 확보됨"
+            : "손가락 사진 없음";
+          attachmentFingerPhotoStatus.className =
+            "finger-photo-status " + (hasFingerPhoto ? "ok" : "warning");
+        }
+
+        function clearFingerPhotoStatus() {
+          attachmentFingerPhotoStatus.textContent = "";
+          attachmentFingerPhotoStatus.className = "finger-photo-status";
         }
 
         function renderUploadBoolean(value) {
@@ -262,6 +282,7 @@ export function renderAdminPage(
 
         async function loadAttachments(pageId, loadedMessage) {
           attachmentList.innerHTML = "";
+          clearFingerPhotoStatus();
           setMessage(attachmentListMessage, "첨부 목록 불러오는 중..", "");
 
           const response = await fetch(
@@ -281,6 +302,7 @@ export function renderAdminPage(
           const attachments = data.attachments || [];
           if (attachments.length === 0) {
             setMessage(attachmentListMessage, "첨부가 없습니다.", "");
+            clearFingerPhotoStatus();
             attachmentList.innerHTML = renderEmptyState("첨부가 없습니다.");
             return;
           }
@@ -288,6 +310,10 @@ export function renderAdminPage(
           const pendingClassificationCount = attachments.filter((item) =>
             isBlankAttachmentType(item.attachmentType)
           ).length;
+          const hasCurrentFingerPhoto = attachments.some((item) =>
+            isCurrentFingerPhoto(item)
+          );
+          setFingerPhotoStatus(hasCurrentFingerPhoto);
           setMessage(
             attachmentListMessage,
             loadedMessage ||
@@ -485,6 +511,7 @@ export function renderAdminPage(
           setMessage(uploadMessage, "", "");
           uploadResults.innerHTML = "";
           setMessage(attachmentListMessage, "", "");
+          clearFingerPhotoStatus();
           attachmentList.innerHTML = "";
           setMessage(fifoMessage, "", "");
           fifoResults.textContent = "";
@@ -811,6 +838,30 @@ export function renderAdminPage(
           }
           .context-line:empty {
             display: none;
+          }
+          .finger-photo-status {
+            display: inline-flex;
+            width: fit-content;
+            max-width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+          }
+          .finger-photo-status:empty {
+            display: none;
+          }
+          .finger-photo-status.ok {
+            border-color: #5f8a3b;
+            background: #eef7e7;
+            color: #315b16;
+          }
+          .finger-photo-status.warning {
+            border-color: #b3483f;
+            background: #fff0ee;
+            color: #7a2119;
           }
           .attachment-row {
             display: grid;
