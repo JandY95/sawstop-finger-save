@@ -174,6 +174,18 @@ export function renderAdminPage(
           return escapeText(value);
         }
 
+        function isBlankAttachmentType(value) {
+          return value === null || value === undefined || value === "";
+        }
+
+        function renderAttachmentTypeBadge(value) {
+          if (isBlankAttachmentType(value)) {
+            return '<span class="meta-badge pending-classification-badge">분류 대기</span>';
+          }
+
+          return '<span class="meta-badge">' + renderValue(value) + '</span>';
+        }
+
         function renderUploadBoolean(value) {
           return value ? "성공" : "실패";
         }
@@ -273,16 +285,28 @@ export function renderAdminPage(
             return;
           }
 
+          const pendingClassificationCount = attachments.filter((item) =>
+            isBlankAttachmentType(item.attachmentType)
+          ).length;
           setMessage(
             attachmentListMessage,
-            loadedMessage || "첨부 " + attachments.length + "건",
+            loadedMessage ||
+              "첨부 " +
+                attachments.length +
+                "건" +
+                (pendingClassificationCount > 0
+                  ? " · 분류 대기 " +
+                    pendingClassificationCount +
+                    "건"
+                  : ""),
             "success"
           );
           const fragment = document.createDocumentFragment();
 
           attachments.forEach((item) => {
             const row = document.createElement("form");
-            row.className = "attachment-row";
+            const needsClassification = isBlankAttachmentType(item.attachmentType);
+            row.className = "attachment-row" + (needsClassification ? " needs-classification" : "");
             row.innerHTML = [
               '<div class="attachment-meta">',
               '<div class="attachment-heading">',
@@ -290,7 +314,7 @@ export function renderAdminPage(
               '<strong>' + renderValue(item.fileName) + '</strong>',
               '</div>',
               '<dl class="attachment-fields">',
-              '<div><dt>Type</dt><dd><span class="meta-badge">' + renderValue(item.attachmentType) + '</span></dd></div>',
+              '<div><dt>Type</dt><dd>' + renderAttachmentTypeBadge(item.attachmentType) + '</dd></div>',
               '<div><dt>Status</dt><dd><span class="meta-badge">' + renderValue(item.status) + '</span></dd></div>',
               (item.deletionReason
                 ? '<div><dt>삭제 사유</dt><dd><span class="meta-badge">' + renderValue(item.deletionReason) + '</span></dd></div>'
@@ -796,6 +820,10 @@ export function renderAdminPage(
             border: 1px solid var(--line);
             border-radius: 12px;
           }
+          .attachment-row.needs-classification {
+            border-color: #c47f00;
+            background: #fff8e6;
+          }
           .attachment-meta {
             display: grid;
             gap: 8px;
@@ -851,6 +879,11 @@ export function renderAdminPage(
             font-size: 13px;
             font-weight: 700;
             overflow-wrap: anywhere;
+          }
+          .pending-classification-badge {
+            border-color: #c47f00;
+            background: #fff0bf;
+            color: #6f4300;
           }
           .attachment-actions {
             display: flex;

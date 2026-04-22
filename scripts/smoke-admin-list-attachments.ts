@@ -81,6 +81,23 @@ async function run() {
                   number: 1
                 }
               }
+            },
+            {
+              id: "attachment-page-2",
+              properties: {
+                [ATTACHMENT_DB_PROPERTY_NAMES.fileName]: {
+                  rich_text: [{ plain_text: "unclassified.jpg" }]
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]: {
+                  select: null
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
+                  status: { name: ATTACHMENT_DB_STATUS.current }
+                },
+                [ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]: {
+                  number: 2
+                }
+              }
             }
           ]
         }
@@ -93,8 +110,9 @@ async function run() {
     const successBody = await readJson(successResponse);
     expect(successResponse.status === 200, "attachment list should return 200");
     expect(successBody.ok === true, "attachment list should return ok=true");
-    expect((successBody.attachments?.length ?? 0) === 1, "attachment list should return 1 row");
+    expect((successBody.attachments?.length ?? 0) === 2, "attachment list should return 2 rows");
     const attachment = successBody.attachments?.[0];
+    const pendingAttachment = successBody.attachments?.[1];
     expect(
       attachment?.attachmentPageId === "attachment-page-1",
       "attachment list should include attachmentPageId"
@@ -112,6 +130,14 @@ async function run() {
     expect(
       attachment?.deletionReason === ATTACHMENT_DELETE_REASON_OPTIONS[0],
       "attachment list should include deletionReason"
+    );
+    expect(
+      pendingAttachment?.attachmentPageId === "attachment-page-2",
+      "attachment list should include pending attachment row"
+    );
+    expect(
+      pendingAttachment?.attachmentType === null,
+      "attachment list should preserve null attachmentType for classification pending UI"
     );
     console.log("PASS: admin_list_attachments_success");
 
