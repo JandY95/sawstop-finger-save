@@ -3,9 +3,9 @@ mode: manual
 current_scope: doc-baseline-recovery
 current_stage_reference:
   profile: stage-3-project-pack-bootstrap
-  state: stage-6-parity-harness
+  state: local-state-refers-to-stage-6-parity-harness
 current_risk:
-  - stage-mismatch-between-profile-and-state
+  - local-state-retains-stage6-references
   - state-may-reference-nonexistent-scripts
 completed_this_session:
   - restored-handoff-latest-md-minimum-baseline
