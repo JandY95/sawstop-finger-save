@@ -128,6 +128,31 @@ export function renderAdminPage(
           target.className = "message" + (tone ? " " + tone : "");
         }
 
+        function escapeText(value) {
+          return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+        }
+
+        function renderValue(value) {
+          if (value === null || value === undefined || value === "") {
+            return "-";
+          }
+
+          return escapeText(value);
+        }
+
+        function renderDisplayOrder(value) {
+          if (typeof value !== "number") {
+            return "-";
+          }
+
+          return escapeText(value);
+        }
+
         async function loadAttachments(pageId) {
           attachmentList.innerHTML = "";
           setMessage(attachmentListMessage, "첨부 목록 불러오는 중..", "");
@@ -160,9 +185,14 @@ export function renderAdminPage(
             row.className = "attachment-row";
             row.innerHTML = [
               '<div class="attachment-meta">',
-              '<strong>' + (item.fileName || "이름 없음") + '</strong>',
-              '<span>현재 유형: ' + (item.attachmentType || "-") + '</span>',
-              '<span>상태: ' + (item.status || "-") + '</span>',
+              '<div class="attachment-heading">',
+              '<span class="attachment-order">#' + renderDisplayOrder(item.displayOrder) + '</span>',
+              '<strong>' + renderValue(item.fileName) + '</strong>',
+              '</div>',
+              '<dl class="attachment-fields">',
+              '<div><dt>Type</dt><dd>' + renderValue(item.attachmentType) + '</dd></div>',
+              '<div><dt>Status</dt><dd>' + renderValue(item.status) + '</dd></div>',
+              '</dl>',
               '</div>',
               '<div class="attachment-actions">',
               (item.status === "영구삭제"
@@ -487,7 +517,46 @@ export function renderAdminPage(
           }
           .attachment-meta {
             display: grid;
-            gap: 4px;
+            gap: 8px;
+          }
+          .attachment-heading {
+            display: flex;
+            gap: 10px;
+            align-items: baseline;
+            min-width: 0;
+          }
+          .attachment-heading strong {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+          .attachment-order {
+            flex: 0 0 auto;
+            padding: 3px 8px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+          }
+          .attachment-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 14px;
+            margin: 0;
+          }
+          .attachment-fields div {
+            min-width: 0;
+          }
+          .attachment-fields dt {
+            margin: 0 0 2px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+          }
+          .attachment-fields dd {
+            margin: 0;
+            overflow-wrap: anywhere;
           }
           .attachment-actions {
             display: flex;

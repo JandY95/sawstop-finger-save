@@ -89,9 +89,20 @@ async function run() {
     expect(successResponse.status === 200, "attachment list should return 200");
     expect(successBody.ok === true, "attachment list should return ok=true");
     expect((successBody.attachments?.length ?? 0) === 1, "attachment list should return 1 row");
+    const attachment = successBody.attachments?.[0];
     expect(
-      successBody.attachments?.[0]?.attachmentPageId === "attachment-page-1",
+      attachment?.attachmentPageId === "attachment-page-1",
       "attachment list should include attachmentPageId"
+    );
+    expect(attachment?.displayOrder === 1, "attachment list should include displayOrder");
+    expect(attachment?.fileName === "finger.jpg", "attachment list should include fileName");
+    expect(
+      attachment?.attachmentType === ATTACHMENT_TYPE_OPTIONS[0],
+      "attachment list should include attachmentType"
+    );
+    expect(
+      attachment?.status === ATTACHMENT_DB_STATUS.current,
+      "attachment list should include status"
     );
     console.log("PASS: admin_list_attachments_success");
 
