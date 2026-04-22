@@ -2,20 +2,20 @@
 
 ## Current Parity Status
 
-- parity 판단: 정식 구현 1차 검증 완료
+- parity 판단: 정식 구현 1차 CI 검증 완료
 - 기준 판단: 기준 유지
 - 현재 상태:
   - `project.profile.json`의 `currentStage`는 `stage-3-project-pack-bootstrap`
   - 로컬 `.project-state.json`은 reference-only 상태 파일로 유지한다
-  - tracked repo 기준 parity runner script와 baseline 파일이 존재한다
-  - `npm run parity` run/compare가 현재 baseline 기준으로 통과했다
+  - tracked repo 기준 parity runner script, baseline 파일, GitHub Actions workflow가 존재한다
+  - `npm run parity` local run/compare와 GitHub Actions `Parity Harness` 1회 성공이 확인됐다
 
 ## Current Repo Reality
 
 - 현재 repo에는 deterministic parity 대상 script가 존재한다
 - live 의존 검사는 parity baseline에서 제외한다
 - parity 결과물은 generated 산출물로 보고 Git 추적 대상에서 제외한다
-- 다음 단계는 local parity를 GitHub Actions parity workflow로 확장하는 것이다
+- GitHub Actions workflow도 현재 baseline 기준으로 재현 가능하게 동작한다
 
 ## Source Of Truth
 
@@ -33,4 +33,4 @@
 
 ## Next One Task
 
-- GitHub Actions parity workflow를 추가하고 1회 성공 실행으로 local parity와 CI parity를 맞춘다.
+- deterministic parity 범위를 현재 수준으로 잠글지, fixture 기반 시나리오를 추가할지 결정한다.

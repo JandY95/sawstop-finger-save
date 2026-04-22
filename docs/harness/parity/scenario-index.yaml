@@ -1,6 +1,6 @@
-﻿status: ci-pending
+﻿status: ci-verified
 mode: formal
-current_scope: deterministic-local-harness-verified
+current_scope: deterministic-local-and-ci-harness-verified
 current_stage_reference:
   profile: stage-3-project-pack-bootstrap
   parity_target: stage-6-parity-harness
@@ -60,4 +60,5 @@ notes:
   - parity compares deterministic local harness behavior against tracked baseline
   - live-dependent checks remain outside parity until stable fixtures exist
   - current baseline is verified by a successful `npm run parity`
-next_one_task: add GitHub Actions parity workflow and verify one successful CI run
+  - GitHub Actions `Parity Harness` also verified the same baseline once
+next_one_task: decide whether deterministic parity stays fixed or expands to fixture-based scenarios
