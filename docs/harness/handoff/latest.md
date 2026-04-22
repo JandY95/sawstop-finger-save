@@ -2,11 +2,11 @@
 
 ## Current Status
 
-- 기준 판단: `stage-6 parity` 정식 구현 1차 CI 검증 완료
+- 기준 판단: `stage-6 parity` 정식 구현 1차 로컬/CI 검증 완료
 - 편입 절차: 종료
 - 현재 실작업 방향: `sawstop-finger-save` deterministic parity 로컬/CI 실행 경로 유지
 - 현재 확인된 정합성 상태:
-  - tracked 기준 현재 stage는 `stage-3-project-pack-bootstrap`
+  - tracked 기준 현재 stage는 `stage-6-parity-harness`
   - 로컬 `.project-state.json`은 reference-only 상태 파일로 유지한다
   - tracked repo에 parity runner script, baseline 파일, GitHub Actions workflow를 추가했다
   - `npm run parity` local run/compare와 GitHub Actions `Parity Harness` 1회 성공이 확인됐다
@@ -29,6 +29,7 @@
 
 ## This Batch Files
 
+- `project.profile.json`
 - `docs/harness/handoff/latest.md`
 - `docs/harness/parity/PARITY_STATUS.md`
 - `docs/harness/parity/scenario-index.yaml`

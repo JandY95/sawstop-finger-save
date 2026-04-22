@@ -2,7 +2,7 @@
 mode: formal
 current_scope: deterministic-local-and-ci-harness-verified
 current_stage_reference:
-  profile: stage-3-project-pack-bootstrap
+  profile: stage-6-parity-harness
   parity_target: stage-6-parity-harness
 source_of_truth:
   tracked_stage_file: project.profile.json
