@@ -2,14 +2,14 @@
 
 ## Current Status
 
-- 기준 판단: `stage-6 parity` 정식 구현 1차 반영
+- 기준 판단: `stage-6 parity` 정식 구현 1차 검증 완료
 - 편입 절차: 종료
-- 현재 실작업 방향: `sawstop-finger-save` deterministic parity 실행 경로 고정
+- 현재 실작업 방향: `sawstop-finger-save` deterministic parity 실행 경로 유지
 - 현재 확인된 정합성 상태:
   - tracked 기준 현재 stage는 `stage-3-project-pack-bootstrap`
   - 로컬 `.project-state.json`은 reference-only 상태 파일로 유지한다
   - tracked repo에 parity runner script와 baseline 파일을 추가했다
-  - parity 문서는 baseline recovery를 지나 정식 구현 1차 기준으로 갱신했다
+  - `npm run parity` run/compare가 현재 baseline 기준으로 통과했다
 
 ## Locked
 
@@ -28,16 +28,10 @@
 
 ## This Batch Files
 
-- `package.json`
-- `.gitignore`
 - `docs/harness/handoff/latest.md`
 - `docs/harness/parity/PARITY_STATUS.md`
 - `docs/harness/parity/scenario-index.yaml`
-- `docs/harness/parity/PARITY_SCENARIOS.md`
-- `docs/harness/parity/parity-baseline.json`
-- `scripts/run-harness-scenarios.ts`
-- `scripts/compare-harness-results.ts`
 
 ## Next One Task
 
-- `npm run parity`를 실제로 실행해 baseline과 compare 산출물이 의도대로 생성되는지 검증한다.
+- parity 결과를 CI 연동 대상으로 올릴지, 수동 검증 기준으로 유지할지 결정한다.

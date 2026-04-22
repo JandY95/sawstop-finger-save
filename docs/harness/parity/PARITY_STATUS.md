@@ -2,27 +2,17 @@
 
 ## Current Parity Status
 
-- parity 판단: 정식 구현 1차 반영 완료
+- parity 판단: 정식 구현 1차 검증 완료
 - 기준 판단: 기준 유지
 - 현재 상태:
   - `project.profile.json`의 `currentStage`는 `stage-3-project-pack-bootstrap`
   - 로컬 `.project-state.json`은 reference-only 상태 파일로 유지한다
   - tracked repo 기준 parity runner script와 baseline 파일이 존재한다
-  - 현재 deterministic parity 대상은 `package.json`의 smoke/check chain이다
+  - `npm run parity` run/compare가 현재 baseline 기준으로 통과했다
 
 ## Current Repo Reality
 
-- 현재 repo에는 아래 deterministic script가 이미 존재한다
-  - `check:notion-schema`
-  - `check:allowed-values`
-  - `smoke:submit`
-  - `smoke:admin-search`
-  - `smoke:admin-upload`
-  - `smoke:admin-list-attachments`
-  - `smoke:admin-update-attachment-type`
-  - `smoke:admin-move-attachment-to-trash`
-  - `smoke:admin-restore-attachment`
-  - `smoke:admin-process-fifo-trash`
+- 현재 repo에는 deterministic parity 대상 script가 존재한다
 - live 의존 검사는 parity baseline에서 제외한다
 - parity 결과물은 generated 산출물로 보고 Git 추적 대상에서 제외한다
 
@@ -41,4 +31,4 @@
 
 ## Next One Task
 
-- `npm run parity`를 실행해 1차 baseline run/compare 결과를 확인한다.
+- parity를 CI에 연결할지, 수동 실행 기준으로 유지할지 결정한다.
