@@ -1,4 +1,4 @@
-﻿status: verified
+﻿status: ci-pending
 mode: formal
 current_scope: deterministic-local-harness-verified
 current_stage_reference:
@@ -9,6 +9,9 @@ source_of_truth:
   parity_baseline_file: docs/harness/parity/parity-baseline.json
   latest_run_file: docs/harness/parity/latest-run.json
   latest_compare_file: docs/harness/parity/latest-compare.json
+execution_targets:
+  - local
+  - github-actions
 scenarios:
   - id: check-notion-schema
     command: npm run check:notion-schema
@@ -57,4 +60,4 @@ notes:
   - parity compares deterministic local harness behavior against tracked baseline
   - live-dependent checks remain outside parity until stable fixtures exist
   - current baseline is verified by a successful `npm run parity`
-next_one_task: decide whether parity moves to CI or stays as manual verification
+next_one_task: add GitHub Actions parity workflow and verify one successful CI run

@@ -15,6 +15,7 @@
 - 현재 repo에는 deterministic parity 대상 script가 존재한다
 - live 의존 검사는 parity baseline에서 제외한다
 - parity 결과물은 generated 산출물로 보고 Git 추적 대상에서 제외한다
+- 다음 단계는 local parity를 GitHub Actions parity workflow로 확장하는 것이다
 
 ## Source Of Truth
 
@@ -28,7 +29,8 @@
 - `npm run parity`가 deterministic scenario 전체에서 통과한다
 - baseline과 compare 규칙이 현재 repo 기준으로 일관되게 유지된다
 - live 의존 script는 parity 범위에 포함하지 않는다
+- GitHub Actions parity workflow가 `main`과 PR에서 재현 가능하게 동작한다
 
 ## Next One Task
 
-- parity를 CI에 연결할지, 수동 실행 기준으로 유지할지 결정한다.
+- GitHub Actions parity workflow를 추가하고 1회 성공 실행으로 local parity와 CI parity를 맞춘다.
