@@ -60,6 +60,13 @@ export const DEFAULT_BUSINESS_OR_SCHOOL_NAME = "NA";
 export const ATTACHMENT_TRASH_RETENTION_DAYS = 7;
 export const INITIAL_ACCIDENT_STATUS = "접수";
 
+export const ACCIDENT_STATUS = {
+  received: "접수",
+  inProgress: "진행중",
+  complete: "완료",
+  rejected: "반려"
+} as const;
+
 export const ATTACHMENT_UPLOAD_STATUS = {
   processing: "처리중",
   complete: "완료",
@@ -112,6 +119,7 @@ export const NOTION_API_BASE_URL = "https://api.notion.com/v1";
 export const NOTION_API_VERSION = "2022-06-28";
 export const SUBMIT_ROUTE = "/submit";
 export const ADMIN_ACCIDENT_SEARCH_ROUTE = "/admin/accidents/search";
+export const ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE = "/admin/accidents/status";
 export const ADMIN_ATTACHMENT_LIST_ROUTE = "/admin/attachments/list";
 export const ADMIN_UPLOAD_ROUTE = "/admin/upload";
 export const ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE = "/admin/attachments/type";

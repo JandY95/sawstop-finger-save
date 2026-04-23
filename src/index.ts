@@ -1,5 +1,6 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
+  ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE,
   ADMIN_ATTACHMENT_LIST_ROUTE,
   ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE,
   ADMIN_ATTACHMENT_RESTORE_ROUTE,
@@ -28,6 +29,7 @@ import { handleAdminMoveAttachmentToTrash } from "./admin/move-attachment-to-tra
 import { handleAdminProcessFifoTrash } from "./admin/process-fifo-trash";
 import { handleAdminRestoreAttachment } from "./admin/restore-attachment";
 import { handleAdminAccidentSearch } from "./admin/search";
+import { handleAdminUpdateAccidentStatus } from "./admin/update-accident-status";
 import { handleAdminUpdateAttachmentType } from "./admin/update-attachment-type";
 import { handleAdminUpload } from "./admin/upload";
 import { consumeAttachmentBatch } from "./consumer";
@@ -275,6 +277,15 @@ export default {
       }
 
       return handleAdminAccidentSearch(request, env);
+    }
+
+    if (request.method === "POST" && url.pathname === ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return handleAdminUpdateAccidentStatus(request, env);
     }
 
     if (request.method === "GET" && url.pathname === ADMIN_ATTACHMENT_LIST_ROUTE) {

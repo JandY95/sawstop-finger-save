@@ -3,6 +3,7 @@ import type {
   ATTACHMENT_DB_STATUS,
   ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_SOURCE_OPTIONS,
+  ACCIDENT_STATUS,
   BLADE_TYPE_OPTIONS,
   FEED_RATE_OPTIONS,
   GLOVES_OPTIONS,
@@ -23,6 +24,7 @@ export type AttachmentDbStatus =
   (typeof ATTACHMENT_DB_STATUS)[keyof typeof ATTACHMENT_DB_STATUS];
 export type AttachmentDeleteReason = (typeof ATTACHMENT_DELETE_REASON_OPTIONS)[number];
 export type AttachmentSource = (typeof ATTACHMENT_SOURCE_OPTIONS)[number];
+export type AccidentStatus = (typeof ACCIDENT_STATUS)[keyof typeof ACCIDENT_STATUS];
 
 interface R2PutOptions {
   httpMetadata?: {
@@ -249,6 +251,7 @@ export interface AdminAccidentSearchRequest {
 export interface AdminAccidentSearchResultItem {
   pageId: string;
   receiptNumber: string;
+  status: string | null;
   phone: string | null;
   occurredAt: string | null;
   operatorName: string | null;
@@ -260,6 +263,22 @@ export interface AdminAccidentSearchSuccessResponse {
 }
 
 export interface AdminAccidentSearchFailureResponse {
+  ok: false;
+  message: string;
+}
+
+export interface AdminUpdateAccidentStatusRequest {
+  pageId: string;
+  fromStatus: string;
+  toStatus: string;
+}
+
+export interface AdminUpdateAccidentStatusSuccessResponse {
+  ok: true;
+  status: string;
+}
+
+export interface AdminUpdateAccidentStatusFailureResponse {
   ok: false;
   message: string;
 }
