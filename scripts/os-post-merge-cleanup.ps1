@@ -37,32 +37,22 @@ if (-not (Test-Path $CleanupScript)) {
   throw "Missing post-merge cleanup script: $CleanupScript"
 }
 
-$argsList = @(
-  "-Repo",
-  $ProjectRoot
-)
-
 if ($Branch) {
-  $argsList += @("-Branch", $Branch)
+  & $CleanupScript `
+    -Repo $ProjectRoot `
+    -Branch $Branch `
+    -SkipTest:$($SkipTest.IsPresent) `
+    -SkipStatus:$($SkipStatus.IsPresent) `
+    -ForceDelete:$($ForceDelete.IsPresent) `
+    -AllowDirty:$($AllowDirty.IsPresent)
+} else {
+  & $CleanupScript `
+    -Repo $ProjectRoot `
+    -SkipTest:$($SkipTest.IsPresent) `
+    -SkipStatus:$($SkipStatus.IsPresent) `
+    -ForceDelete:$($ForceDelete.IsPresent) `
+    -AllowDirty:$($AllowDirty.IsPresent)
 }
-
-if ($SkipTest) {
-  $argsList += "-SkipTest"
-}
-
-if ($SkipStatus) {
-  $argsList += "-SkipStatus"
-}
-
-if ($ForceDelete) {
-  $argsList += "-ForceDelete"
-}
-
-if ($AllowDirty) {
-  $argsList += "-AllowDirty"
-}
-
-& $CleanupScript @argsList
 
 if ($LASTEXITCODE -ne 0) {
   throw "Project post-merge cleanup failed."
