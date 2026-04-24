@@ -4,36 +4,42 @@
   "blocks": {
     "common-harness-operating-loop": {
       "state": "hidden",
+      "stateSource": "registry",
+      "registryState": "hidden",
       "version": "0.1.0",
       "source": "core",
       "targets": [
         "common"
       ],
       "checksum": null,
-      "lastSyncAt": "2026-04-24T00:43:16.119Z"
+      "lastSyncAt": "2026-04-24T01:07:20.598Z"
     },
     "claude-harness-operating-loop": {
       "state": "active",
+      "stateSource": "registry",
+      "registryState": "active",
       "version": "0.1.0",
       "source": "core",
       "targets": [
         "claude"
       ],
       "checksum": null,
-      "lastSyncAt": "2026-04-24T00:43:16.119Z"
+      "lastSyncAt": "2026-04-24T01:07:20.598Z"
     },
     "codex-harness-operating-loop": {
       "state": "active",
+      "stateSource": "registry",
+      "registryState": "active",
       "version": "0.1.0",
       "source": "core",
       "targets": [
         "codex"
       ],
       "checksum": null,
-      "lastSyncAt": "2026-04-24T00:43:16.119Z"
+      "lastSyncAt": "2026-04-24T01:07:20.598Z"
     }
   },
-  "lastSyncAt": "2026-04-24T00:43:16.119Z",
+  "lastSyncAt": "2026-04-24T01:07:20.598Z",
   "sourceCore": "C:\\Users\\june\\Downloads\\harness-os-core-work",
   "toolProfile": "both",
   "requestedTargets": [
@@ -48,7 +54,7 @@
     "hiddenBlockCount": 1,
     "detachedBlockCount": 0,
     "linkedCount": 0,
-    "copiedCount": 2,
+    "copiedCount": 0,
     "conflictCount": 0,
     "skippedCount": 0
   }
