@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-24T07:21:50.529Z",
+  "generatedAt": "2026-04-24T11:13:01.153Z",
   "source": "Core/machine/usage-budget-policy.json",
   "thresholds": {
     "caution": 20,
