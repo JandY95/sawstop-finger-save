@@ -12,7 +12,7 @@
         "common"
       ],
       "checksum": null,
-      "lastSyncAt": "2026-04-24T07:22:00.582Z"
+      "lastSyncAt": "2026-04-24T11:13:04.750Z"
     },
     "claude-harness-operating-loop": {
       "state": "active",
@@ -24,7 +24,7 @@
         "claude"
       ],
       "checksum": null,
-      "lastSyncAt": "2026-04-24T07:22:00.582Z"
+      "lastSyncAt": "2026-04-24T11:13:04.750Z"
     },
     "codex-harness-operating-loop": {
       "state": "active",
@@ -36,11 +36,11 @@
         "codex"
       ],
       "checksum": null,
-      "lastSyncAt": "2026-04-24T07:22:00.582Z"
+      "lastSyncAt": "2026-04-24T11:13:04.750Z"
     }
   },
-  "lastSyncAt": "2026-04-24T07:22:00.582Z",
-  "sourceCore": "C:\\Users\\june\\Downloads\\harness-os-core",
+  "lastSyncAt": "2026-04-24T11:13:04.750Z",
+  "sourceCore": "I:\\Codex\\harness-os-core",
   "toolProfile": "both",
   "requestedTargets": [
     "common",
