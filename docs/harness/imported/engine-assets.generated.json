@@ -1,5 +1,68 @@
 {
-  "generatedAt": "2026-04-23T12:27:31.603Z",
+  "generatedAt": "2026-04-24T00:43:16.116Z",
   "source": "Core/registry/engine-assets.json",
-  "items": []
+  "toolProfile": "both",
+  "requestedTargets": [
+    "common",
+    "claude",
+    "codex"
+  ],
+  "itemCount": 0,
+  "blockCount": 3,
+  "activeBlockCount": 2,
+  "hiddenBlockCount": 1,
+  "detachedBlockCount": 0,
+  "linkedCount": 0,
+  "copiedCount": 2,
+  "conflictCount": 0,
+  "skippedCount": 0,
+  "items": [],
+  "blocks": [
+    {
+      "id": "common-harness-operating-loop",
+      "version": "0.1.0",
+      "type": "skill-agent-block",
+      "targets": [
+        "common"
+      ],
+      "state": "hidden",
+      "source": "core",
+      "blockPath": "Core/engine-assets/blocks/common-harness-operating-loop",
+      "payloadRoot": "payload",
+      "managedPaths": [
+        ".claude/agents/harness-operating-loop.md",
+        ".codex/skills/harness-operating-loop.md"
+      ]
+    },
+    {
+      "id": "claude-harness-operating-loop",
+      "version": "0.1.0",
+      "type": "agent-block",
+      "targets": [
+        "claude"
+      ],
+      "state": "active",
+      "source": "core",
+      "blockPath": "Core/engine-assets/blocks/claude-harness-operating-loop",
+      "payloadRoot": "payload",
+      "managedPaths": [
+        ".claude/agents/harness-operating-loop.md"
+      ]
+    },
+    {
+      "id": "codex-harness-operating-loop",
+      "version": "0.1.0",
+      "type": "skill-block",
+      "targets": [
+        "codex"
+      ],
+      "state": "active",
+      "source": "core",
+      "blockPath": "Core/engine-assets/blocks/codex-harness-operating-loop",
+      "payloadRoot": "payload",
+      "managedPaths": [
+        ".codex/skills/harness-operating-loop.md"
+      ]
+    }
+  ]
 }

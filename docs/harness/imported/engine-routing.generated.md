@@ -1,6 +1,6 @@
 # Engine Routing
 
-- generatedAt: 2026-04-23T12:27:31.685Z
+- generatedAt: 2026-04-24T00:43:16.341Z
 - source: Core/registry/engine-assets.json
 - itemCount: 0
 
