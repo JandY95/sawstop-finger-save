@@ -281,7 +281,20 @@ if (args[0] === '--status') {
     process.exit(1);
   }
   const state = readJson(statePath);
-  console.log(JSON.stringify(state.stageGates, null, 2));
+  if (state.stageGates) {
+    console.log(JSON.stringify(state.stageGates, null, 2));
+    process.exit(0);
+  }
+  console.log(JSON.stringify({
+    statusModel: state.stageController ? 'stageController' : 'unknown',
+    legacyStageGatesPresent: false,
+    currentStage: state.currentStage ?? state.current_stage ?? null,
+    currentStageStatus: state.currentStageStatus ?? null,
+    nextTargetStage: state.nextTargetStage ?? null,
+    nextStageGateStatus: state.nextStageGateStatus ?? null,
+    recommendedNextStage: state.recommendedNextStage ?? null,
+    stageController: state.stageController ?? null
+  }, null, 2));
   process.exit(0);
 }
 
