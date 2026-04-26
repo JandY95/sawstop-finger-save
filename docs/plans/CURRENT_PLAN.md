@@ -20,6 +20,8 @@
 - 관리자 로그인 안내 문구를 현재 구현 상태에 맞게 정리했다.
 - `MVP_CHECKLIST.md`의 관리자 Turnstile 기준을 D-12와 현재 구현 상태에 맞게 정리했다.
 - `MVP_CHECKLIST.md`의 stale source path 정리는 PR #17에서 완료됐다.
+- `verify:gates --status`의 `undefined` 출력은 PR #19에서 repo-local `stageController` JSON 출력으로 정리됐다.
+- `README.md` 0-byte 상태는 PR #20에서 최소 운영 안내 문서 작성으로 정리됐다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
@@ -28,4 +30,4 @@
 - `project.profile.json`과 `.project-state.json`의 stage drift는 게이트 의미가 있으므로 값 수정 전 안전 범위를 먼저 확정한다.
 
 ## 다음 단일 후보
-- `npm.cmd run verify:gates`가 exit code 0으로 끝나면서 `undefined`를 출력하는 원인을 repo-local gate/status 기준으로 정리한다.
+- `project.profile.json`과 `.project-state.json`의 stage drift를 값 수정 없이 repo-local safety 범위에서 조사한다.
