@@ -148,19 +148,19 @@
 - 체크 항목: 관리자 검색에서 완료건이 제외된다.
 - 완료 기준: 상태가 `완료`인 사고건은 접수번호 검색, 연락처 검색, 4자리 검색 결과에 포함되지 않는다.
 - 검증 방법: 완료건과 미완료건 샘플로 검색 결과를 비교한다.
-- 실패 시 먼저 볼 파일: `src/admin-search.ts`, `src/notion.ts`, `src/schema.ts`
+- 실패 시 먼저 볼 파일: `src/admin/search.ts`, `src/notion.ts`, `src/constants.ts`
 
 ### 4.3 보완 업로드 저장 구조
 - 체크 항목: 관리자 업로드도 고객 첨부와 같은 저장 구조를 사용한다.
 - 완료 기준: 업로드한 파일이 R2 저장, 첨부 DB 1행 생성, `사고건` relation 연결, `표시 순서` 증가를 모두 만족한다.
 - 검증 방법: `node scripts/smoke-admin-upload.ts` 실행 또는 수동 업로드 후 첨부 DB를 확인한다.
-- 실패 시 먼저 볼 파일: `src/admin-upload.ts`, `src/consumer.ts`, `src/notion.ts`
+- 실패 시 먼저 볼 파일: `src/admin/upload.ts`, `src/consumer.ts`, `src/notion.ts`
 
 ### 4.4 관리자 업로드 즉시 유형 지정
 - 체크 항목: 관리자 업로드는 첨부 유형을 업로드 시점에 지정한다.
 - 완료 기준: 관리자 업로드로 생성된 첨부 DB 행의 `첨부 유형`은 `손가락 사진`, `브레이크 카트리지 사진`, `기타` 중 하나이며 null이 아니다.
 - 검증 방법: 유형별로 1건씩 업로드하고 첨부 DB 값을 확인한다.
-- 실패 시 먼저 볼 파일: `src/admin-upload.ts`, `src/notion.ts`
+- 실패 시 먼저 볼 파일: `src/admin/upload.ts`, `src/notion.ts`
 
 ### 4.5 관리자 업로드 UX
 - 체크 항목: 관리자 업로드 화면에 드래그 앤 드롭 업로드 영역이 보인다.
@@ -202,7 +202,7 @@
 - 체크 항목: 영문 초안 작성 후에도 관리자 보완 업로드로 다시 들어갈 수 있다.
 - 완료 기준: 사고 페이지에서 보완 업로드 진입 경로가 유지되고, 보완 후 다시 같은 사고 페이지 본문 수정 흐름으로 복귀할 수 있다.
 - 검증 방법: 사고 페이지에서 보완 업로드 진입, 파일 업로드, 원래 페이지 복귀를 순서대로 확인한다.
-- 실패 시 먼저 볼 파일: `src/render.ts`, `src/admin-upload.ts`, `src/index.ts`
+- 실패 시 먼저 볼 파일: `src/render.ts`, `src/admin/upload.ts`, `src/index.ts`
 
 ## 6. 출력 / 발송 준비
 
@@ -216,13 +216,13 @@
 - 체크 항목: `발송 준비 완료(자동)`이 3개 체크값 조합으로만 결정된다.
 - 완료 기준: `영문 검수 완료`, `첨부 최종 확인 완료`, `출력 확인 완료`가 모두 true일 때만 `발송 준비 완료(자동)`이 true다.
 - 검증 방법: 3개 체크값 조합을 바꿔가며 formula 결과를 확인한다.
-- 실패 시 먼저 볼 파일: `src/notion.ts`, `src/attachment-state.ts`
+- 실패 시 먼저 볼 파일: `src/notion.ts`
 
 ### 6.3 수동 발송 기본 유지
 - 체크 항목: MVP에서 본사 전달 기본값이 수동 발송으로 유지된다.
 - 완료 기준: 코드와 운영 흐름 어디에도 SMTP 완료 전 자동 발송 강제 경로가 없다.
 - 검증 방법: 발송 관련 코드 경로와 설정값을 확인한다.
-- 실패 시 먼저 볼 파일: `src/notion.ts`, `src/index.ts`, `src/mail.ts`
+- 실패 시 먼저 볼 파일: `src/notion.ts`, `src/index.ts`
 
 ## 7. 운영 검증
 
@@ -230,19 +230,19 @@
 - 체크 항목: 현재 첨부 중 손가락 사진 존재 여부가 체크박스에 반영된다.
 - 완료 기준: 현재 첨부에 `첨부 유형=손가락 사진`이 1개 이상이면 `손가락 사진 있음=true`, 없으면 false다.
 - 검증 방법: 손가락 사진 첨부 추가와 삭제를 각각 수행하고 사고 DB 체크박스를 확인한다.
-- 실패 시 먼저 볼 파일: `src/attachment-state.ts`, `src/consumer.ts`, `src/admin-upload.ts`
+- 실패 시 먼저 볼 파일: `src/notion.ts`, `src/consumer.ts`, `src/admin/upload.ts`
 
 ### 7.2 첨부 최종 확인 완료 자동 해제
 - 체크 항목: 첨부 변경 이벤트 발생 시 `첨부 최종 확인 완료`가 자동 false로 해제된다.
 - 완료 기준: 새 첨부 추가, 유형 변경, 삭제, 휴지통 이동, 복구, FIFO 영구삭제, 마지막 손가락 사진 상실 중 하나가 발생하면 기존 true 값이 false가 된다.
 - 검증 방법: 각 이벤트를 최소 1회씩 재현해 체크박스 변화를 확인한다.
-- 실패 시 먼저 볼 파일: `src/attachment-state.ts`, `src/consumer.ts`, `src/admin-upload.ts`
+- 실패 시 먼저 볼 파일: `src/notion.ts`, `src/consumer.ts`, `src/admin/upload.ts`
 
 ### 7.3 미분류 고객 첨부 저장
 - 체크 항목: 고객 웹폼 첨부는 분류 전 상태로 저장된다.
 - 완료 기준: 고객 웹폼으로 생성된 첨부 DB 행은 `첨부 유형=null`이고, 관리자 업로드 생성 행은 null이 아니다.
 - 검증 방법: 고객 제출 1건과 관리자 업로드 1건을 각각 만들어 첨부 DB를 비교한다.
-- 실패 시 먼저 볼 파일: `src/consumer.ts`, `src/admin-upload.ts`, `src/notion.ts`
+- 실패 시 먼저 볼 파일: `src/consumer.ts`, `src/admin/upload.ts`, `src/notion.ts`
 
 ### 7.4 고객 화면 비노출 유지
 - 체크 항목: 고객 화면에 내부 운영 상태가 노출되지 않는다.
@@ -256,7 +256,7 @@
 - 체크 항목: live schema와 코드 상수 간 drift가 없다.
 - 완료 기준: 속성명 누락, 타입 불일치, 허용값 불일치가 0건이다.
 - 검증 방법: `node scripts/check-notion-schema.ts`와 `node scripts/check-allowed-values.ts`를 실행한다.
-- 실패 시 먼저 볼 파일: `src/schema.ts`, `src/constants.ts`, `scripts/check-notion-schema.ts`, `scripts/check-allowed-values.ts`
+- 실패 시 먼저 볼 파일: `src/constants.ts`, `scripts/check-notion-schema.ts`, `scripts/check-allowed-values.ts`
 
 ### 8.2 고객 접수 회귀
 - 체크 항목: 기본 접수 성공 흐름이 유지된다.
@@ -268,7 +268,7 @@
 - 체크 항목: 관리자 보완 업로드 흐름이 유지된다.
 - 완료 기준: 인증, 검색, 업로드, relation 연결, 유형 저장, 상태 반영이 한 번에 완료된다.
 - 검증 방법: `node scripts/smoke-admin-upload.ts` 실행
-- 실패 시 먼저 볼 파일: `src/admin-auth.ts`, `src/admin-search.ts`, `src/admin-upload.ts`, `src/notion.ts`
+- 실패 시 먼저 볼 파일: `src/admin/auth.ts`, `src/admin/search.ts`, `src/admin/upload.ts`, `src/notion.ts`
 
 ### 8.4 relation / R2 Key 회귀
 - 체크 항목: 첨부 저장 후 relation과 `R2 Key`가 동시에 올바르다.
@@ -280,4 +280,4 @@
 - 체크 항목: 첨부 변경 후 `손가락 사진 있음`과 `첨부 최종 확인 완료`가 규칙대로 다시 계산된다.
 - 완료 기준: 손가락 사진 추가 시 true, 마지막 손가락 사진 상실 또는 새 첨부 추가 시 `첨부 최종 확인 완료=false`가 재현된다.
 - 검증 방법: 첨부 추가, 삭제, 유형 변경 시나리오를 순서대로 수행한다.
-- 실패 시 먼저 볼 파일: `src/attachment-state.ts`, `src/consumer.ts`, `src/admin-upload.ts`
+- 실패 시 먼저 볼 파일: `src/notion.ts`, `src/consumer.ts`, `src/admin/upload.ts`
