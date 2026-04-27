@@ -23,6 +23,7 @@
 - submit fixture validator coverage closure review는 현재 standalone manual tooling 기준 coverage가 충분하다고 닫았다
 - broader fixture-based parity expansion은 현재 deterministic parity baseline과 별도 설계 대상으로 유지한다
 - `FIXTURE_PARITY_DESIGN.md`는 현재 fixture expansion design 기준으로 refresh되어 manual validator boundary와 future runner/baseline/CI/rollback 조건을 기록한다
+- specific fixture parity implementation proposal은 지금 필요하지 않으며, 향후 fixture parity 구현은 별도 guarded proposal 전까지 보류한다
 
 ## Source Of Truth
 
@@ -40,4 +41,4 @@
 
 ## Next One Task
 
-- 특정 fixture parity implementation proposal이 필요한지 별도 docs-only로 판단한다.
+- 다음 non-fixture Stage 6 parity candidate를 재선정하거나 broader project status triage로 돌아갈지 판단한다.
