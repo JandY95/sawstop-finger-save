@@ -20,6 +20,8 @@
 - PR #35에서 `scripts/check-queue-payload-fixtures.js`와 `check:queue-payload-fixtures`가 추가되어 Queue payload fixture JSON을 standalone으로 검증할 수 있게 됐다.
 - PR #37에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_INTEGRATION_DECISION.md`가 추가되어 `check:queue-payload-fixtures`를 당분간 standalone으로 유지하기로 결정했다.
 - PR #39에서 `docs/harness/parity/PARITY_SCENARIOS.md`에 `check:queue-payload-fixtures`가 manual tooling check로 추가됐다.
+- PR #41에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_CLOSURE_REVIEW.md`가 추가되어 Queue payload validator 흐름이 standalone manual tooling path로 닫혔다.
+- PR #42에서 `PARITY_STATUS.md`와 `scenario-index.yaml`의 stale next-task wording이 정리됐다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
@@ -34,7 +36,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- Queue payload fixture validator 흐름 종료 리뷰 후 다음 stage-6 후보 재선정
+- 다음 stage-6 후보 재선정 결과를 별도 read-only decision으로 문서화
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 연결은 standalone 결정 이후에도 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
