@@ -16,6 +16,8 @@
 - live 의존 검사는 parity baseline에서 제외한다
 - parity 결과물은 generated 산출물로 보고 Git 추적 대상에서 제외한다
 - deterministic parity는 local/CI 모두 같은 baseline 기준으로 검증된다
+- stage-6 운영 기준은 현재 deterministic baseline을 유지한다
+- fixture 기반 scenario 확장은 baseline 변경 전에 별도 설계로 분리한다
 
 ## Source Of Truth
 
@@ -33,4 +35,4 @@
 
 ## Next One Task
 
-- deterministic parity 범위를 현재 상태로 유지할지, fixture 기반 시나리오로 확장할지 결정한다.
+- fixture 기반 parity 확장 설계를 먼저 작성하거나, `scenario-index.yaml`과 `parity-baseline.json`의 scenario 범위 drift를 정리한다.

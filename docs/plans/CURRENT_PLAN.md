@@ -28,7 +28,8 @@
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - 관리자 Turnstile은 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있으며 운영 노출 여부는 별도 판단이 필요하다.
-- deterministic parity 범위를 현재 baseline으로 유지할지, fixture 기반 시나리오로 확장할지 결정이 필요하다.
+- stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하다.
 
 ## 다음 단일 후보
-- deterministic parity 범위를 현재 상태로 유지할지, fixture 기반 시나리오로 확장할지 repo-local safety 범위에서 결정한다.
+- fixture 기반 parity 확장 설계를 먼저 작성하거나, `scenario-index.yaml`과 `parity-baseline.json`의 scenario 범위 drift를 정리한다.

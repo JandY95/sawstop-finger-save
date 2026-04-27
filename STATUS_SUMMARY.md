@@ -17,7 +17,8 @@
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있지만, 운영 메인 UI에 노출할 필요성은 문서 기준으로 확인되지 않는다.
 - FIFO 실제 운영 기준과 live 상태 옵션 전체 잠금 여부는 문서만으로 완전히 닫히지 않았다.
-- deterministic parity 범위를 현재 baseline으로 유지할지, fixture 기반 시나리오로 확장할지 결정해야 한다.
+- stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하다.
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
@@ -25,8 +26,8 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- deterministic parity 범위 유지 또는 fixture 기반 확장 여부를 repo-local 문서 기준으로 결정
-- `STATUS_SUMMARY.md`와 `docs/plans/CURRENT_PLAN.md`의 stage-6 후속 후보 정렬
+- fixture 기반 parity 확장 설계를 repo-local 문서로 먼저 작성
+- `scenario-index.yaml`과 `parity-baseline.json`의 scenario 범위 drift 정리
 
 ## live 환경 확인이 필요한 항목
 - Notion 사고 DB의 실제 status 옵션이 `접수`, `진행중`, `반려`, `완료`로 운영 중인지
