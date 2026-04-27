@@ -24,6 +24,7 @@
 - broader fixture-based parity expansion은 현재 deterministic parity baseline과 별도 설계 대상으로 유지한다
 - `FIXTURE_PARITY_DESIGN.md`는 현재 fixture expansion design 기준으로 refresh되어 manual validator boundary와 future runner/baseline/CI/rollback 조건을 기록한다
 - specific fixture parity implementation proposal은 지금 필요하지 않으며, 향후 fixture parity 구현은 별도 guarded proposal 전까지 보류한다
+- 새 non-fixture Stage 6 parity candidate는 지금 선정하지 않으며, 다음 작업은 broader project status triage로 돌아간다
 
 ## Source Of Truth
 
@@ -41,4 +42,4 @@
 
 ## Next One Task
 
-- 다음 non-fixture Stage 6 parity candidate를 재선정하거나 broader project status triage로 돌아갈지 판단한다.
+- broader project status triage로 돌아가 live FIFO 기준, live status 옵션 확인, 강제 FIFO 노출/제거, Turnstile/MVP boundary 중 다음 단일 후보를 정한다.
