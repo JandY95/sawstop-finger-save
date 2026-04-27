@@ -19,13 +19,14 @@
 - PR #33에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATION_DESIGN.md`가 추가되어 Queue payload fixture validation 방식이 문서화됐다.
 - PR #35에서 `scripts/check-queue-payload-fixtures.js`와 `check:queue-payload-fixtures`가 추가되어 Queue payload fixture JSON을 standalone으로 검증할 수 있게 됐다.
 - PR #37에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_INTEGRATION_DECISION.md`가 추가되어 `check:queue-payload-fixtures`를 당분간 standalone으로 유지하기로 결정했다.
+- PR #39에서 `docs/harness/parity/PARITY_SCENARIOS.md`에 `check:queue-payload-fixtures`가 manual tooling check로 추가됐다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있지만, 운영 메인 UI에 노출할 필요성은 문서 기준으로 확인되지 않는다.
 - FIFO 실제 운영 기준과 live 상태 옵션 전체 잠금 여부는 문서만으로 완전히 닫히지 않았다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
-- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator는 standalone 유지로 결정됐고 manual docs/tooling checklist 추가 여부 판단이 다음 경계다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator는 standalone manual tooling check까지 정리됐다.
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
@@ -33,7 +34,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- Queue payload fixture validator를 manual docs/tooling checklist에 추가할지 판단
+- Queue payload fixture validator 흐름 종료 리뷰 후 다음 stage-6 후보 재선정
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 연결은 standalone 결정 이후에도 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
