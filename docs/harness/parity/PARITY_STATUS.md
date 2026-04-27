@@ -35,4 +35,4 @@
 
 ## Next One Task
 
-- Submit fixture validator design이 완료됐으므로, validator/package script/runner/baseline/CI/parity 연결 없이 submit fixture validator 구현 승인 여부를 별도 docs-only decision으로 검토한다.
+- Submit fixture validator implementation decision이 완료됐으므로, standalone submit fixture validator를 구현하되 test/parity/runner/baseline/CI 연결은 하지 않는다.

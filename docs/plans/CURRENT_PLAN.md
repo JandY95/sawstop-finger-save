@@ -40,13 +40,14 @@
 - PR #52에서 `docs/harness/parity/SUBMIT_FIXTURE_JSON_CLOSURE_REVIEW.md`를 추가해 submit fixture JSON 후보 흐름을 documentation-level fixture-candidate 상태로 닫았다.
 - PR #54에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_DESIGN_DECISION.md`를 추가해 submit fixture validator design이 구현 전 필요하다는 docs-only decision을 완료했다.
 - PR #56에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_DESIGN.md`를 추가해 submit fixture validator 설계를 docs-only로 완료했다.
+- PR #58에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_IMPLEMENTATION_DECISION.md`를 추가해 standalone submit fixture validator 구현을 manual tooling step으로 승인했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - 관리자 Turnstile은 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있으며 운영 노출 여부는 별도 판단이 필요하다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
-- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`와 live-read checks는 standalone으로 유지하고 submit normalization / Notion mapping은 submit fixture validator design까지 완료됐다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`와 live-read checks는 standalone으로 유지하고 submit normalization / Notion mapping은 standalone submit fixture validator implementation decision까지 완료됐다.
 
 ## 다음 단일 후보
-- submit fixture validator 구현 승인 여부를 별도 docs-only decision으로 검토한다.
+- standalone submit fixture validator를 구현하되 test/parity/runner/baseline/CI 연결은 하지 않는다.
