@@ -28,13 +28,14 @@
 - PR #30에서 `docs/harness/parity/fixtures/queue-payload/` 아래 Queue payload fixture JSON 5개를 추가했다.
 - Queue payload fixture JSON 5개는 repo-local 리뷰에서 파일 목록, positive 필드셋, negative 신호, live-like token 없음이 확인됐다.
 - PR #33에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATION_DESIGN.md`를 추가해 Queue payload fixture validation 방식을 문서화했다.
+- PR #35에서 `scripts/check-queue-payload-fixtures.js`와 `check:queue-payload-fixtures`를 추가해 Queue payload fixture JSON standalone validation을 구현했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - 관리자 Turnstile은 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있으며 운영 노출 여부는 별도 판단이 필요하다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
-- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, validation design 리뷰 전까지 runner/compare, baseline, scenario index 변경은 아직 하지 않는다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`의 test/parity/CI 연결 여부는 아직 판단하지 않는다.
 
 ## 다음 단일 후보
-- Queue payload fixture validation design 리뷰 후 validator 구현 여부를 판단한다.
+- Queue payload fixture validator를 `npm test`, `npm run parity`, CI 중 어디에도 연결하지 않고 standalone으로 유지할지 먼저 판단한다.
