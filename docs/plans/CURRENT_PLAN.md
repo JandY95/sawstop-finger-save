@@ -22,12 +22,13 @@
 - `MVP_CHECKLIST.md`의 stale source path 정리는 PR #17에서 완료됐다.
 - `verify:gates --status`의 `undefined` 출력은 PR #19에서 repo-local `stageController` JSON 출력으로 정리됐다.
 - `README.md` 0-byte 상태는 PR #20에서 최소 운영 안내 문서 작성으로 정리됐다.
+- local `.project-state.json`의 stage drift는 core PR #113 bootstrap 경로로 복구됐고, `verify:gates`는 `stage-6-parity-harness`의 `stageController`를 정상 출력한다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - 관리자 Turnstile은 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있으며 운영 노출 여부는 별도 판단이 필요하다.
-- `project.profile.json`과 `.project-state.json`의 stage drift는 게이트 의미가 있으므로 값 수정 전 안전 범위를 먼저 확정한다.
+- deterministic parity 범위를 현재 baseline으로 유지할지, fixture 기반 시나리오로 확장할지 결정이 필요하다.
 
 ## 다음 단일 후보
-- `project.profile.json`과 `.project-state.json`의 stage drift를 값 수정 없이 repo-local safety 범위에서 조사한다.
+- deterministic parity 범위를 현재 상태로 유지할지, fixture 기반 시나리오로 확장할지 repo-local safety 범위에서 결정한다.
