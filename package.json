@@ -9,6 +9,7 @@
     "check:attachment-source-live": "node --experimental-strip-types scripts/check-attachment-source-live.ts",
     "check:fifo-trash-candidates": "node --experimental-strip-types scripts/check-fifo-trash-candidates.ts",
     "check:queue-payload-fixtures": "node scripts/check-queue-payload-fixtures.js",
+    "check:submit-fixtures": "node scripts/check-submit-fixtures.js",
     "smoke:submit": "node --experimental-strip-types scripts/smoke-submit.ts",
     "smoke:admin-search": "node --experimental-strip-types scripts/smoke-admin-search.ts",
     "smoke:admin-upload": "node --experimental-strip-types scripts/smoke-admin-upload.ts",
