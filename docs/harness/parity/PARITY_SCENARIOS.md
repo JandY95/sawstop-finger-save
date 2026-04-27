@@ -1,4 +1,4 @@
-﻿# PARITY SCENARIOS
+# PARITY SCENARIOS
 
 ## 목적
 
@@ -40,3 +40,30 @@
 - baseline에 등록된 모든 시나리오가 실행됨
 - 각 시나리오의 exit code가 baseline과 일치함
 - compare 결과에 mismatch가 없음
+
+## Manual tooling checks
+
+These checks are repo-local and manual. They are not part of `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, or `scenario-index.yaml`.
+
+### Queue payload fixture validator
+
+Command:
+
+- `npm run check:queue-payload-fixtures`
+
+Purpose:
+
+- Validate the Queue payload fixture JSON file list.
+- Validate JSON parse success.
+- Validate the positive fixture contract.
+- Validate intended negative fixture signals.
+- Validate the attachment count mismatch fixture.
+- Guard against live-like tokens in fixture JSON.
+
+Boundary:
+
+- Standalone tooling check only.
+- No live Notion, R2, Queue, Cloudflare, or credential access.
+- No parity baseline update.
+- No scenario-index update.
+- No runner/compare integration.
