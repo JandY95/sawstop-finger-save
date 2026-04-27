@@ -1,4 +1,4 @@
-﻿# PARITY STATUS
+# PARITY STATUS
 
 ## Current Parity Status
 
@@ -35,4 +35,4 @@
 
 ## Next One Task
 
-- Submit fixture plan이 docs-only로 완료됐으므로, fixture JSON 생성 없이 submit fixture JSON 후보 범위를 별도 승인 전 read-only로 검토한다. Runner/baseline/CI/parity 연결은 계속 제외한다.
+- Submit fixture JSON 후보 8개가 추가됐으므로, validator/package script/runner/baseline/CI/parity 연결 없이 fixture JSON closure review로 검토한다.
