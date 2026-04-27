@@ -13,10 +13,11 @@
 4. `smoke:admin-search`
 5. `smoke:admin-upload`
 6. `smoke:admin-list-attachments`
-7. `smoke:admin-update-attachment-type`
-8. `smoke:admin-move-attachment-to-trash`
-9. `smoke:admin-restore-attachment`
-10. `smoke:admin-process-fifo-trash`
+7. `smoke:admin-update-accident-status`
+8. `smoke:admin-update-attachment-type`
+9. `smoke:admin-move-attachment-to-trash`
+10. `smoke:admin-restore-attachment`
+11. `smoke:admin-process-fifo-trash`
 
 ## 제외 시나리오
 

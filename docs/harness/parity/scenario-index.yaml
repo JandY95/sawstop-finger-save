@@ -37,6 +37,10 @@ scenarios:
     command: npm run smoke:admin-list-attachments
     kind: deterministic-smoke
     expected_exit: 0
+  - id: smoke-admin-update-accident-status
+    command: npm run smoke:admin-update-accident-status
+    kind: deterministic-smoke
+    expected_exit: 0
   - id: smoke-admin-update-attachment-type
     command: npm run smoke:admin-update-attachment-type
     kind: deterministic-smoke
