@@ -63,6 +63,7 @@ excluded_from_parity:
 notes:
   - parity compares deterministic local harness behavior against tracked baseline
   - live-dependent checks remain outside parity until stable fixtures exist
+  - standalone submit fixture validator is available as `npm.cmd run check:submit-fixtures` manual tooling and is not wired into scenario execution
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: implement standalone submit fixture validator manual tooling, without wiring it into test, parity, runner, baseline, scenario-index scenarios, or CI
+next_one_task: review whether submit fixture validator integration should remain manual-only or be considered for a future guarded integration decision
