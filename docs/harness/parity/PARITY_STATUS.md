@@ -18,6 +18,7 @@
 - deterministic parity는 local/CI 모두 같은 baseline 기준으로 검증된다
 - stage-6 운영 기준은 현재 deterministic baseline을 유지한다
 - fixture 기반 scenario 확장은 baseline 변경 전에 별도 설계로 분리한다
+- submit fixture validator는 `npm.cmd run check:submit-fixtures`로 실행하는 standalone manual tooling이며 test/parity runner/baseline/scenario execution/CI/product app code에 연결하지 않는다
 
 ## Source Of Truth
 
@@ -35,4 +36,4 @@
 
 ## Next One Task
 
-- Submit fixture validator implementation decision이 완료됐으므로, standalone submit fixture validator를 구현하되 test/parity/runner/baseline/CI 연결은 하지 않는다.
+- Submit fixture validator integration을 manual-only로 유지할지, 향후 guarded integration decision 후보로 검토할지 판단한다.
