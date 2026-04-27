@@ -65,4 +65,4 @@ notes:
   - live-dependent checks remain outside parity until stable fixtures exist
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: reselect the remaining stage-6 parity candidate after queue payload fixture validator and live-read checks are closed as standalone manual paths, without wiring manual tooling into runner, baseline, or CI
+next_one_task: write a docs-only submit fixture plan after the submit normalization / Notion mapping decision, without creating fixture JSON or wiring runner, baseline, parity, or CI
