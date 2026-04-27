@@ -35,4 +35,4 @@
 
 ## Next One Task
 
-- Queue payload fixture validator와 live-read checks가 standalone/manual path로 닫힌 상태를 기준으로, runner/baseline/CI 연결 없이 남은 stage-6 parity 후보를 별도 read-only decision으로 재선정한다.
+- Submit normalization / Notion mapping decision이 완료됐으므로, runner/baseline/CI/parity 연결 없이 submit fixture plan을 별도 docs-only 문서로 작성한다.
