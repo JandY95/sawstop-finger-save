@@ -35,4 +35,4 @@
 
 ## Next One Task
 
-- Submit normalization / Notion mapping decision이 완료됐으므로, runner/baseline/CI/parity 연결 없이 submit fixture plan을 별도 docs-only 문서로 작성한다.
+- Submit fixture plan이 docs-only로 완료됐으므로, fixture JSON 생성 없이 submit fixture JSON 후보 범위를 별도 승인 전 read-only로 검토한다. Runner/baseline/CI/parity 연결은 계속 제외한다.
