@@ -13,9 +13,10 @@ Next work returns to broader project status triage.
 ## Likely Triage Areas
 
 - live FIFO criteria
-- live status option confirmation
 - force FIFO exposure/removal
 - Turnstile/MVP boundary
+
+Live status option confirmation has since been closed as already resolved by existing repo docs.
 
 ## Boundary
 
@@ -32,4 +33,4 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Use broader project status triage to select the next single candidate from the likely triage areas.
+Use broader project status triage to select the next single candidate from live FIFO criteria or force FIFO exposure/removal.
