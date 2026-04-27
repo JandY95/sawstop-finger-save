@@ -31,6 +31,8 @@
 - PR #35에서 `scripts/check-queue-payload-fixtures.js`와 `check:queue-payload-fixtures`를 추가해 Queue payload fixture JSON standalone validation을 구현했다.
 - PR #37에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_INTEGRATION_DECISION.md`를 추가해 `check:queue-payload-fixtures`를 당분간 standalone으로 유지하기로 결정했다.
 - PR #39에서 `docs/harness/parity/PARITY_SCENARIOS.md`에 `check:queue-payload-fixtures`를 manual tooling check로 추가했다.
+- PR #41에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_CLOSURE_REVIEW.md`를 추가해 Queue payload validator 흐름을 standalone manual tooling path로 닫았다.
+- PR #42에서 `PARITY_STATUS.md`와 `scenario-index.yaml`의 stale next-task wording을 정리했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
@@ -40,4 +42,4 @@
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`는 당분간 standalone으로 유지하고 test/parity/CI 연결은 아직 하지 않는다.
 
 ## 다음 단일 후보
-- Queue payload fixture validator 흐름을 종료 리뷰하고 다음 stage-6 후보를 재선정한다.
+- 다음 stage-6 parity 후보를 read-only decision으로 재선정한다.

@@ -41,18 +41,14 @@ The closure review requires these commands to pass:
 - `git diff --check`
 - `git status --short`
 
-## Remaining Drift Candidates
+## Post-Closure Drift Cleanup
 
-The Queue payload validator flow is closed, but some stage-6 guidance documents may still contain older next-task wording.
-
-Review candidates:
+The Queue payload validator flow is closed, and PR #42 updated the stale next-task wording in:
 
 - `docs/harness/parity/PARITY_STATUS.md`
 - `docs/harness/parity/scenario-index.yaml`
 
-These should be updated only as status/next-task wording changes.
-
-Do not use the drift cleanup to connect the validator to parity, CI, runner/compare, baseline, or scenario-index scenarios.
+This cleanup did not connect the validator to parity, CI, runner/compare, baseline, or scenario-index scenarios.
 
 ## Non-goals
 
@@ -71,4 +67,4 @@ This closure review does not:
 
 ## Next Safe Step
 
-Update stale stage-6 next-task wording in `PARITY_STATUS.md` and `scenario-index.yaml` after this closure review is accepted.
+Reselect the next stage-6 parity candidate as a separate read-only decision. Do not wire manual tooling into runner, baseline, parity, or CI without a separate approval.
