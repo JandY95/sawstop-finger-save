@@ -35,4 +35,4 @@
 
 ## Next One Task
 
-- Queue payload fixture validator closure review 완료 상태를 기준으로, runner/baseline/CI 연결 없이 다음 stage-6 parity 후보를 재선정한다.
+- Queue payload fixture validator와 live-read checks가 standalone/manual path로 닫힌 상태를 기준으로, runner/baseline/CI 연결 없이 남은 stage-6 parity 후보를 별도 read-only decision으로 재선정한다.
