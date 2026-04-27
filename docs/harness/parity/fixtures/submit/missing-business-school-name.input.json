@@ -1,0 +1,20 @@
+{
+  "fixtureVersion": 1,
+  "fixtureId": "missing-business-school-name",
+  "purpose": "Submit input where business or school name is omitted.",
+  "submitInput": {
+    "businessOrSchoolName": "",
+    "operatorName": "Fixture Operator",
+    "personWhoTouchedBlade": "Fixture Person",
+    "phone": "010-0000-0000",
+    "email": "fixture@example.test",
+    "incidentDate": "2026-04-03",
+    "incidentTime": "09:30",
+    "incidentTimeUnknown": false,
+    "bodyPartContacted": "left index finger",
+    "visibleInjuryMark": "예 (YES)",
+    "consentForPromotionalUse": "미동의 (NO)",
+    "accidentDescription": "Deterministic fixture submit with no business or school name.",
+    "attachments": []
+  }
+}

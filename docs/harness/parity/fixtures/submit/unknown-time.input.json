@@ -1,0 +1,20 @@
+{
+  "fixtureVersion": 1,
+  "fixtureId": "unknown-time",
+  "purpose": "Submit input where the occurrence time is unknown.",
+  "submitInput": {
+    "businessOrSchoolName": "YJ Woodshop",
+    "operatorName": "Fixture Operator",
+    "personWhoTouchedBlade": "Fixture Person",
+    "phone": "010-0000-0000",
+    "email": "fixture@example.test",
+    "incidentDate": "2026-04-03",
+    "incidentTime": null,
+    "incidentTimeUnknown": true,
+    "bodyPartContacted": "left index finger",
+    "visibleInjuryMark": "예 (YES)",
+    "consentForPromotionalUse": "미동의 (NO)",
+    "accidentDescription": "Deterministic fixture submit with unknown occurrence time.",
+    "attachments": []
+  }
+}

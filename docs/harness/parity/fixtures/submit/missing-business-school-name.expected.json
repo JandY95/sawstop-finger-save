@@ -1,0 +1,38 @@
+{
+  "fixtureVersion": 1,
+  "fixtureId": "missing-business-school-name",
+  "purpose": "Expected normalized, Notion mapping, and customer response boundaries when business or school name is omitted.",
+  "expected": {
+    "normalized": {
+      "receiptNumber": "SUBMIT-FIXTURE-0004",
+      "Date of Occurence": "2026-04-03T09:30:00+09:00",
+      "Business or School Name (NA if Not Applicable)": "NA",
+      "attachmentCount": 0
+    },
+    "notionMapping": {
+      "properties": {
+        "접수번호": "SUBMIT-FIXTURE-0004",
+        "상태": "접수",
+        "Date of Occurence": "2026-04-03T09:30:00+09:00",
+        "첨부 업로드 상태": "완료"
+      },
+      "accidentDatabasePropertiesStored": true,
+      "basicPageBodyStored": true
+    },
+    "customerResponse": {
+      "receiptNumber": "SUBMIT-FIXTURE-0004",
+      "exposesPageId": false,
+      "exposesInternalAttachmentStatus": false,
+      "exposesInternalErrorCode": false
+    }
+  },
+  "doNotAssert": [
+    "live Notion page id",
+    "live database id",
+    "real R2 key",
+    "Queue binding",
+    "credentials",
+    "candidate attachment DB properties",
+    "source-doc ambiguous internal error flags"
+  ]
+}
