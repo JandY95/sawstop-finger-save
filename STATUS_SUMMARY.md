@@ -31,6 +31,7 @@
 - PR #56에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_DESIGN.md`가 추가되어 submit fixture validator 설계가 docs-only로 완료됐다.
 - PR #58에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_IMPLEMENTATION_DECISION.md`가 추가되어 standalone submit fixture validator 구현이 manual tooling step으로 승인됐다.
 - PR #60에서 `scripts/check-submit-fixtures.js`와 `check:submit-fixtures`가 추가되어 `npm.cmd run check:submit-fixtures`로 submit fixture JSON 8개를 standalone manual tooling으로 검증할 수 있게 됐다.
+- PR #62에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_INTEGRATION_DECISION.md`가 추가되어 `check:submit-fixtures`를 standalone manual tooling으로 유지하고 test/parity/runner/baseline/scenario execution/CI/product app code 연결은 별도 guarded integration decision 전까지 보류하기로 결정했다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
@@ -45,7 +46,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- submit fixture validator integration을 manual-only로 유지할지, 향후 guarded integration decision 후보로 검토할지 판단
+- submit fixture validator coverage가 향후 guarded integration proposal 전에 closure review가 필요한지 검토
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
