@@ -22,13 +22,14 @@
 - PR #39에서 `docs/harness/parity/PARITY_SCENARIOS.md`에 `check:queue-payload-fixtures`가 manual tooling check로 추가됐다.
 - PR #41에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_CLOSURE_REVIEW.md`가 추가되어 Queue payload validator 흐름이 standalone manual tooling path로 닫혔다.
 - PR #42에서 `PARITY_STATUS.md`와 `scenario-index.yaml`의 stale next-task wording이 정리됐다.
+- PR #44에서 `docs/harness/parity/LIVE_CHECKS_STANDALONE_DECISION.md`가 추가되어 `check:attachment-source-live`와 `check:fifo-trash-candidates`를 deterministic parity 후보에서 제외하고 standalone live-read manual checks로 유지하기로 결정했다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있지만, 운영 메인 UI에 노출할 필요성은 문서 기준으로 확인되지 않는다.
 - FIFO 실제 운영 기준과 live 상태 옵션 전체 잠금 여부는 문서만으로 완전히 닫히지 않았다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
-- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator는 standalone manual tooling check까지 정리됐다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator와 live-read checks는 standalone manual tooling boundary까지 정리됐다.
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
@@ -36,7 +37,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- 다음 stage-6 후보 재선정 결과를 별도 read-only decision으로 문서화
+- live-read checks 제외 결정 이후 남은 stage-6 후보를 별도 read-only decision으로 재선정
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 연결은 standalone 결정 이후에도 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목

@@ -33,13 +33,14 @@
 - PR #39에서 `docs/harness/parity/PARITY_SCENARIOS.md`에 `check:queue-payload-fixtures`를 manual tooling check로 추가했다.
 - PR #41에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_CLOSURE_REVIEW.md`를 추가해 Queue payload validator 흐름을 standalone manual tooling path로 닫았다.
 - PR #42에서 `PARITY_STATUS.md`와 `scenario-index.yaml`의 stale next-task wording을 정리했다.
+- PR #44에서 `docs/harness/parity/LIVE_CHECKS_STANDALONE_DECISION.md`를 추가해 `check:attachment-source-live`와 `check:fifo-trash-candidates`를 deterministic parity 후보에서 제외하고 standalone live-read manual checks로 유지하기로 결정했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - 관리자 Turnstile은 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있으며 운영 노출 여부는 별도 판단이 필요하다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
-- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`는 당분간 standalone으로 유지하고 test/parity/CI 연결은 아직 하지 않는다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`와 live-read checks는 standalone으로 유지하고 test/parity/CI 연결은 아직 하지 않는다.
 
 ## 다음 단일 후보
-- 다음 stage-6 parity 후보를 read-only decision으로 재선정한다.
+- live-read checks 제외 결정 이후 남은 stage-6 후보를 별도 read-only decision으로 재선정한다.
