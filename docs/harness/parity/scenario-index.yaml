@@ -71,6 +71,8 @@ notes:
   - no specific fixture parity implementation proposal is needed now
   - no new non-fixture Stage 6 parity candidate is selected now
   - next work returns to broader project status triage
+  - live status option confirmation is already resolved by existing repo docs
+  - no new live Notion confirmation is needed for live status options
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: return to broader project status triage and select the next single candidate from live FIFO criteria, live status option confirmation, force FIFO exposure/removal, or Turnstile/MVP boundary
+next_one_task: return to broader project status triage and select the next single candidate from live FIFO criteria or force FIFO exposure/removal
