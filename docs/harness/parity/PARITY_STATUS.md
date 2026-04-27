@@ -19,6 +19,7 @@
 - stage-6 운영 기준은 현재 deterministic baseline을 유지한다
 - fixture 기반 scenario 확장은 baseline 변경 전에 별도 설계로 분리한다
 - submit fixture validator는 `npm.cmd run check:submit-fixtures`로 실행하는 standalone manual tooling이며 test/parity runner/baseline/scenario execution/CI/product app code에 연결하지 않는다
+- submit fixture validator integration decision은 manual-only 유지를 승인했으며 향후 연결은 별도 guarded integration design/approval PR이 필요하다
 
 ## Source Of Truth
 
@@ -36,4 +37,4 @@
 
 ## Next One Task
 
-- Submit fixture validator integration을 manual-only로 유지할지, 향후 guarded integration decision 후보로 검토할지 판단한다.
+- Submit fixture validator coverage가 향후 guarded integration proposal 전에 closure review가 필요한지 검토한다.

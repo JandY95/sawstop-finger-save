@@ -42,6 +42,7 @@
 - PR #56에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_DESIGN.md`를 추가해 submit fixture validator 설계를 docs-only로 완료했다.
 - PR #58에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_IMPLEMENTATION_DECISION.md`를 추가해 standalone submit fixture validator 구현을 manual tooling step으로 승인했다.
 - PR #60에서 `scripts/check-submit-fixtures.js`와 `check:submit-fixtures`를 추가해 `npm.cmd run check:submit-fixtures`로 submit fixture JSON 8개를 standalone manual tooling으로 검증할 수 있게 했다.
+- PR #62에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_INTEGRATION_DECISION.md`를 추가해 `check:submit-fixtures`를 standalone manual tooling으로 유지하고 test/parity/runner/baseline/scenario execution/CI/product app code 연결은 별도 guarded integration decision 전까지 보류하기로 결정했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
@@ -51,4 +52,4 @@
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.
 
 ## 다음 단일 후보
-- submit fixture validator integration을 manual-only로 유지할지, 향후 guarded integration decision 후보로 검토할지 판단한다.
+- submit fixture validator coverage가 향후 guarded integration proposal 전에 closure review가 필요한지 검토한다.
