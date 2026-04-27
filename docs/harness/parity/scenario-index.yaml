@@ -1,4 +1,4 @@
-﻿status: ci-verified
+status: ci-verified
 mode: formal
 current_scope: deterministic-local-and-ci-harness-verified
 current_stage_reference:
@@ -65,4 +65,4 @@ notes:
   - live-dependent checks remain outside parity until stable fixtures exist
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: review submit fixture JSON candidate scope read-only before separate approval, without creating fixture JSON or wiring runner, baseline, parity, or CI
+next_one_task: review the 8 submit fixture JSON candidates through a fixture JSON closure review, without wiring validator, runner, baseline, parity, or CI
