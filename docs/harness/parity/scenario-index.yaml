@@ -68,6 +68,7 @@ notes:
   - submit fixture validator coverage is closed as sufficient for current standalone manual tooling
   - broader fixture-based parity expansion remains separate from the current deterministic parity baseline
   - FIXTURE_PARITY_DESIGN.md is refreshed as the current fixture expansion design boundary
+  - no specific fixture parity implementation proposal is needed now
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: decide whether a specific future fixture parity implementation proposal is needed
+next_one_task: reselect the next non-fixture Stage 6 parity candidate or return to broader project status triage

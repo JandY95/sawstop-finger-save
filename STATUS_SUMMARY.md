@@ -35,6 +35,7 @@
 - PR #63에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_COVERAGE_CLOSURE_REVIEW.md`가 추가되어 submit fixture validator coverage가 현재 standalone manual tooling 기준으로 충분하다고 닫혔다.
 - PR #64에서 `docs/harness/parity/FIXTURE_PARITY_EXPANSION_DECISION.md`가 추가되어 broader fixture-based parity expansion은 현재 deterministic parity baseline과 별도 설계 대상으로 유지하기로 결정했다.
 - PR #65에서 `docs/harness/parity/FIXTURE_PARITY_DESIGN.md`가 현재 fixture expansion design 기준으로 refresh되어 manual validator boundary, future runner/baseline/CI/rollback 조건이 정리됐다.
+- PR #66에서 `docs/harness/parity/FIXTURE_PARITY_IMPLEMENTATION_PROPOSAL_DECISION.md`가 추가되어 특정 fixture parity implementation proposal은 지금 필요하지 않다고 결정했다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
@@ -49,7 +50,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- 특정 fixture parity implementation proposal이 필요한지 별도 docs-only로 판단
+- 다음 non-fixture Stage 6 parity candidate를 재선정하거나 broader project status triage로 돌아갈지 판단
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
