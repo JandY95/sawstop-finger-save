@@ -69,6 +69,8 @@ notes:
   - broader fixture-based parity expansion remains separate from the current deterministic parity baseline
   - FIXTURE_PARITY_DESIGN.md is refreshed as the current fixture expansion design boundary
   - no specific fixture parity implementation proposal is needed now
+  - no new non-fixture Stage 6 parity candidate is selected now
+  - next work returns to broader project status triage
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: reselect the next non-fixture Stage 6 parity candidate or return to broader project status triage
+next_one_task: return to broader project status triage and select the next single candidate from live FIFO criteria, live status option confirmation, force FIFO exposure/removal, or Turnstile/MVP boundary

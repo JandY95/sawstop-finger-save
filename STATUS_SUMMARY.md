@@ -36,6 +36,7 @@
 - PR #64에서 `docs/harness/parity/FIXTURE_PARITY_EXPANSION_DECISION.md`가 추가되어 broader fixture-based parity expansion은 현재 deterministic parity baseline과 별도 설계 대상으로 유지하기로 결정했다.
 - PR #65에서 `docs/harness/parity/FIXTURE_PARITY_DESIGN.md`가 현재 fixture expansion design 기준으로 refresh되어 manual validator boundary, future runner/baseline/CI/rollback 조건이 정리됐다.
 - PR #66에서 `docs/harness/parity/FIXTURE_PARITY_IMPLEMENTATION_PROPOSAL_DECISION.md`가 추가되어 특정 fixture parity implementation proposal은 지금 필요하지 않다고 결정했다.
+- `docs/harness/parity/STAGE_6_PARITY_TRIAGE_DECISION.md`에서 새 non-fixture Stage 6 parity candidate를 지금 선정하지 않고 broader project status triage로 돌아가기로 결정했다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
@@ -43,6 +44,7 @@
 - FIFO 실제 운영 기준과 live 상태 옵션 전체 잠금 여부는 문서만으로 완전히 닫히지 않았다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
+- 다음 작업은 live FIFO 기준, live status 옵션 확인, 강제 FIFO 노출/제거, Turnstile/MVP boundary를 broader project status triage로 정리하는 것이다.
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
@@ -50,7 +52,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- 다음 non-fixture Stage 6 parity candidate를 재선정하거나 broader project status triage로 돌아갈지 판단
+- broader project status triage 결과를 문서화하고 다음 단일 후보를 정리
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목

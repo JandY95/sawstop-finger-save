@@ -47,6 +47,7 @@
 - PR #64에서 `docs/harness/parity/FIXTURE_PARITY_EXPANSION_DECISION.md`를 추가해 broader fixture-based parity expansion은 현재 deterministic parity baseline과 별도 설계 대상으로 유지하기로 결정했다.
 - PR #65에서 `docs/harness/parity/FIXTURE_PARITY_DESIGN.md`를 현재 fixture expansion design 기준으로 refresh해 manual validator boundary, future runner/baseline/CI/rollback 조건을 정리했다.
 - PR #66에서 `docs/harness/parity/FIXTURE_PARITY_IMPLEMENTATION_PROPOSAL_DECISION.md`를 추가해 특정 fixture parity implementation proposal은 지금 필요하지 않다고 결정했다.
+- `docs/harness/parity/STAGE_6_PARITY_TRIAGE_DECISION.md`에서 새 non-fixture Stage 6 parity candidate를 지금 선정하지 않고 broader project status triage로 돌아가기로 결정했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
@@ -56,4 +57,4 @@
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.
 
 ## 다음 단일 후보
-- 다음 non-fixture Stage 6 parity candidate를 재선정하거나 broader project status triage로 돌아갈지 판단한다.
+- broader project status triage로 돌아가 live FIFO 기준, live status 옵션 확인, 강제 FIFO 노출/제거, Turnstile/MVP boundary 중 다음 단일 후보를 정한다.
