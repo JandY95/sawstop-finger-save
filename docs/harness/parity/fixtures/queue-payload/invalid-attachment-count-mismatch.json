@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "receiptNumber": "202604031224-0000",
+  "pageId": "fixture_page_id",
+  "attachmentCount": 2,
+  "retryCount": 0,
+  "attachments": [
+    {
+      "seq": 1,
+      "tmpKey": "tmp/202604031224-0000/0001_20260403122430.jpg",
+      "originalFileName": "finger.jpg",
+      "contentType": "image/jpeg",
+      "sizeBytes": 123456
+    }
+  ]
+}
