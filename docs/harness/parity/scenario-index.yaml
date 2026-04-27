@@ -65,4 +65,4 @@ notes:
   - live-dependent checks remain outside parity until stable fixtures exist
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: write a docs-only submit fixture plan after the submit normalization / Notion mapping decision, without creating fixture JSON or wiring runner, baseline, parity, or CI
+next_one_task: review submit fixture JSON candidate scope read-only before separate approval, without creating fixture JSON or wiring runner, baseline, parity, or CI
