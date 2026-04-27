@@ -65,6 +65,7 @@ notes:
   - parity compares deterministic local harness behavior against tracked baseline
   - live-dependent checks remain outside parity until stable fixtures exist
   - standalone submit fixture validator remains manual-only by integration decision and is not wired into scenario execution
+  - submit fixture validator coverage is closed as sufficient for current standalone manual tooling
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: review whether submit fixture validator coverage needs a closure review before any future guarded integration proposal
+next_one_task: decide whether broader fixture-based parity expansion should be designed separately
