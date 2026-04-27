@@ -66,6 +66,7 @@ notes:
   - live-dependent checks remain outside parity until stable fixtures exist
   - standalone submit fixture validator remains manual-only by integration decision and is not wired into scenario execution
   - submit fixture validator coverage is closed as sufficient for current standalone manual tooling
+  - broader fixture-based parity expansion remains separate from the current deterministic parity baseline
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: decide whether broader fixture-based parity expansion should be designed separately
+next_one_task: decide whether FIXTURE_PARITY_DESIGN.md should be refreshed into a current fixture expansion design
