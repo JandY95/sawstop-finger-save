@@ -35,4 +35,4 @@
 
 ## Next One Task
 
-- fixture 기반 parity 확장 설계를 먼저 작성하거나, `scenario-index.yaml`과 `parity-baseline.json`의 scenario 범위 drift를 정리한다.
+- Queue payload fixture validator closure review 완료 상태를 기준으로, runner/baseline/CI 연결 없이 다음 stage-6 parity 후보를 재선정한다.

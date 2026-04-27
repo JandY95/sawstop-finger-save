@@ -65,4 +65,4 @@ notes:
   - live-dependent checks remain outside parity until stable fixtures exist
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: decide whether deterministic parity stays fixed or expands to fixture-based scenarios
+next_one_task: reselect the next stage-6 parity candidate after queue payload fixture validator closure, without wiring manual tooling into runner, baseline, or CI
