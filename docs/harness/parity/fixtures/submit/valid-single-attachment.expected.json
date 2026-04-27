@@ -1,0 +1,38 @@
+{
+  "fixtureVersion": 1,
+  "fixtureId": "valid-single-attachment",
+  "purpose": "Expected normalized, Notion mapping, and customer response boundaries for a valid submit with one attachment.",
+  "expected": {
+    "normalized": {
+      "receiptNumber": "SUBMIT-FIXTURE-0002",
+      "Date of Occurence": "2026-04-03T09:30:00+09:00",
+      "Business or School Name (NA if Not Applicable)": "YJ Woodshop",
+      "attachmentCount": 1
+    },
+    "notionMapping": {
+      "properties": {
+        "접수번호": "SUBMIT-FIXTURE-0002",
+        "상태": "접수",
+        "Date of Occurence": "2026-04-03T09:30:00+09:00",
+        "첨부 업로드 상태": "처리중"
+      },
+      "accidentDatabasePropertiesStored": true,
+      "basicPageBodyStored": true
+    },
+    "customerResponse": {
+      "receiptNumber": "SUBMIT-FIXTURE-0002",
+      "exposesPageId": false,
+      "exposesInternalAttachmentStatus": false,
+      "exposesInternalErrorCode": false
+    }
+  },
+  "doNotAssert": [
+    "live Notion page id",
+    "live database id",
+    "real R2 key",
+    "Queue binding",
+    "credentials",
+    "candidate attachment DB properties",
+    "source-doc ambiguous internal error flags"
+  ]
+}
