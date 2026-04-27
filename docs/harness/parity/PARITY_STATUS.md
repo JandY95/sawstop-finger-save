@@ -35,4 +35,4 @@
 
 ## Next One Task
 
-- Submit fixture JSON 후보 8개가 추가됐으므로, validator/package script/runner/baseline/CI/parity 연결 없이 fixture JSON closure review로 검토한다.
+- Submit fixture JSON closure review가 완료됐으므로, validator/package script/runner/baseline/CI/parity 연결 없이 submit fixture validator design 필요 여부를 별도 docs-only decision으로 검토한다.
