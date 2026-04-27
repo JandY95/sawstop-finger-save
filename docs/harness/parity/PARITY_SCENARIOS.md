@@ -49,7 +49,7 @@ These checks are repo-local and manual. They are not part of `npm test`, `npm ru
 
 Command:
 
-- `npm run check:queue-payload-fixtures`
+- `npm.cmd run check:queue-payload-fixtures`
 
 Purpose:
 
@@ -65,5 +65,30 @@ Boundary:
 - Standalone tooling check only.
 - No live Notion, R2, Queue, Cloudflare, or credential access.
 - No parity baseline update.
-- No scenario-index update.
+- No scenario execution.
 - No runner/compare integration.
+
+### Submit fixture validator
+
+Command:
+
+- `npm.cmd run check:submit-fixtures`
+
+Purpose:
+
+- Validate the exact submit fixture JSON file list.
+- Validate input/expected pairing.
+- Validate JSON parse success.
+- Validate fixture shape and expected sections.
+- Validate deterministic receipt placeholders.
+- Guard against live-like tokens, paths, IDs, and keys.
+
+Boundary:
+
+- Standalone tooling check only.
+- No live Notion, R2, Queue, Cloudflare, or credential access.
+- No parity baseline update.
+- No scenario execution.
+- No runner/compare integration.
+
+Both fixture validators are excluded from parity scenario execution unless a future guarded design approves otherwise.

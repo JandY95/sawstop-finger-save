@@ -21,6 +21,7 @@
 - submit fixture validator는 `npm.cmd run check:submit-fixtures`로 실행하는 standalone manual tooling이며 test/parity runner/baseline/scenario execution/CI/product app code에 연결하지 않는다
 - submit fixture validator integration decision은 manual-only 유지를 승인했으며 향후 연결은 별도 guarded integration design/approval PR이 필요하다
 - submit fixture validator coverage closure review는 현재 standalone manual tooling 기준 coverage가 충분하다고 닫았다
+- broader fixture-based parity expansion은 현재 deterministic parity baseline과 별도 설계 대상으로 유지한다
 
 ## Source Of Truth
 
@@ -38,4 +39,4 @@
 
 ## Next One Task
 
-- Broader fixture-based parity expansion을 별도 설계 대상으로 둘지 판단한다.
+- `FIXTURE_PARITY_DESIGN.md`를 현재 fixture expansion design으로 refresh할지 판단한다.
