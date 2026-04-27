@@ -13,13 +13,14 @@
 - `README.md`는 PR #20에서 최소 운영 안내와 문서 진입점 역할을 하도록 작성되어 있다.
 - local `.project-state.json`은 core PR #113의 bootstrap 경로로 복구됐고, `npm.cmd run verify:gates`는 `stage-6-parity-harness`의 `stageController` 모델을 정상 출력한다.
 - PR #26에서 `docs/harness/parity/QUEUE_PAYLOAD_CONTRACT.md`가 추가되어 Queue payload fixture JSON 생성 전 문서 계약이 고정됐다.
+- PR #28에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_PLAN.md`가 추가되어 Queue payload positive/negative/mismatch fixture 후보가 문서 수준으로 고정됐다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있지만, 운영 메인 UI에 노출할 필요성은 문서 기준으로 확인되지 않는다.
 - FIFO 실제 운영 기준과 live 상태 옵션 전체 잠금 여부는 문서만으로 완전히 닫히지 않았다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
-- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload contract 문서 리뷰가 다음 경계다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload fixture plan 리뷰가 다음 경계다.
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
@@ -27,8 +28,8 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- Queue payload contract 문서 리뷰 결과를 바탕으로 fixture JSON 설계 여부 판단
-- fixture JSON, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 변경은 별도 승인 전까지 보류
+- Queue payload fixture plan 리뷰 결과를 바탕으로 실제 fixture JSON 생성 여부 판단
+- fixture JSON, fixture directory, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 변경은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
 - Notion 사고 DB의 실제 status 옵션이 `접수`, `진행중`, `반려`, `완료`로 운영 중인지

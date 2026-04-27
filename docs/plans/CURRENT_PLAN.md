@@ -24,13 +24,14 @@
 - `README.md` 0-byte 상태는 PR #20에서 최소 운영 안내 문서 작성으로 정리됐다.
 - local `.project-state.json`의 stage drift는 core PR #113 bootstrap 경로로 복구됐고, `verify:gates`는 `stage-6-parity-harness`의 `stageController`를 정상 출력한다.
 - PR #26에서 `docs/harness/parity/QUEUE_PAYLOAD_CONTRACT.md`를 추가해 Queue payload fixture JSON 생성 전 계약 경계를 문서화했다.
+- PR #28에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_PLAN.md`를 추가해 Queue payload positive/negative/mismatch fixture 후보를 문서 수준으로 고정했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - 관리자 Turnstile은 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
 - 강제 FIFO는 백엔드 옵션으로 남아 있으며 운영 노출 여부는 별도 판단이 필요하다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
-- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, fixture JSON, runner/compare, baseline, scenario index 변경은 아직 하지 않는다.
+- fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, fixture JSON, fixture directory, runner/compare, baseline, scenario index 변경은 아직 하지 않는다.
 
 ## 다음 단일 후보
-- Queue payload contract 문서 리뷰 후 fixture JSON 설계 조사 여부를 판단한다.
+- Queue payload fixture plan 리뷰 후 실제 fixture JSON 생성 여부를 판단한다.
