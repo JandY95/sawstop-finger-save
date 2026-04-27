@@ -45,6 +45,7 @@
 - PR #62에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_INTEGRATION_DECISION.md`를 추가해 `check:submit-fixtures`를 standalone manual tooling으로 유지하고 test/parity/runner/baseline/scenario execution/CI/product app code 연결은 별도 guarded integration decision 전까지 보류하기로 결정했다.
 - PR #63에서 `docs/harness/parity/SUBMIT_FIXTURE_VALIDATOR_COVERAGE_CLOSURE_REVIEW.md`를 추가해 submit fixture validator coverage가 현재 standalone manual tooling 기준으로 충분하다고 닫았다.
 - PR #64에서 `docs/harness/parity/FIXTURE_PARITY_EXPANSION_DECISION.md`를 추가해 broader fixture-based parity expansion은 현재 deterministic parity baseline과 별도 설계 대상으로 유지하기로 결정했다.
+- PR #65에서 `docs/harness/parity/FIXTURE_PARITY_DESIGN.md`를 현재 fixture expansion design 기준으로 refresh해 manual validator boundary, future runner/baseline/CI/rollback 조건을 정리했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
@@ -54,4 +55,4 @@
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.
 
 ## 다음 단일 후보
-- `FIXTURE_PARITY_DESIGN.md`를 현재 fixture expansion design으로 refresh할지 판단한다.
+- 특정 fixture parity implementation proposal이 필요한지 별도 docs-only로 판단한다.
