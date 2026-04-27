@@ -65,4 +65,4 @@ notes:
   - live-dependent checks remain outside parity until stable fixtures exist
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: write a docs-only submit fixture validator design document, without wiring validator, package script, runner, baseline, parity, or CI
+next_one_task: review whether standalone submit fixture validator implementation should be approved as a separate docs-only decision, without wiring validator, package script, runner, baseline, parity, or CI
