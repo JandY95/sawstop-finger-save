@@ -85,13 +85,14 @@ notes:
   - fixture expansion remains separated and blocked until a separate guarded proposal
   - FIFO cleanup ownership / 5GB storage measurement basis cannot be fully closed docs-only from existing docs alone
   - OI-16 and OI-17 remain unresolved
-  - existing FIFO safe operating boundary remains unchanged
+  - PR #75 moved the already-safe FIFO/trash operating boundary into docs/source/PRD.md, docs/source/TRD.md, and docs/source/DB_SCHEMA_AND_MAPPING.md
+  - source docs now carry the FIFO safe operating boundary
   - no FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation decision is approved
-  - FIFO cleanup ownership / 5GB storage measurement basis resolution requires a later narrow source-of-truth movement PR
-  - FIFO source-of-truth movement proposal is prepared, not executed
-  - future source-of-truth movement targets docs/source/PRD.md, docs/source/TRD.md, and docs/source/DB_SCHEMA_AND_MAPPING.md
+  - PR #75 did not close OI-16 or OI-17
+  - check:fifo-trash-candidates remains standalone live-read manual validation outside deterministic parity, scenario execution, baseline, CI, and product wiring
+  - FIFO cleanup ownership / 5GB storage measurement basis / `영구삭제 예정 시각` calculation resolution requires a later narrow decision/triage
   - future required decisions are the 8 AM expired trash cleanup owner, 5GB R2/storage population basis, and `영구삭제 예정 시각` calculation relative to the 7-day restore window and 8 AM cleanup
-  - this decision does not approve live access, behavior changes, implementation changes, or source-of-truth movement
+  - this decision does not approve live access, behavior changes, implementation changes, or parity/product wiring
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: separate FIFO cleanup ownership / 5GB storage measurement basis source-of-truth movement into a later narrow PR
+next_one_task: separate FIFO cleanup ownership / 5GB storage measurement basis / `영구삭제 예정 시각` calculation unresolved implementation criteria into a later narrow decision or triage

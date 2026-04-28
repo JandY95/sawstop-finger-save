@@ -2,27 +2,35 @@
 
 ## Decision
 
-A narrow docs-only source-of-truth movement is justified later, but not in this PR.
+PR #75 moved the already-safe FIFO/trash operating boundary into source docs:
 
-This PR prepares the exact decision candidates required before source-of-truth files can be changed.
+- `docs/source/PRD.md`
+- `docs/source/TRD.md`
+- `docs/source/DB_SCHEMA_AND_MAPPING.md`
 
-Source-of-truth movement is prepared, not executed.
+The source-of-truth movement completed only for the already-safe operating boundary.
 
 OI-16 and OI-17 remain unresolved.
 
-Do not decide FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation in this PR.
+PR #75 did not decide FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation.
+
+`check:fifo-trash-candidates` remains standalone live-read manual validation outside deterministic parity, scenario execution, baseline, CI, and product wiring.
+
+Parity status remains stable and guarded.
+
+No new Stage 6 parity candidate is selected.
 
 ## Required Future Decisions
 
-A later source-of-truth movement PR must decide:
+A later narrow decision/triage must decide:
 
 - FIFO cleanup owner candidate: what system or operator owns the 8 AM expired trash cleanup.
 - 5GB measurement basis candidate: what R2/storage population counts toward the threshold.
 - `영구삭제 예정 시각` candidate: how the stored date should be calculated relative to the 7-day restore window and 8 AM cleanup.
 
-## Later Source Files
+## Source Files Updated By PR #75
 
-Target source files for a later movement PR are:
+PR #75 updated:
 
 - `docs/source/PRD.md`
 - `docs/source/TRD.md`
@@ -32,7 +40,6 @@ Target source files for a later movement PR are:
 
 This proposal does not approve:
 
-- source-of-truth movement in this PR
 - FIFO cleanup ownership decisions
 - 5GB storage measurement basis decisions
 - `영구삭제 예정 시각` calculation decisions
@@ -53,4 +60,4 @@ This proposal does not approve:
 
 ## Next Safe Step
 
-Use a later narrow source-of-truth movement PR to decide and move these criteria into the target source files.
+Use a later narrow decision/triage to resolve the remaining implementation criteria before any behavior or wiring changes.

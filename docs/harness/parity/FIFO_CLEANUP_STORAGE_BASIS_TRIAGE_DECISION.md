@@ -23,6 +23,12 @@ A future narrow source-of-truth movement PR is required before implementation cr
 
 Do not implement behavior in this PR.
 
+PR #75 later moved only the already-safe FIFO/trash operating boundary into source docs.
+
+PR #75 did not close OI-16 or OI-17.
+
+PR #75 did not decide FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation.
+
 ## Boundary
 
 This decision does not approve:
@@ -48,6 +54,6 @@ This decision does not approve:
 
 ## Next Safe Step
 
-FIFO source-of-truth movement proposal has since been prepared without executing source-of-truth movement.
+FIFO source-of-truth movement for the already-safe boundary has since been completed by PR #75.
 
-A later narrow source-of-truth movement PR is still required before closing FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` implementation criteria.
+A later narrow decision/triage is still required before closing FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` implementation criteria.
