@@ -11,7 +11,7 @@
 - `MVP_CHECKLIST.md`의 stale `실패 시 먼저 볼 파일` 경로는 PR #17에서 현재 source layout 기준으로 정리되어 있다.
 - `npm.cmd run verify:gates`는 PR #19에서 `undefined` 대신 repo-local `stageController` JSON을 출력하도록 정리되어 있다.
 - `README.md`는 PR #20에서 최소 운영 안내와 문서 진입점 역할을 하도록 작성되어 있다.
-- local `.project-state.json`은 core PR #113의 bootstrap 경로로 복구됐고, `npm.cmd run verify:gates`는 `stage-6-parity-harness`의 `stageController` 모델을 정상 출력한다.
+- historical: core PR #113 bootstrap 경로에서 local `.project-state.json` 복구가 언급됐지만, 현재 repo-local checkout에는 `.project-state.json`이 없다.
 - PR #26에서 `docs/harness/parity/QUEUE_PAYLOAD_CONTRACT.md`가 추가되어 Queue payload fixture JSON 생성 전 문서 계약이 고정됐다.
 - PR #28에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_PLAN.md`가 추가되어 Queue payload positive/negative/mismatch fixture 후보가 문서 수준으로 고정됐다.
 - PR #30에서 `docs/harness/parity/fixtures/queue-payload/` 아래 Queue payload fixture JSON 5개가 추가됐다.
@@ -71,8 +71,9 @@
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
-- stage 기준은 `project.profile.json`과 `.project-state.json` 모두 `stage-6-parity-harness`로 정렬되어 있다.
-- `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
+- 현재 repo-local checkout에는 `.project-state.json`이 없다.
+- stage 기준은 현재 tracked `project.profile.json`의 `currentStage=stage-6-parity-harness`로 판단한다.
+- `.project-state.json`이 현재 checkout에 복구됐거나 유지된다고 전제하지 않는다.
 
 ## 지금 바로 수정해도 안전한 항목
 - OI-16 cleanup ownership is selected as manual operator-owned cleanup by explicit operator/ops decision; OI-17 remains separate and open.

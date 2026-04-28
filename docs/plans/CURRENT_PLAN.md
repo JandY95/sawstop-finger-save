@@ -22,7 +22,7 @@
 - `MVP_CHECKLIST.md`의 stale source path 정리는 PR #17에서 완료됐다.
 - `verify:gates --status`의 `undefined` 출력은 PR #19에서 repo-local `stageController` JSON 출력으로 정리됐다.
 - `README.md` 0-byte 상태는 PR #20에서 최소 운영 안내 문서 작성으로 정리됐다.
-- local `.project-state.json`의 stage drift는 core PR #113 bootstrap 경로로 복구됐고, `verify:gates`는 `stage-6-parity-harness`의 `stageController`를 정상 출력한다.
+- historical: core PR #113 bootstrap 경로에서 local `.project-state.json` stage drift 복구가 언급됐지만, 현재 repo-local checkout에는 `.project-state.json`이 없다.
 - PR #26에서 `docs/harness/parity/QUEUE_PAYLOAD_CONTRACT.md`를 추가해 Queue payload fixture JSON 생성 전 계약 경계를 문서화했다.
 - PR #28에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_PLAN.md`를 추가해 Queue payload positive/negative/mismatch fixture 후보를 문서 수준으로 고정했다.
 - PR #30에서 `docs/harness/parity/fixtures/queue-payload/` 아래 Queue payload fixture JSON 5개를 추가했다.
@@ -62,6 +62,7 @@
 - `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_OPEN_DECISION.md`에서 PR #79의 OI-16 owner 후보 중 어떤 것도 기존 docs만으로 승인하지 않고 OI-16을 open 상태로 유지하기로 정리했다.
 
 ## 보류
+- 현재 repo-local checkout에는 `.project-state.json`이 없으며, 이번 plan은 해당 파일을 생성하거나 복구하지 않는다.
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - Customer webform Turnstile은 별도 흐름이며 이번 broader triage closure로 약화하거나 재정의하지 않는다.
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
