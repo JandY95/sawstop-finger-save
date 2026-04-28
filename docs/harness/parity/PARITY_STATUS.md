@@ -48,6 +48,7 @@
 - `FIFO_CLEANUP_CLI_ASSISTED_WRAPPER_IMPLEMENTATION_DECISION.md`는 dry-run-only CLI wrapper 구현 경계를 승인한다. live cleanup, execute mode, scheduled automation, OI-17 basis 선택은 승인하지 않는다
 - `cleanup:fifo-trash:dry-run`은 manual operator 검토용 dry-run-only wrapper다. deterministic parity, scenario execution, baseline, CI, product wiring, live cleanup, execute mode와 분리한다
 - `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` was added in PR #90 as the local Notion env setup runbook. It documents manual operator dry-run preparation only, and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
+- PR #92 made `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` path-agnostic by replacing the company-PC-specific absolute path with repo-root detection. It remains a manual operator dry-run preparation runbook only and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
 
 ## Source Of Truth
 
