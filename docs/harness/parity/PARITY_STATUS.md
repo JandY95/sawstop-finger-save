@@ -42,7 +42,7 @@
 - OI-16 cleanup ownership은 OI-17 5GB storage measurement basis와 분리되어 다음 단일 live-readiness 후보로 선정됐다
 - OI-16과 OI-17은 계속 unresolved 상태이며, OI-17은 다음 OI-16 triage 범위 밖에 둔다
 - OI-16 cleanup ownership은 기존 docs만으로 안전하게 결정할 수 없으며, scheduled Worker/Cron, manual operator, separate operational runbook 같은 owner 후보만 proposal로 준비됐다
-- FIFO cleanup ownership의 실제 resolution에는 별도 narrow approval PR이 필요하다
+- PR #79의 OI-16 owner 후보는 모두 기존 docs만으로 승인되지 않았으며, OI-16은 explicit product/ops/source-of-truth decision 전까지 open 상태로 유지한다
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다
 
 ## Source Of Truth
@@ -61,4 +61,4 @@
 
 ## Next One Task
 
-- OI-16 FIFO / expired trash cleanup ownership 후보 중 하나를 후속 narrow approval PR에서 선택하거나, OI-16을 계속 open으로 유지한다.
+- OI-16 FIFO / expired trash cleanup ownership은 explicit product/ops/source-of-truth decision 전까지 open 상태로 유지하고, OI-17 5GB R2/storage population basis는 별도 후보로 분리한다.
