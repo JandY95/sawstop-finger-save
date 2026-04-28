@@ -45,10 +45,22 @@ $env:NOTION_TOKEN = "<paste-token-in-terminal-only>"
 
 ## 권장 실행 순서
 
-PowerShell에서 아래 순서로 실행한다.
+PowerShell에서 먼저 현재 로컬 clone 위치로 이동한 뒤, repo root를 확인하고 실행한다.
+
+저장소 경로는 회사, 집, 다른 PC마다 달라질 수 있으므로 이 runbook은 특정 절대 경로를 기준으로 하지 않는다.
 
 ~~~powershell
-cd C:\Users\june\Downloads\sawstop-finger-save
+# 먼저 본인이 받은 sawstop-finger-save 폴더로 이동한다.
+# 예: cd "D:\work\sawstop-finger-save"
+
+$repoRoot = (git rev-parse --show-toplevel).Trim()
+$repoName = Split-Path $repoRoot -Leaf
+
+if ($repoName -ne "sawstop-finger-save") {
+  throw "wrong repo: expected sawstop-finger-save, got $repoName"
+}
+
+Set-Location $repoRoot
 
 $env:NOTION_SETTINGS_DB_ID = "a432f5acc8554f7db141f9ab2dc86f35"
 $env:NOTION_ATTACHMENT_DB_ID = "3376eb7f574c803b894af22a97ff4b30"
