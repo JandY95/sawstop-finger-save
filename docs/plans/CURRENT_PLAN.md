@@ -58,6 +58,7 @@
 - PR #75에서 이미 안전한 FIFO/trash operating boundary만 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다.
 - `docs/harness/parity/PERMANENT_DELETE_SCHEDULE_CALCULATION_DECISION.md`에서 `영구삭제 예정 시각` 계산 경계만 docs-only로 결정했다.
 - `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_TRIAGE_DECISION.md`에서 OI-16 cleanup ownership을 OI-17 5GB storage measurement basis와 분리해 다음 단일 live-readiness 후보로 선정했다.
+- `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_DECISION_PROPOSAL.md`에서 OI-16 cleanup ownership은 기존 docs만으로 안전하게 결정할 수 없으며, owner 후보만 준비하고 OI-16은 open 상태로 유지한다고 정리했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
@@ -67,11 +68,12 @@
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
 - FIFO cleanup ownership과 5GB storage measurement basis는 unresolved live-readiness 후보로 남아 있다.
 - OI-16과 OI-17은 unresolved 상태로 유지되며, FIFO cleanup ownership implementation과 5GB storage measurement implementation은 승인되지 않았다.
-- 다음 단일 decision path는 OI-16 8 AM expired trash cleanup owner이며, OI-17 5GB threshold에 포함되는 R2/storage population은 별도 후보로 분리해 유지한다.
+- OI-16은 8 AM expired trash cleanup owner가 아직 미확정이라 open 상태로 유지하며, 후속 narrow approval PR에서 scheduled Worker/Cron, manual operator, separate operational runbook 중 하나를 선택하거나 계속 open으로 남겨야 한다.
+- OI-17 5GB threshold에 포함되는 R2/storage population은 별도 후보로 분리해 유지한다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
 - 이번 결정은 live access, behavior change, implementation change를 승인하지 않는다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.
 
 ## 다음 단일 후보
-- OI-16 FIFO / expired trash cleanup ownership을 OI-17 5GB storage measurement basis와 분리해 narrow decision/triage로 다룬다.
+- OI-16 FIFO / expired trash cleanup ownership 후보 중 하나를 후속 narrow approval PR에서 선택하거나, OI-16을 계속 open으로 유지한다.
