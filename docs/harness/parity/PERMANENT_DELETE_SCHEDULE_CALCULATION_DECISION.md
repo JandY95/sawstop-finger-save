@@ -14,13 +14,17 @@ Calculation boundary:
 
 This decision closes only the `영구삭제 예정 시각` calculation boundary.
 
-OI-16 remains open.
+At the time of this decision, OI-16 remained open.
 
 OI-17 remains open.
 
-No FIFO cleanup ownership decision is approved.
+No FIFO cleanup ownership decision was approved by this decision.
 
 No 5GB storage measurement basis decision is approved.
+
+OI-16 cleanup ownership was later resolved as manual operator-owned cleanup by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`.
+
+This note does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, implementation changes, or OI-17 basis selection.
 
 ## Boundary
 
@@ -45,6 +49,6 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Use a later narrow decision/triage to handle OI-16 FIFO cleanup ownership separately from OI-17.
+OI-16 FIFO cleanup ownership has since been handled separately from OI-17 and selected as manual operator-owned cleanup.
 
 Keep OI-17 5GB storage measurement basis separate and unresolved until a later PR explicitly scopes the R2/storage population basis.
