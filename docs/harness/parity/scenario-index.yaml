@@ -83,8 +83,12 @@ notes:
   - PR #67-#71 broader triage loop is closed and parity candidate selection is not reopened
   - current parity status remains stable and guarded
   - fixture expansion remains separated and blocked until a separate guarded proposal
-  - next single live-readiness candidate is FIFO cleanup ownership / 5GB storage measurement basis triage
+  - FIFO cleanup ownership / 5GB storage measurement basis cannot be fully closed docs-only from existing docs alone
+  - OI-16 and OI-17 remain unresolved
+  - existing FIFO safe operating boundary remains unchanged
+  - no FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation decision is approved
+  - FIFO cleanup ownership / 5GB storage measurement basis resolution requires a later narrow source-of-truth movement PR
   - this decision does not approve live access, behavior changes, implementation changes, or source-of-truth movement
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: resolve FIFO cleanup ownership / 5GB storage measurement basis as the next single live-readiness triage candidate
+next_one_task: separate FIFO cleanup ownership / 5GB storage measurement basis resolution into a later narrow source-of-truth movement PR

@@ -34,7 +34,10 @@
 - PR #67-#71 broader triage loop는 닫혔으며 parity candidate selection은 이 PR에서 다시 열지 않는다
 - current parity status는 stable and guarded 상태로 유지한다
 - fixture expansion은 별도 guarded proposal 전까지 separated and blocked 상태로 유지한다
-- 다음 단일 live-readiness 후보는 FIFO cleanup ownership / 5GB storage measurement basis triage다
+- FIFO cleanup ownership / 5GB storage measurement basis는 기존 docs만으로 fully closed 상태가 아니며, OI-16과 OI-17은 unresolved 상태로 유지한다
+- 기존 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지 그대로 유지한다
+- FIFO cleanup ownership, 5GB storage measurement basis, `영구삭제 예정 시각` calculation decision은 승인되지 않았다
+- FIFO cleanup ownership / 5GB storage measurement basis의 실제 resolution에는 별도 narrow source-of-truth movement PR이 필요하다
 
 ## Source Of Truth
 
@@ -52,4 +55,4 @@
 
 ## Next One Task
 
-- FIFO cleanup ownership / 5GB storage measurement basis를 다음 단일 live-readiness triage 후보로 정리한다.
+- FIFO cleanup ownership / 5GB storage measurement basis의 실제 resolution을 별도 narrow source-of-truth movement PR로 분리한다.

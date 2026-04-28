@@ -51,4 +51,6 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Resolve FIFO cleanup ownership / 5GB storage measurement basis as the next single live-readiness triage candidate in a separate PR.
+FIFO cleanup ownership / 5GB storage measurement basis has since been triaged as not fully closable from existing docs alone.
+
+Real resolution requires a later narrow source-of-truth movement PR before implementation criteria can be closed.
