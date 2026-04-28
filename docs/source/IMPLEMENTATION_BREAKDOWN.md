@@ -147,7 +147,8 @@ live DB 속성명, 타입, 허용값을 코드 상수로 고정한다.
 - `src/schema.ts`
 - `src/constants.ts`
 - `src/types.ts`
-- `docs/SCHEMA_SNAPSHOT.md`
+- `docs/source/DB_SCHEMA_AND_MAPPING.md`
+- `docs/decisions/DECISIONS_LOCK.md`
 
 예시 범위:
 - 사고 DB 속성명
@@ -358,7 +359,7 @@ Workers와 Consumer 사이 계약을 먼저 고정한다.
 - `src/types.ts`
 - `src/queue.ts`
 - `docs/decisions/OPEN_ISSUES.md`
-- 필요 시 `fixtures/queue-payload.valid.json`
+- 필요 시 `docs/harness/parity/fixtures/queue-payload/` examples
 
 고정 필드:
 - `version` = `1`
