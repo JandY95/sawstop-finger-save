@@ -6,6 +6,7 @@ const { execSync } = require('child_process');
 const root = process.cwd();
 const args = process.argv.slice(2);
 const statePath = path.join(root, '.project-state.json');
+const profilePath = path.join(root, 'project.profile.json');
 const requiredFiles = ['AGENTS.md', 'MVP_CHECKLIST.md', 'PLAN_PROMPT.txt', '.gitignore'];
 
 function fail(message) {
@@ -17,7 +18,7 @@ function pass(message) {
 }
 
 function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
 }
 
 function writeJson(filePath, data) {
@@ -66,6 +67,46 @@ function trackedSecretFile() {
 
 function hasState() {
   return fs.existsSync(statePath);
+}
+
+function loadJson(filePath, fallback = {}) {
+  if (!fs.existsSync(filePath)) return fallback;
+  return readJson(filePath);
+}
+
+function normalizeProjectStateMode(value) {
+  const mode = String(value || '').trim();
+  return ['required', 'optional-read-only', 'absent-locked'].includes(mode) ? mode : 'required';
+}
+
+const projectProfile = loadJson(profilePath, {});
+const projectStateMode = normalizeProjectStateMode(projectProfile.projectStateMode || projectProfile?.harness?.projectStateMode);
+
+function enforceProjectStatePolicy() {
+  const stateExists = hasState();
+  if (projectStateMode === 'absent-locked' && stateExists) {
+    console.error('Found .project-state.json in project root, but projectStateMode is absent-locked.');
+    process.exit(1);
+  }
+  if (projectStateMode === 'required' && !stateExists) {
+    console.error('Missing .project-state.json in project root.');
+    process.exit(1);
+  }
+}
+
+function profileStatus() {
+  return {
+    statusModel: 'projectProfile',
+    projectStateMode,
+    projectStatePresent: hasState(),
+    legacyStageGatesPresent: false,
+    currentStage: projectProfile.currentStage ?? projectProfile.current_stage ?? null,
+    currentStageStatus: projectProfile.currentStageStatus ?? null,
+    nextTargetStage: projectProfile.nextTargetStage ?? null,
+    nextStageGateStatus: projectProfile.nextStageGateStatus ?? null,
+    recommendedNextStage: projectProfile.recommendedNextStage ?? null,
+    stageController: projectProfile.stageController ?? null
+  };
 }
 
 function qualityPass(value) {
@@ -171,8 +212,9 @@ function updateStage(state, stage, ok, notes) {
 }
 
 function run(stage) {
+  enforceProjectStatePolicy();
   if (!hasState()) {
-    console.error('Missing .project-state.json in project root.');
+    console.error(`No .project-state.json to verify stage gates; projectStateMode is ${projectStateMode}.`);
     process.exit(1);
   }
   const state = readJson(statePath);
@@ -276,9 +318,10 @@ function run(stage) {
 }
 
 if (args[0] === '--status') {
+  enforceProjectStatePolicy();
   if (!hasState()) {
-    console.error('Missing .project-state.json in project root.');
-    process.exit(1);
+    console.log(JSON.stringify(profileStatus(), null, 2));
+    process.exit(0);
   }
   const state = readJson(statePath);
   if (state.stageGates) {
@@ -287,8 +330,10 @@ if (args[0] === '--status') {
   }
   console.log(JSON.stringify({
     statusModel: state.stageController ? 'stageController' : 'unknown',
+    projectStateMode,
+    projectStatePresent: true,
     legacyStageGatesPresent: false,
-    currentStage: state.currentStage ?? state.current_stage ?? null,
+    currentStage: state.currentStage ?? state.current_stage ?? projectProfile.currentStage ?? projectProfile.current_stage ?? null,
     currentStageStatus: state.currentStageStatus ?? null,
     nextTargetStage: state.nextTargetStage ?? null,
     nextStageGateStatus: state.nextStageGateStatus ?? null,
