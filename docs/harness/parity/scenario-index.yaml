@@ -84,13 +84,13 @@ notes:
   - current parity status remains stable and guarded
   - fixture expansion remains separated and blocked until a separate guarded proposal
   - FIFO cleanup ownership / 5GB storage measurement basis cannot be fully closed docs-only from existing docs alone
-  - OI-16 and OI-17 remain unresolved
+  - OI-16 remains unresolved; OI-17 remains open by PR #84
   - PR #75 moved the already-safe FIFO/trash operating boundary into docs/source/PRD.md, docs/source/TRD.md, and docs/source/DB_SCHEMA_AND_MAPPING.md
   - source docs now carry the FIFO safe operating boundary
   - `영구삭제 예정 시각` calculation boundary is decided docs-only as the first 08:00 Asia/Seoul cleanup boundary at or after `휴지통 이동 시각 + 7 days`
-  - no FIFO cleanup ownership or 5GB storage measurement basis decision is approved
+  - no FIFO cleanup ownership decision is approved; PR #84 explicitly keeps OI-17 5GB storage measurement basis open without selecting a basis
   - OI-16 cleanup ownership is split from OI-17 5GB storage measurement basis as the next single live-readiness candidate
-  - OI-16 and OI-17 remain unresolved
+  - OI-16 remains unresolved; OI-17 remains open by PR #84
   - OI-16 cleanup ownership cannot be safely decided from existing docs alone
   - OI-16 owner candidates are prepared as scheduled Worker/Cron, manual operator, or separate operational runbook, with no candidate selected
   - no OI-16 owner candidate is approved from existing docs alone after reviewing the PR #79 proposal candidates
@@ -98,8 +98,8 @@ notes:
   - check:fifo-trash-candidates remains standalone live-read manual validation outside deterministic parity, scenario execution, baseline, CI, and product wiring
   - OI-17 5GB R2/storage population basis remains separate and out of scope for the next OI-16 path
   - OI-17 5GB storage measurement basis cannot be safely decided from existing docs alone
-  - OI-17 measurement candidates are prepared without selecting a basis
+  - OI-17 measurement candidates are prepared, and PR #84 keeps the basis unselected and open
   - this decision does not approve live access, behavior changes, implementation changes, or parity/product wiring
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: select one OI-17 5GB storage measurement basis candidate in a later narrow approval PR, or explicitly keep OI-17 open
+next_one_task: keep PR #84 OI-17 open decision reflected in pointer/status docs until a later explicit approval PR selects a 5GB storage measurement basis
