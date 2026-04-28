@@ -48,4 +48,6 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Select a later narrow source-of-truth movement PR before closing FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` implementation criteria.
+FIFO source-of-truth movement proposal has since been prepared without executing source-of-truth movement.
+
+A later narrow source-of-truth movement PR is still required before closing FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` implementation criteria.
