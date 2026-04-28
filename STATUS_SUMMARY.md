@@ -67,6 +67,8 @@
 - `cleanup:fifo-trash:dry-run`은 manual operator 검토용 dry-run-only wrapper로 추가된다. 이 wrapper는 `check:fifo-trash-candidates` 기반 후보 조회를 보조하되 live cleanup, execute mode, scheduled automation, OI-17 basis 선택을 수행하지 않는다.
 - PR #90 added `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` as the local Notion env setup runbook. It documents DB IDs and session-only token setup, and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
 - PR #92 made `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` path-agnostic by replacing the company-PC-specific absolute path with repo-root detection. It remains limited to manual operator dry-run preparation and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
+- PR #96 aligned `docs/harness/parity/scenario-index.yaml` with current OI-16/OI-17 status. OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 remains open.
+- PR #97 clarified older parity decision notes as historical OI-16 status records. It did not move source docs, approve live cleanup, approve execute mode, approve scheduled Worker/Cron cleanup, or select an OI-17 5GB basis.
 - broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다.
 
 ## 문서와 코드가 충돌하는 부분
