@@ -83,18 +83,14 @@ notes:
   - PR #67-#71 broader triage loop is closed and parity candidate selection is not reopened
   - current parity status remains stable and guarded
   - fixture expansion remains separated and blocked until a separate guarded proposal
-  - FIFO cleanup ownership / 5GB storage measurement basis cannot be fully closed docs-only from existing docs alone
-  - OI-16 remains unresolved; OI-17 remains open by PR #84
+  - FIFO cleanup ownership is resolved as manual operator-owned cleanup; OI-17 5GB storage measurement basis remains open
   - PR #75 moved the already-safe FIFO/trash operating boundary into docs/source/PRD.md, docs/source/TRD.md, and docs/source/DB_SCHEMA_AND_MAPPING.md
   - source docs now carry the FIFO safe operating boundary
   - `영구삭제 예정 시각` calculation boundary is decided docs-only as the first 08:00 Asia/Seoul cleanup boundary at or after `휴지통 이동 시각 + 7 days`
-  - no FIFO cleanup ownership decision is approved; PR #84 explicitly keeps OI-17 5GB storage measurement basis open without selecting a basis
-  - OI-16 cleanup ownership is split from OI-17 5GB storage measurement basis as the next single live-readiness candidate
-  - OI-16 remains unresolved; OI-17 remains open by PR #84
-  - OI-16 cleanup ownership cannot be safely decided from existing docs alone
-  - OI-16 owner candidates are prepared as scheduled Worker/Cron, manual operator, or separate operational runbook, with no candidate selected
-  - no OI-16 owner candidate is approved from existing docs alone after reviewing the PR #79 proposal candidates
-  - OI-16 remains open until a later explicit product, operations, or source-of-truth decision selects the 8 AM expired trash cleanup owner
+  - PR #84 explicitly keeps OI-17 5GB storage measurement basis open without selecting a basis
+  - OI-16 cleanup ownership is split from OI-17 5GB storage measurement basis and is selected as manual operator-owned cleanup
+  - manual operator-owned cleanup means the operator owns final approval for live cleanup execution
+  - scheduled Worker/Cron-owned cleanup remains a later automation maturity candidate and is not approved now
   - check:fifo-trash-candidates remains standalone live-read manual validation outside deterministic parity, scenario execution, baseline, CI, and product wiring
   - OI-17 5GB R2/storage population basis remains separate and out of scope for the next OI-16 path
   - OI-17 5GB storage measurement basis cannot be safely decided from existing docs alone
