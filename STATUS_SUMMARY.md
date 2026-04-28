@@ -55,9 +55,9 @@
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
 - PR #75로 source docs에 반영된 안전한 FIFO/trash boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
-- FIFO cleanup ownership과 5GB storage measurement basis는 unresolved live-readiness 후보로 남아 있다.
-- OI-16과 OI-17은 unresolved 상태로 유지되며, FIFO cleanup ownership implementation과 5GB storage measurement implementation은 승인되지 않았다.
-- OI-16은 8 AM expired trash cleanup owner가 아직 미확정이라 open 상태로 유지하며, scheduled Worker/Cron, manual operator, separate operational runbook 중 어떤 후보도 기존 docs만으로 승인되지 않았다.
+- FIFO cleanup ownership owner selection is resolved by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`; 5GB storage measurement basis remains unresolved.
+- OI-16 ownership selection is resolved as manual operator-owned cleanup; OI-17 remains unresolved, and FIFO cleanup implementation / 5GB storage measurement implementation are not approved.
+- OI-16 selects manual operator-owned cleanup as the 8 AM expired trash cleanup owner. Manual operator means final approval owner, not repeated hand cleanup. Scheduled Worker/Cron-owned cleanup remains a later automation candidate.
 - PR #84에서 OI-17 5GB threshold에 포함되는 R2/storage population은 기존 docs만으로 선택하지 않고 open 유지로 결정했으며, 후속 explicit product/ops/source-of-truth approval PR 전까지 implementation과 source-of-truth movement를 차단한다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
@@ -70,9 +70,9 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- OI-16 cleanup ownership은 explicit product/ops/source-of-truth decision 전까지 open 상태로 유지하고, OI-17은 별도 범위로 분리함
+- OI-16 cleanup ownership is selected as manual operator-owned cleanup by explicit operator/ops decision; OI-17 remains separate and open.
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
 - FIFO 후보 조회/처리 시 live 첨부 DB의 `영구삭제 예정 시각` 값 형식과 현재 코드가 일치하는지
-- FIFO 8 AM cleanup ownership과 5GB storage measurement basis
+- 5GB storage measurement basis; FIFO 8 AM cleanup implementation remains unapproved after manual operator ownership selection
