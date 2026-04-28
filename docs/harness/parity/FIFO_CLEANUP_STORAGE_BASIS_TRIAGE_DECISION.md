@@ -55,4 +55,6 @@ This decision does not approve:
 
 FIFO source-of-truth movement for the already-safe boundary has since been completed by PR #75, and `영구삭제 예정 시각` calculation has since been decided docs-only.
 
-A later narrow decision/triage is still required before closing FIFO cleanup ownership or 5GB storage measurement basis implementation criteria.
+A later narrow decision/triage should handle OI-16 FIFO cleanup ownership separately from OI-17 before any source-of-truth movement, behavior, or wiring changes.
+
+Keep OI-17 5GB storage measurement basis separate and unresolved until a later PR explicitly scopes the R2/storage population basis.

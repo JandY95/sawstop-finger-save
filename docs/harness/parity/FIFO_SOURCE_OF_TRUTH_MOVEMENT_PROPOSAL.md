@@ -60,4 +60,6 @@ This proposal does not approve:
 
 ## Next Safe Step
 
-Use a later narrow decision/triage to resolve the remaining FIFO cleanup ownership and 5GB storage measurement basis criteria before any behavior or wiring changes.
+Use a later narrow decision/triage to handle OI-16 FIFO cleanup ownership separately from OI-17 before any source-of-truth movement, behavior, or wiring changes.
+
+Keep OI-17 5GB storage measurement basis separate and unresolved until a later PR explicitly scopes the R2/storage population basis.

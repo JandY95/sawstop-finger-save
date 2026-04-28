@@ -39,8 +39,9 @@
 - source docs에 반영된 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
 - `영구삭제 예정 시각` calculation boundary는 docs-only로 결정됐으며, `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계를 사용한다
 - FIFO cleanup ownership과 5GB storage measurement basis decision은 승인되지 않았다
-- PR #75는 OI-16 또는 OI-17을 닫지 않았다
-- FIFO cleanup ownership / 5GB storage measurement basis의 실제 resolution에는 별도 narrow decision/triage가 필요하다
+- OI-16 cleanup ownership은 OI-17 5GB storage measurement basis와 분리되어 다음 단일 live-readiness 후보로 선정됐다
+- OI-16과 OI-17은 계속 unresolved 상태이며, OI-17은 다음 OI-16 triage 범위 밖에 둔다
+- FIFO cleanup ownership의 실제 resolution에는 별도 narrow decision/triage가 필요하다
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다
 
 ## Source Of Truth
@@ -59,4 +60,4 @@
 
 ## Next One Task
 
-- FIFO cleanup ownership / 5GB storage measurement basis의 unresolved implementation criteria를 별도 narrow decision/triage로 분리한다.
+- OI-16 FIFO / expired trash cleanup ownership을 OI-17 5GB storage measurement basis와 분리한 narrow decision/triage로 다룬다.
