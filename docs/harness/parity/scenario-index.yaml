@@ -88,7 +88,10 @@ notes:
   - existing FIFO safe operating boundary remains unchanged
   - no FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation decision is approved
   - FIFO cleanup ownership / 5GB storage measurement basis resolution requires a later narrow source-of-truth movement PR
+  - FIFO source-of-truth movement proposal is prepared, not executed
+  - future source-of-truth movement targets docs/source/PRD.md, docs/source/TRD.md, and docs/source/DB_SCHEMA_AND_MAPPING.md
+  - future required decisions are the 8 AM expired trash cleanup owner, 5GB R2/storage population basis, and `영구삭제 예정 시각` calculation relative to the 7-day restore window and 8 AM cleanup
   - this decision does not approve live access, behavior changes, implementation changes, or source-of-truth movement
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: separate FIFO cleanup ownership / 5GB storage measurement basis resolution into a later narrow source-of-truth movement PR
+next_one_task: separate FIFO cleanup ownership / 5GB storage measurement basis source-of-truth movement into a later narrow PR
