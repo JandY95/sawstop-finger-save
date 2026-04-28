@@ -80,6 +80,11 @@ notes:
   - Turnstile/MVP boundary is closed as docs-only; admin Turnstile is not required for current MVP completion
   - customer webform Turnstile remains separate and is not weakened or re-scoped by the Turnstile/MVP boundary decision
   - broader project status triage is closed for live status option confirmation, force FIFO exposure/removal, live FIFO criteria, and Turnstile/MVP boundary
+  - PR #67-#71 broader triage loop is closed and parity candidate selection is not reopened
+  - current parity status remains stable and guarded
+  - fixture expansion remains separated and blocked until a separate guarded proposal
+  - next single live-readiness candidate is FIFO cleanup ownership / 5GB storage measurement basis triage
+  - this decision does not approve live access, behavior changes, implementation changes, or source-of-truth movement
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: select any new non-parity status candidate separately in a later PR
+next_one_task: resolve FIFO cleanup ownership / 5GB storage measurement basis as the next single live-readiness triage candidate

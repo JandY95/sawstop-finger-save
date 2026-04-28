@@ -31,6 +31,10 @@
 - `check:fifo-trash-candidates`는 standalone live-read manual check로 유지하고 deterministic parity에서 제외한다
 - Turnstile/MVP boundary는 docs-only로 닫혔으며 admin Turnstile은 현재 MVP 완료 조건이 아니다
 - broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다
+- PR #67-#71 broader triage loop는 닫혔으며 parity candidate selection은 이 PR에서 다시 열지 않는다
+- current parity status는 stable and guarded 상태로 유지한다
+- fixture expansion은 별도 guarded proposal 전까지 separated and blocked 상태로 유지한다
+- 다음 단일 live-readiness 후보는 FIFO cleanup ownership / 5GB storage measurement basis triage다
 
 ## Source Of Truth
 
@@ -48,4 +52,4 @@
 
 ## Next One Task
 
-- 새 non-parity status 후보가 필요하면 별도 PR에서 단일 후보를 다시 선정한다.
+- FIFO cleanup ownership / 5GB storage measurement basis를 다음 단일 live-readiness triage 후보로 정리한다.
