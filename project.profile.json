@@ -1,7 +1,8 @@
-﻿{
+{
   "id": "sawstop-finger-save",
   "name": "SawStop Finger Save",
   "hostMode": "both",
   "visibility": "private",
-  "currentStage": "stage-6-parity-harness"
+  "currentStage": "stage-6-parity-harness",
+  "projectStateMode": "absent-locked"
 }
