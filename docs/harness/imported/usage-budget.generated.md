@@ -5,4 +5,3 @@
 - emergency <= 5%
 
 When usage budget is low, prefer handoff over expansion.
-

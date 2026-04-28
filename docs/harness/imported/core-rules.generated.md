@@ -18,4 +18,3 @@
 - caution: 20%
 - conserve: 10%
 - emergency: 5%
-
