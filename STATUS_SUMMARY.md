@@ -40,15 +40,16 @@
 - `docs/harness/parity/LIVE_STATUS_OPTIONS_TRIAGE_DECISION.md`에서 live status option confirmation은 기존 repo docs 기준으로 이미 resolved 상태라고 정리했다.
 - `docs/harness/parity/FORCE_FIFO_EXPOSURE_TRIAGE_DECISION.md`에서 force FIFO는 main admin UI에 노출하지 않고 일반 FIFO 실행 UI를 operating surface로 유지하기로 정리했다.
 - `docs/harness/parity/LIVE_FIFO_CRITERIA_TRIAGE_DECISION.md`에서 live FIFO 기준은 문서만으로 완전히 닫지 않고 현재 안전한 operating boundary만 기록했다.
+- `docs/harness/parity/TURNSTILE_MVP_BOUNDARY_TRIAGE_DECISION.md`에서 admin Turnstile은 현재 MVP 완료 조건이 아니며 D-12와 `MVP_CHECKLIST.md`가 admin auth MVP boundary를 이미 잠근 것으로 정리했다.
 
 ## 아직 안 된 것
-- Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
+- Customer webform Turnstile은 별도 흐름이며 이번 broader triage closure로 약화하거나 재정의하지 않는다.
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
 - FIFO 실제 운영 기준은 문서만으로 완전히 닫히지 않았고, 현재 안전한 boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
 - OI-16, OI-17, `영구삭제 예정 시각` calculation은 unresolved로 남아 있다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
-- 다음 broader project status triage 후보는 Turnstile/MVP boundary다.
+- broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다.
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
@@ -56,7 +57,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- Turnstile/MVP boundary를 broader project status triage로 문서화
+- 새 non-parity status 후보가 필요하면 별도 PR에서 단일 후보를 다시 선정
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목

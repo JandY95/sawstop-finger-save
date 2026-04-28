@@ -77,6 +77,9 @@ notes:
   - live FIFO criteria is not fully closable docs-only from existing docs alone
   - current live FIFO safe boundary is expired trash cleanup before FIFO, FIFO only after storage remains over 5GB, no trash path for FIFO, and attachment rows marked `영구삭제`
   - check:fifo-trash-candidates remains a standalone live-read manual check excluded from deterministic parity
+  - Turnstile/MVP boundary is closed as docs-only; admin Turnstile is not required for current MVP completion
+  - customer webform Turnstile remains separate and is not weakened or re-scoped by the Turnstile/MVP boundary decision
+  - broader project status triage is closed for live status option confirmation, force FIFO exposure/removal, live FIFO criteria, and Turnstile/MVP boundary
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: return to broader project status triage and resolve Turnstile/MVP boundary next
+next_one_task: select any new non-parity status candidate separately in a later PR

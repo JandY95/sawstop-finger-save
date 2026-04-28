@@ -10,13 +10,12 @@ Fixture-based expansion remains blocked until a separate guarded proposal select
 
 Next work returns to broader project status triage.
 
-## Likely Triage Areas
-
-- Turnstile/MVP boundary
+## Closed Triage Areas
 
 Live status option confirmation has since been closed as already resolved by existing repo docs.
 Force FIFO exposure/removal has since been closed as a docs-only decision: force FIFO remains unexposed in the main admin UI, while normal FIFO execution remains the operating surface.
 Live FIFO criteria has since been narrowed as a docs-only decision: full closure is not safe from existing docs alone, and the current safe operating boundary is limited to expired trash cleanup before FIFO, FIFO only after storage remains over 5GB, no trash path for FIFO, and attachment rows marked `영구삭제`.
+Turnstile/MVP boundary has since been closed as a docs-only decision: admin Turnstile is not required for current MVP completion, and customer webform Turnstile remains separate.
 
 ## Boundary
 
@@ -33,4 +32,4 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Use broader project status triage to resolve Turnstile/MVP boundary as the next unresolved candidate.
+Do not select another broader project status candidate from this decision. Any new non-parity status candidate must be selected separately in a later PR.
