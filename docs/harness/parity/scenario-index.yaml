@@ -95,6 +95,9 @@ notes:
   - OI-17 5GB R2/storage population basis remains separate and out of scope for the next OI-16 path
   - OI-17 5GB storage measurement basis cannot be safely decided from existing docs alone
   - OI-17 measurement candidates are prepared, and PR #84 keeps the basis unselected and open
+  - PR #96 aligned scenario status pointers with the current OI-16/OI-17 split
+  - PR #97 clarified older parity decision notes as historical OI-16 records without approving source-of-truth movement or cleanup execution
+  - PR #98 refreshed top-level status pointers after PR #97 without selecting an OI-17 5GB basis
   - this decision does not approve live access, behavior changes, implementation changes, or parity/product wiring
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once

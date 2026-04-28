@@ -50,6 +50,9 @@
 - `cleanup:fifo-trash:dry-run`은 manual operator 검토용 dry-run-only wrapper다. deterministic parity, scenario execution, baseline, CI, product wiring, live cleanup, execute mode와 분리한다
 - `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` was added in PR #90 as the local Notion env setup runbook. It documents manual operator dry-run preparation only, and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
 - PR #92 made `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` path-agnostic by replacing the company-PC-specific absolute path with repo-root detection. It remains a manual operator dry-run preparation runbook only and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
+- PR #96 aligned `scenario-index.yaml` with current OI-16/OI-17 status; OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 remains open.
+- PR #97 clarified older parity decision notes as historical OI-16 records without approving live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, or OI-17 basis selection.
+- PR #98 refreshed top-level status pointers after PR #97 and did not change source docs, product behavior, cleanup execution posture, or the OI-17 open decision.
 
 ## Source Of Truth
 
