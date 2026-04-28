@@ -53,6 +53,6 @@
 - `npm run smoke:admin-upload`
 
 ## TODO / OPEN ISSUE
-- Turnstile은 아직 관리자 로그인에 연결하지 않았다
-- 완료건 제외 검색은 live status option 잠금 전까지 TODO
-- `dev:remote`에서 multipart preview 안정성은 후속 확인 대상
+- Turnstile is still not wired to admin login and remains open.
+- Completed-record exclusion search now follows D-08: use the current admin search path that excludes completed records.
+- `dev:remote` multipart preview stability remains pending verification.
