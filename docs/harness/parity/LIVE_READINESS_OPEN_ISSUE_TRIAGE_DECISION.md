@@ -53,4 +53,8 @@ This decision does not approve:
 
 FIFO cleanup ownership / 5GB storage measurement basis has since been triaged as not fully closable from existing docs alone.
 
-Real resolution requires a later narrow source-of-truth movement PR before implementation criteria can be closed.
+PR #75 later moved only the already-safe FIFO/trash operating boundary into source docs.
+
+PR #75 did not close OI-16 or OI-17, and did not decide FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation.
+
+Real resolution requires a later narrow decision/triage before implementation criteria can be closed.

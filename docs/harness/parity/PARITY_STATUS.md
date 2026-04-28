@@ -35,12 +35,12 @@
 - current parity status는 stable and guarded 상태로 유지한다
 - fixture expansion은 별도 guarded proposal 전까지 separated and blocked 상태로 유지한다
 - FIFO cleanup ownership / 5GB storage measurement basis는 기존 docs만으로 fully closed 상태가 아니며, OI-16과 OI-17은 unresolved 상태로 유지한다
-- 기존 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지 그대로 유지한다
+- PR #75는 이미 안전한 FIFO/trash operating boundary를 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다
+- source docs에 반영된 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
 - FIFO cleanup ownership, 5GB storage measurement basis, `영구삭제 예정 시각` calculation decision은 승인되지 않았다
-- FIFO cleanup ownership / 5GB storage measurement basis의 실제 resolution에는 별도 narrow source-of-truth movement PR이 필요하다
-- FIFO source-of-truth movement proposal은 prepared 상태이며 source-of-truth movement는 아직 실행하지 않는다
-- 이후 source-of-truth movement PR의 target은 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`다
-- 이후 PR에서 결정해야 할 후보는 8 AM expired trash cleanup owner, 5GB threshold에 포함되는 R2/storage population, 7-day restore window와 8 AM cleanup 기준의 `영구삭제 예정 시각` 계산 방식이다
+- PR #75는 OI-16 또는 OI-17을 닫지 않았다
+- FIFO cleanup ownership / 5GB storage measurement basis / `영구삭제 예정 시각` calculation의 실제 resolution에는 별도 narrow decision/triage가 필요하다
+- `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다
 
 ## Source Of Truth
 
@@ -58,4 +58,4 @@
 
 ## Next One Task
 
-- FIFO cleanup ownership / 5GB storage measurement basis의 실제 source-of-truth movement를 별도 narrow PR로 분리한다.
+- FIFO cleanup ownership / 5GB storage measurement basis / `영구삭제 예정 시각` calculation의 unresolved implementation criteria를 별도 narrow decision/triage로 분리한다.

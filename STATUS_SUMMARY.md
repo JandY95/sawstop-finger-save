@@ -44,18 +44,19 @@
 - `docs/harness/parity/LIVE_READINESS_OPEN_ISSUE_TRIAGE_DECISION.md`에서 PR #67-#71 broader triage loop를 닫고 다음 단일 live-readiness 후보를 FIFO cleanup ownership / 5GB storage measurement basis triage로 선정했다.
 - `docs/harness/parity/FIFO_CLEANUP_STORAGE_BASIS_TRIAGE_DECISION.md`에서 FIFO cleanup ownership / 5GB storage measurement basis는 기존 docs만으로 완전히 닫을 수 없고, 실제 resolution에는 별도 narrow source-of-truth movement PR이 필요하다고 정리했다.
 - `docs/harness/parity/FIFO_SOURCE_OF_TRUTH_MOVEMENT_PROPOSAL.md`에서 FIFO cleanup ownership / 5GB storage measurement basis의 source-of-truth movement 후보를 준비하되, 이번 PR에서는 source-of-truth movement를 실행하지 않는 것으로 정리했다.
+- PR #75에서 이미 안전한 FIFO/trash operating boundary만 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다.
 
 ## 아직 안 된 것
 - Customer webform Turnstile은 별도 흐름이며 이번 broader triage closure로 약화하거나 재정의하지 않는다.
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
-- FIFO 실제 운영 기준은 문서만으로 완전히 닫히지 않았고, 현재 안전한 boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
+- PR #75로 source docs에 반영된 안전한 FIFO/trash boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
 - FIFO cleanup ownership, 5GB storage measurement basis, `영구삭제 예정 시각` calculation은 unresolved live-readiness 후보로 남아 있다.
-- 이 PR은 FIFO cleanup ownership, 5GB storage measurement basis, `영구삭제 예정 시각` calculation을 결정하지 않는다.
+- PR #75는 FIFO cleanup ownership, 5GB storage measurement basis, `영구삭제 예정 시각` calculation을 결정하지 않았다.
 - OI-16과 OI-17은 unresolved 상태로 유지되며, FIFO cleanup ownership implementation, 5GB storage measurement implementation, `영구삭제 예정 시각` calculation implementation은 승인되지 않았다.
-- 이후 source-of-truth movement PR에서 결정해야 할 후보는 8 AM expired trash cleanup owner, 5GB threshold에 포함되는 R2/storage population, 7-day restore window와 8 AM cleanup 기준의 `영구삭제 예정 시각` 계산 방식이다.
-- source-of-truth movement target은 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 준비됐지만 이번 PR에서는 수정하지 않는다.
+- 이후 별도 decision/triage에서 결정해야 할 후보는 8 AM expired trash cleanup owner, 5GB threshold에 포함되는 R2/storage population, 7-day restore window와 8 AM cleanup 기준의 `영구삭제 예정 시각` 계산 방식이다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
+- `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
 - broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다.
 
 ## 문서와 코드가 충돌하는 부분
@@ -64,7 +65,7 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- FIFO cleanup ownership / 5GB storage measurement basis의 source-of-truth movement proposal prepared 상태를 문서화하고, 실제 source-of-truth movement는 별도 PR로 분리
+- PR #75 이후 pointer docs를 source-boundary moved 상태로 정렬하고, OI-16/OI-17 및 `영구삭제 예정 시각` calculation은 unresolved 상태로 유지
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
