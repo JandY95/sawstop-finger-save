@@ -61,4 +61,4 @@
 
 ## Next One Task
 
-- OI-16 FIFO / expired trash cleanup ownership은 explicit product/ops/source-of-truth decision 전까지 open 상태로 유지하고, OI-17 5GB R2/storage population basis는 별도 후보로 분리한다.
+- OI-17 5GB R2/storage population basis 후보 중 하나를 후속 narrow approval PR에서 선택하거나, OI-17을 계속 open으로 유지한다.

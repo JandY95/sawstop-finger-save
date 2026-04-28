@@ -97,7 +97,9 @@ notes:
   - OI-16 remains open until a later explicit product, operations, or source-of-truth decision selects the 8 AM expired trash cleanup owner
   - check:fifo-trash-candidates remains standalone live-read manual validation outside deterministic parity, scenario execution, baseline, CI, and product wiring
   - OI-17 5GB R2/storage population basis remains separate and out of scope for the next OI-16 path
+  - OI-17 5GB storage measurement basis cannot be safely decided from existing docs alone
+  - OI-17 measurement candidates are prepared without selecting a basis
   - this decision does not approve live access, behavior changes, implementation changes, or parity/product wiring
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: keep OI-16 FIFO / expired trash cleanup ownership open until a later explicit product, operations, or source-of-truth decision, and keep OI-17 separate
+next_one_task: select one OI-17 5GB storage measurement basis candidate in a later narrow approval PR, or explicitly keep OI-17 open
