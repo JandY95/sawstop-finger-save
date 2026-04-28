@@ -45,4 +45,6 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Keep OI-16 and OI-17 open until a later narrow decision separately resolves FIFO cleanup ownership and 5GB storage measurement basis.
+Use a later narrow decision/triage to handle OI-16 FIFO cleanup ownership separately from OI-17.
+
+Keep OI-17 5GB storage measurement basis separate and unresolved until a later PR explicitly scopes the R2/storage population basis.
