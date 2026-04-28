@@ -15,11 +15,11 @@
 - 관리자 인증 MVP 기준은 D-12에 맞춰 비밀번호, 서명 세션 쿠키, 실패 로그인 잠금으로 정리되어 있다.
 
 ## 이번 배치 정리
-- 관리자 UI의 완료건 제외 검색 TODO 문구를 현재 코드 기준으로 정리했다.
+- Historical stale/TODO wording for the admin completed-case exclusion search has been cleaned up against the current code.
 - 관리자 UI의 강제 FIFO 버튼은 제거하고 일반 FIFO 실행만 유지했다.
 - 관리자 로그인 안내 문구를 현재 구현 상태에 맞게 정리했다.
 - `MVP_CHECKLIST.md`의 관리자 Turnstile 기준을 D-12와 현재 구현 상태에 맞게 정리했다.
-- `MVP_CHECKLIST.md`의 stale source path 정리는 PR #17에서 완료됐다.
+- Historical stale source-path wording in `MVP_CHECKLIST.md` was cleaned up in PR #17.
 - `verify:gates --status`의 `undefined` 출력은 PR #19에서 repo-local `stageController` JSON 출력으로 정리됐다.
 - `README.md` 0-byte 상태는 PR #20에서 최소 운영 안내 문서 작성으로 정리됐다.
 - historical: core PR #113 bootstrap 경로에서 local `.project-state.json` stage drift 복구가 언급됐지만, 현재 repo-local checkout에는 `.project-state.json`이 없다.
@@ -32,7 +32,7 @@
 - PR #37에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_INTEGRATION_DECISION.md`를 추가해 `check:queue-payload-fixtures`를 당분간 standalone으로 유지하기로 결정했다.
 - PR #39에서 `docs/harness/parity/PARITY_SCENARIOS.md`에 `check:queue-payload-fixtures`를 manual tooling check로 추가했다.
 - PR #41에서 `docs/harness/parity/QUEUE_PAYLOAD_FIXTURE_VALIDATOR_CLOSURE_REVIEW.md`를 추가해 Queue payload validator 흐름을 standalone manual tooling path로 닫았다.
-- PR #42에서 `PARITY_STATUS.md`와 `scenario-index.yaml`의 stale next-task wording을 정리했다.
+- PR #42 cleaned up historical stale next-task wording in `PARITY_STATUS.md` and `scenario-index.yaml`.
 - PR #44에서 `docs/harness/parity/LIVE_CHECKS_STANDALONE_DECISION.md`를 추가해 `check:attachment-source-live`와 `check:fifo-trash-candidates`를 deterministic parity 후보에서 제외하고 standalone live-read manual checks로 유지하기로 결정했다.
 - PR #46에서 `docs/harness/parity/SUBMIT_NORMALIZATION_FIXTURE_DECISION.md`를 추가해 submit normalization / Notion mapping을 다음 stage-6 fixture 후보로 선정했다.
 - PR #48에서 `docs/harness/parity/SUBMIT_FIXTURE_PLAN.md`를 추가해 submit fixture plan을 docs-only로 완료했다.
