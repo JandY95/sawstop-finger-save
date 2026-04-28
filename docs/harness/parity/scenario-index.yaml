@@ -73,6 +73,10 @@ notes:
   - next work returns to broader project status triage
   - live status option confirmation is already resolved by existing repo docs
   - no new live Notion confirmation is needed for live status options
+  - force FIFO exposure/removal is closed as docs-only; force FIFO remains unexposed in the main admin UI
+  - live FIFO criteria is not fully closable docs-only from existing docs alone
+  - current live FIFO safe boundary is expired trash cleanup before FIFO, FIFO only after storage remains over 5GB, no trash path for FIFO, and attachment rows marked `영구삭제`
+  - check:fifo-trash-candidates remains a standalone live-read manual check excluded from deterministic parity
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: return to broader project status triage and select the next single candidate from live FIFO criteria or force FIFO exposure/removal
+next_one_task: return to broader project status triage and resolve Turnstile/MVP boundary next

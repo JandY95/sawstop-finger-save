@@ -38,14 +38,17 @@
 - PR #66에서 `docs/harness/parity/FIXTURE_PARITY_IMPLEMENTATION_PROPOSAL_DECISION.md`가 추가되어 특정 fixture parity implementation proposal은 지금 필요하지 않다고 결정했다.
 - `docs/harness/parity/STAGE_6_PARITY_TRIAGE_DECISION.md`에서 새 non-fixture Stage 6 parity candidate를 지금 선정하지 않고 broader project status triage로 돌아가기로 결정했다.
 - `docs/harness/parity/LIVE_STATUS_OPTIONS_TRIAGE_DECISION.md`에서 live status option confirmation은 기존 repo docs 기준으로 이미 resolved 상태라고 정리했다.
+- `docs/harness/parity/FORCE_FIFO_EXPOSURE_TRIAGE_DECISION.md`에서 force FIFO는 main admin UI에 노출하지 않고 일반 FIFO 실행 UI를 operating surface로 유지하기로 정리했다.
+- `docs/harness/parity/LIVE_FIFO_CRITERIA_TRIAGE_DECISION.md`에서 live FIFO 기준은 문서만으로 완전히 닫지 않고 현재 안전한 operating boundary만 기록했다.
 
 ## 아직 안 된 것
 - Turnstile은 관리자 로그인에 현재 적용되지 않으며, 후속 결정 전까지 MVP 필수 조건이 아니다.
-- 강제 FIFO는 백엔드 옵션으로 남아 있지만, 운영 메인 UI에 노출할 필요성은 문서 기준으로 확인되지 않는다.
-- FIFO 실제 운영 기준은 문서만으로 완전히 닫히지 않았다.
+- 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
+- FIFO 실제 운영 기준은 문서만으로 완전히 닫히지 않았고, 현재 안전한 boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
+- OI-16, OI-17, `영구삭제 예정 시각` calculation은 unresolved로 남아 있다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
-- 다음 작업은 live FIFO 기준 또는 강제 FIFO 노출/제거를 broader project status triage로 정리하는 것이다.
+- 다음 broader project status triage 후보는 Turnstile/MVP boundary다.
 
 ## 문서와 코드가 충돌하는 부분
 - 현재 확인된 repo-local 충돌 후보는 제품 코드가 아니라 parity 운영 범위 판단 쪽에 있다.
@@ -53,9 +56,9 @@
 - `verify-gates.js --status`는 현재 `.project-state.json`의 `stageController` 모델을 repo-local status JSON으로 출력한다.
 
 ## 지금 바로 수정해도 안전한 항목
-- broader project status triage 결과를 문서화하고 다음 단일 후보를 정리
+- Turnstile/MVP boundary를 broader project status triage로 문서화
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
-- FIFO 후보 조회/처리 시 live 첨부 DB의 `영구삭제 예정 시각` 값 형식과 status 옵션명이 현재 코드와 일치하는지
-- 강제 FIFO 백엔드 옵션을 운영에서 계속 유지할지, 완전히 제거할지
+- FIFO 후보 조회/처리 시 live 첨부 DB의 `영구삭제 예정 시각` 값 형식과 현재 코드가 일치하는지
+- FIFO 8 AM cleanup ownership과 5GB storage measurement basis
