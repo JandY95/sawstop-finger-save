@@ -56,20 +56,21 @@
 - `docs/harness/parity/FIFO_CLEANUP_STORAGE_BASIS_TRIAGE_DECISION.md`에서 FIFO cleanup ownership / 5GB storage measurement basis는 기존 docs만으로 완전히 닫을 수 없고, 실제 resolution에는 별도 narrow source-of-truth movement PR이 필요하다고 정리했다.
 - `docs/harness/parity/FIFO_SOURCE_OF_TRUTH_MOVEMENT_PROPOSAL.md`에서 FIFO cleanup ownership / 5GB storage measurement basis의 source-of-truth movement 후보를 준비하되, 이번 PR에서는 source-of-truth movement를 실행하지 않는 것으로 정리했다.
 - PR #75에서 이미 안전한 FIFO/trash operating boundary만 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다.
+- `docs/harness/parity/PERMANENT_DELETE_SCHEDULE_CALCULATION_DECISION.md`에서 `영구삭제 예정 시각` 계산 경계만 docs-only로 결정했다.
 
 ## 보류
 - `출처` 속성은 candidate 상태라 runtime 연결 전 live schema 확정이 필요하다.
 - Customer webform Turnstile은 별도 흐름이며 이번 broader triage closure로 약화하거나 재정의하지 않는다.
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
 - PR #75로 source docs에 반영된 live FIFO safe boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
-- FIFO cleanup ownership, 5GB storage measurement basis, `영구삭제 예정 시각` calculation은 unresolved live-readiness 후보로 남아 있다.
-- OI-16과 OI-17은 unresolved 상태로 유지되며, FIFO cleanup ownership implementation, 5GB storage measurement implementation, `영구삭제 예정 시각` calculation implementation은 승인되지 않았다.
-- PR #75는 FIFO cleanup ownership, 5GB storage measurement basis, `영구삭제 예정 시각` calculation을 결정하지 않았다.
-- 이후 별도 decision/triage에서 결정해야 할 후보는 8 AM expired trash cleanup owner, 5GB threshold에 포함되는 R2/storage population, 7-day restore window와 8 AM cleanup 기준의 `영구삭제 예정 시각` 계산 방식이다.
+- `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
+- FIFO cleanup ownership과 5GB storage measurement basis는 unresolved live-readiness 후보로 남아 있다.
+- OI-16과 OI-17은 unresolved 상태로 유지되며, FIFO cleanup ownership implementation과 5GB storage measurement implementation은 승인되지 않았다.
+- 이후 별도 decision/triage에서 결정해야 할 후보는 8 AM expired trash cleanup owner와 5GB threshold에 포함되는 R2/storage population이다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
 - 이번 결정은 live access, behavior change, implementation change를 승인하지 않는다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.
 
 ## 다음 단일 후보
-- FIFO cleanup ownership / 5GB storage measurement basis / `영구삭제 예정 시각` calculation의 unresolved implementation criteria를 별도 narrow decision/triage로 분리한다.
+- FIFO cleanup ownership / 5GB storage measurement basis의 unresolved implementation criteria를 별도 narrow decision/triage로 분리한다.

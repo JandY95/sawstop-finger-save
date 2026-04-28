@@ -19,7 +19,6 @@ Remaining unresolved live-readiness candidates include:
 
 - FIFO cleanup ownership
 - 5GB storage measurement basis
-- `영구삭제 예정 시각` calculation
 - other source-doc open issues
 
 The next single candidate should be FIFO cleanup ownership / 5GB storage measurement basis triage.
@@ -45,7 +44,6 @@ This decision does not approve:
 - live readiness behavior implementation
 - FIFO cleanup ownership decisions
 - 5GB storage measurement basis decisions
-- `영구삭제 예정 시각` calculation decisions
 - wiring into `npm test`, parity, scenario execution, CI, baseline, or live services
 - live Notion, R2, Queue, or Cloudflare access or writes
 
@@ -57,4 +55,6 @@ PR #75 later moved only the already-safe FIFO/trash operating boundary into sour
 
 PR #75 did not close OI-16 or OI-17, and did not decide FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation.
 
-Real resolution requires a later narrow decision/triage before implementation criteria can be closed.
+`영구삭제 예정 시각` calculation has since been decided docs-only.
+
+Real resolution for the remaining FIFO cleanup ownership and 5GB storage measurement basis criteria requires a later narrow decision/triage before implementation criteria can be closed.
