@@ -91,10 +91,12 @@ notes:
   - no FIFO cleanup ownership or 5GB storage measurement basis decision is approved
   - OI-16 cleanup ownership is split from OI-17 5GB storage measurement basis as the next single live-readiness candidate
   - OI-16 and OI-17 remain unresolved
+  - OI-16 cleanup ownership cannot be safely decided from existing docs alone
+  - OI-16 owner candidates are prepared as scheduled Worker/Cron, manual operator, or separate operational runbook, with no candidate selected
   - check:fifo-trash-candidates remains standalone live-read manual validation outside deterministic parity, scenario execution, baseline, CI, and product wiring
-  - FIFO cleanup ownership resolution requires a later narrow decision/triage
+  - FIFO cleanup ownership resolution requires a later narrow approval PR
   - OI-17 5GB R2/storage population basis remains separate and out of scope for the next OI-16 path
   - this decision does not approve live access, behavior changes, implementation changes, or parity/product wiring
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: handle OI-16 FIFO / expired trash cleanup ownership separately from OI-17 5GB storage measurement basis in a later narrow decision or triage
+next_one_task: select one OI-16 FIFO / expired trash cleanup ownership candidate in a later narrow approval PR, or explicitly keep OI-16 open

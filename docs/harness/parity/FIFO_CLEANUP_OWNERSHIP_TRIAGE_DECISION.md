@@ -49,6 +49,8 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Use a later narrow docs-only decision to decide whether OI-16 cleanup ownership can be closed or must remain open.
+OI-16 cleanup ownership has since been reviewed as not safely decidable from existing docs alone.
+
+Use a later narrow approval PR to select one OI-16 cleanup owner candidate or explicitly keep OI-16 open.
 
 Keep OI-17 separate until a later PR explicitly scopes the 5GB R2/storage population measurement basis.
