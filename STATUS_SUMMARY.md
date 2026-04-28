@@ -62,6 +62,7 @@
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
+- `docs/harness/parity/FIFO_CLEANUP_CLI_ASSISTED_DRY_RUN_DESIGN.md`에서 manual operator의 반복 피로도를 낮추기 위한 CLI-assisted cleanup dry-run 설계 경계를 문서화한다. 이 설계는 구현, live cleanup, scheduled Worker/Cron, source-of-truth movement, OI-17 basis 선택을 승인하지 않는다.
 - broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다.
 
 ## 문서와 코드가 충돌하는 부분

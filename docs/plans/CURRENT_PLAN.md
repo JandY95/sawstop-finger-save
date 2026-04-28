@@ -72,6 +72,7 @@
 - OI-16 selects manual operator-owned cleanup as the 8 AM expired trash cleanup owner. Manual operator means final approval owner, not repeated hand cleanup. Scheduled Worker/Cron-owned cleanup remains a later automation candidate.
 - PR #84에서 OI-17 5GB threshold에 포함되는 R2/storage population은 기존 docs만으로 선택하지 않고 open 유지로 결정했으며, 후속 explicit product/ops/source-of-truth approval PR 전까지 implementation과 source-of-truth movement를 차단한다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
+- `docs/harness/parity/FIFO_CLEANUP_CLI_ASSISTED_DRY_RUN_DESIGN.md`에서 manual operator의 반복 피로도를 낮추기 위한 CLI-assisted cleanup dry-run 설계 경계를 문서화한다. 이 설계는 구현, live cleanup, scheduled Worker/Cron, source-of-truth movement, OI-17 basis 선택을 승인하지 않는다.
 - 이번 결정은 live access, behavior change, implementation change를 승인하지 않는다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.

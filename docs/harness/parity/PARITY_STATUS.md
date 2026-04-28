@@ -44,6 +44,7 @@
 - OI-16 cleanup ownership selects manual operator-owned cleanup. The manual operator is the final live cleanup approval owner; CLI-assisted candidate generation, dry-run, verification, and audit logging may be proposed later.
 - Scheduled Worker/Cron-owned cleanup remains a later automation maturity candidate and is not approved for live execution now.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다
+- `FIFO_CLEANUP_CLI_ASSISTED_DRY_RUN_DESIGN.md`는 manual operator-owned cleanup의 다음 성숙 단계인 CLI-assisted dry-run 설계 경계를 기록한다. 구현, live cleanup, scheduled Worker/Cron, OI-17 basis 선택은 승인하지 않는다
 
 ## Source Of Truth
 
