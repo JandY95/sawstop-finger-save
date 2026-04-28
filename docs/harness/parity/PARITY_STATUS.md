@@ -29,6 +29,8 @@
 - force FIFO exposure/removal은 docs-only로 닫혔으며 force FIFO는 main admin UI에 노출하지 않는다
 - live FIFO criteria는 문서만으로 fully closed 상태가 아니며, 현재 안전한 boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
 - `check:fifo-trash-candidates`는 standalone live-read manual check로 유지하고 deterministic parity에서 제외한다
+- Turnstile/MVP boundary는 docs-only로 닫혔으며 admin Turnstile은 현재 MVP 완료 조건이 아니다
+- broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다
 
 ## Source Of Truth
 
@@ -46,4 +48,4 @@
 
 ## Next One Task
 
-- broader project status triage에서 Turnstile/MVP boundary를 다음 단일 후보로 정리한다.
+- 새 non-parity status 후보가 필요하면 별도 PR에서 단일 후보를 다시 선정한다.

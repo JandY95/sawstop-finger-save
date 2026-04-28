@@ -41,4 +41,6 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Move the next broader triage candidate to Turnstile/MVP boundary, unless live FIFO implementation criteria are explicitly approved separately.
+Turnstile/MVP boundary has since been closed as a docs-only decision.
+
+Any new non-parity status candidate must be selected separately in a later PR.
