@@ -2,6 +2,17 @@
 
 ## Decision
 
+## Current Status Note
+
+This document records an earlier triage state.
+
+OI-16 cleanup ownership was later resolved as manual operator-owned cleanup by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`.
+
+OI-17 5GB storage measurement basis remains separate and open.
+
+This note does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, implementation changes, or OI-17 basis selection.
+
+
 PR #75 moved the already-safe FIFO/trash operating boundary into source docs:
 
 - `docs/source/PRD.md`
