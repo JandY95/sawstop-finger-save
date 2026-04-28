@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T01:49:23.241Z",
+  "generatedAt": null,
   "source": "Core/machine/stage-definitions.json + Core/machine/project-defaults.json",
   "osStages": [
     {
