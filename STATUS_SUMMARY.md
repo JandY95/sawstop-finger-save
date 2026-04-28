@@ -65,6 +65,7 @@
 - `docs/harness/parity/FIFO_CLEANUP_CLI_ASSISTED_DRY_RUN_DESIGN.md`에서 manual operator의 반복 피로도를 낮추기 위한 CLI-assisted cleanup dry-run 설계 경계를 문서화한다. 이 설계는 구현, live cleanup, scheduled Worker/Cron, source-of-truth movement, OI-17 basis 선택을 승인하지 않는다.
 - `docs/harness/parity/FIFO_CLEANUP_CLI_ASSISTED_WRAPPER_IMPLEMENTATION_DECISION.md`에서 dry-run-only CLI wrapper 구현 경계를 승인한다. 이 결정은 wrapper 구현 PR의 범위만 열며 live cleanup, execute mode, scheduled automation, OI-17 basis 선택은 승인하지 않는다.
 - `cleanup:fifo-trash:dry-run`은 manual operator 검토용 dry-run-only wrapper로 추가된다. 이 wrapper는 `check:fifo-trash-candidates` 기반 후보 조회를 보조하되 live cleanup, execute mode, scheduled automation, OI-17 basis 선택을 수행하지 않는다.
+- PR #90 added `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` as the local Notion env setup runbook. It documents DB IDs and session-only token setup, and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
 - broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다.
 
 ## 문서와 코드가 충돌하는 부분
