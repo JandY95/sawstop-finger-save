@@ -96,8 +96,8 @@ fixtures/
   admin-upload.valid.json
 
 docs/
-  OPEN_ISSUES.md
-  SCHEMA_SNAPSHOT.md
+  decisions/OPEN_ISSUES.md
+  decisions/DECISIONS_LOCK.md
 ```
 
 주의:
@@ -117,8 +117,8 @@ docs/
 코드를 쓰기 전에 **live schema와 미확정 항목**을 먼저 잠가서, 뒤에서 갈아엎는 일을 줄인다.
 
 ### 3. 수정/작성 대상
-- `docs/OPEN_ISSUES.md` 또는 `docs/DECISIONS.md`
-- `docs/SCHEMA_SNAPSHOT.md`
+- `docs/decisions/OPEN_ISSUES.md`
+- `docs/decisions/DECISIONS_LOCK.md`
 - Notion live DB 확인 기록
 
 ### 4. 완료 확인 방법
@@ -357,7 +357,7 @@ Workers와 Consumer 사이 계약을 먼저 고정한다.
 ### 3. 수정/작성 대상
 - `src/types.ts`
 - `src/queue.ts`
-- `docs/OPEN_ISSUES.md`
+- `docs/decisions/OPEN_ISSUES.md`
 - 필요 시 `fixtures/queue-payload.valid.json`
 
 고정 필드:
