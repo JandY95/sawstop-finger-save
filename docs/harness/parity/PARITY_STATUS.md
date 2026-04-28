@@ -6,7 +6,8 @@
 - 기준 판단: 기준 유지
 - 현재 상태:
   - `project.profile.json`의 `currentStage`는 `stage-6-parity-harness`
-  - 로컬 `.project-state.json`은 reference-only 상태 파일로 유지한다
+  - 현재 repo-local checkout에는 `.project-state.json`이 없다
+  - `.project-state.json`이 현재 checkout에 복구됐거나 유지된다고 전제하지 않는다
   - tracked repo 기준 parity runner script, baseline 파일, GitHub Actions workflow가 존재한다
   - `npm run parity` run/compare가 현재 baseline 기준으로 통과했고 GitHub Actions `Parity Harness` 1회 성공이 확인됐다
 
