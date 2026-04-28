@@ -25,7 +25,7 @@
   - 관리자 multipart 업로드는 preview 재시작/503 이슈가 있을 수 있으므로 보조 확인용으로만 사용한다
 
 ## 원격 R2 확인 명령 예시
-Windows PowerShell에서는 `npx.cmd`를 사용한다.
+Windows PowerShell example uses `npx.cmd`.
 
 - `npx.cmd wrangler r2 object get "sawstop-attachments/attachments/202604121252-5678/0001_1775980881697_finger1.jpg" --remote --file <temp-file-path>`
 

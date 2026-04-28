@@ -20,7 +20,7 @@
 
 ## 필요한 환경변수
 
-아래 DB ID는 session-scoped non-secret config로 로컬 세션에 넣어도 된다.
+Use the DB IDs below as session-scoped non-secret local configuration.
 
 ~~~powershell
 $env:NOTION_SETTINGS_DB_ID = "a432f5acc8554f7db141f9ab2dc86f35"
