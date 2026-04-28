@@ -30,7 +30,8 @@
     "dev:recalculate-finger-photo": "node --experimental-strip-types --experimental-specifier-resolution=node scripts/recalculate-finger-photo.ts",
     "test": "npm run check:notion-schema && npm run check:allowed-values && npm run smoke:submit && npm run smoke:admin-search && npm run smoke:admin-upload && npm run smoke:admin-list-attachments && npm run smoke:admin-update-accident-status && npm run smoke:admin-update-attachment-type && npm run smoke:admin-move-attachment-to-trash && npm run smoke:admin-restore-attachment && npm run smoke:admin-process-fifo-trash",
     "lint": "node --check scripts/verify-gates.js",
-    "verify:gates": "node scripts/verify-gates.js --status"
+    "verify:gates": "node scripts/verify-gates.js --status",
+    "cleanup:fifo-trash:dry-run": "node --experimental-strip-types scripts/fifo-cleanup-dry-run.ts"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
