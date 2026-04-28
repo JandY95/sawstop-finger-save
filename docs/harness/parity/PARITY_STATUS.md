@@ -38,9 +38,9 @@
 - PR #75는 이미 안전한 FIFO/trash operating boundary를 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다
 - source docs에 반영된 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
 - `영구삭제 예정 시각` calculation boundary는 docs-only로 결정됐으며, `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계를 사용한다
-- FIFO cleanup ownership과 5GB storage measurement basis decision은 승인되지 않았다
+- FIFO cleanup ownership decision은 승인되지 않았고, PR #84에서 5GB storage measurement basis는 기존 docs만으로 선택하지 않고 open 유지로 결정했다
 - OI-16 cleanup ownership은 OI-17 5GB storage measurement basis와 분리되어 다음 단일 live-readiness 후보로 선정됐다
-- OI-16과 OI-17은 계속 unresolved 상태이며, OI-17은 다음 OI-16 triage 범위 밖에 둔다
+- OI-16은 계속 unresolved 상태이며, OI-17은 PR #84로 open 유지가 명시됐고 다음 OI-16 triage 범위 밖에 둔다
 - OI-16 cleanup ownership은 기존 docs만으로 안전하게 결정할 수 없으며, scheduled Worker/Cron, manual operator, separate operational runbook 같은 owner 후보만 proposal로 준비됐다
 - PR #79의 OI-16 owner 후보는 모두 기존 docs만으로 승인되지 않았으며, OI-16은 explicit product/ops/source-of-truth decision 전까지 open 상태로 유지한다
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다
@@ -61,4 +61,4 @@
 
 ## Next One Task
 
-- OI-17 5GB R2/storage population basis 후보 중 하나를 후속 narrow approval PR에서 선택하거나, OI-17을 계속 open으로 유지한다.
+- PR #84 이후 OI-17은 open 유지 상태로 잠겼으며, 다음 OI-17 작업은 별도 explicit approval 전까지 basis 선택이 아니라 pointer/status drift 방지로 제한한다.

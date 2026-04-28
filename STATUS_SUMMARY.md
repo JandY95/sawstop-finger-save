@@ -58,7 +58,7 @@
 - FIFO cleanup ownership과 5GB storage measurement basis는 unresolved live-readiness 후보로 남아 있다.
 - OI-16과 OI-17은 unresolved 상태로 유지되며, FIFO cleanup ownership implementation과 5GB storage measurement implementation은 승인되지 않았다.
 - OI-16은 8 AM expired trash cleanup owner가 아직 미확정이라 open 상태로 유지하며, scheduled Worker/Cron, manual operator, separate operational runbook 중 어떤 후보도 기존 docs만으로 승인되지 않았다.
-- OI-17 5GB threshold에 포함되는 R2/storage population은 별도 후보로 분리해 유지하며, measurement basis 후보는 후속 narrow approval PR에서 선택하거나 계속 open으로 남겨야 한다.
+- PR #84에서 OI-17 5GB threshold에 포함되는 R2/storage population은 기존 docs만으로 선택하지 않고 open 유지로 결정했으며, 후속 explicit product/ops/source-of-truth approval PR 전까지 implementation과 source-of-truth movement를 차단한다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
