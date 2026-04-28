@@ -21,9 +21,9 @@ PR #75 moved the already-safe FIFO/trash operating boundary into source docs:
 
 The source-of-truth movement completed only for the already-safe operating boundary.
 
-OI-16 and OI-17 remain unresolved.
+At the time of PR #75, OI-16 and OI-17 remained unresolved.
 
-PR #75 did not decide FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation.
+PR #75 did not decide FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` calculation at that time.
 
 `영구삭제 예정 시각` calculation has since been decided docs-only as the first 08:00 Asia/Seoul cleanup boundary at or after the full 7-day restore window has elapsed from `휴지통 이동 시각`.
 
@@ -35,10 +35,12 @@ No new Stage 6 parity candidate is selected.
 
 ## Required Future Decisions
 
-A later narrow decision/triage must decide:
+A later narrow decision/triage was required at that time for:
 
 - FIFO cleanup owner candidate: what system or operator owns the 8 AM expired trash cleanup.
 - 5GB measurement basis candidate: what R2/storage population counts toward the threshold.
+
+OI-16 cleanup ownership was later resolved as manual operator-owned cleanup. OI-17 remains open and still requires explicit product, operations, or source-of-truth approval before any 5GB measurement basis is selected.
 
 ## Source Files Updated By PR #75
 
@@ -71,6 +73,6 @@ This proposal does not approve:
 
 ## Next Safe Step
 
-Use a later narrow decision/triage to handle OI-16 FIFO cleanup ownership separately from OI-17 before any source-of-truth movement, behavior, or wiring changes.
+OI-16 FIFO cleanup ownership has since been handled separately from OI-17 and selected as manual operator-owned cleanup. This document still does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, behavior, or wiring changes.
 
 Keep OI-17 5GB storage measurement basis separate and unresolved until a later PR explicitly scopes the R2/storage population basis.

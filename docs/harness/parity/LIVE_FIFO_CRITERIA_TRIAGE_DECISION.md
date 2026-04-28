@@ -15,7 +15,13 @@ The current safe operating boundary is only:
 
 `check:fifo-trash-candidates` remains excluded from deterministic parity.
 
-OI-16 and OI-17 remain unresolved.
+At the time of this triage, OI-16 and OI-17 remained unresolved.
+
+OI-16 cleanup ownership was later resolved as manual operator-owned cleanup by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`.
+
+OI-17 5GB storage measurement basis remains separate and open.
+
+This note does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, implementation changes, or OI-17 basis selection.
 
 `영구삭제 예정 시각` calculation has since been decided docs-only as the first 08:00 Asia/Seoul cleanup boundary at or after the full 7-day restore window has elapsed from `휴지통 이동 시각`.
 
