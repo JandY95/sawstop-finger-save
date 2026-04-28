@@ -12,11 +12,11 @@ Next work returns to broader project status triage.
 
 ## Likely Triage Areas
 
-- live FIFO criteria
 - Turnstile/MVP boundary
 
 Live status option confirmation has since been closed as already resolved by existing repo docs.
 Force FIFO exposure/removal has since been closed as a docs-only decision: force FIFO remains unexposed in the main admin UI, while normal FIFO execution remains the operating surface.
+Live FIFO criteria has since been narrowed as a docs-only decision: full closure is not safe from existing docs alone, and the current safe operating boundary is limited to expired trash cleanup before FIFO, FIFO only after storage remains over 5GB, no trash path for FIFO, and attachment rows marked `영구삭제`.
 
 ## Boundary
 
@@ -33,4 +33,4 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Use broader project status triage to resolve live FIFO criteria as the next unresolved candidate.
+Use broader project status triage to resolve Turnstile/MVP boundary as the next unresolved candidate.

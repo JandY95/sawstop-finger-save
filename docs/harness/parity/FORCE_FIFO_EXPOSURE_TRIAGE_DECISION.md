@@ -33,4 +33,4 @@ This decision does not approve:
 
 ## Next Safe Step
 
-Return to broader project status triage and resolve live FIFO criteria separately.
+Live FIFO criteria has since been narrowed as a docs-only decision. Return to broader project status triage and resolve Turnstile/MVP boundary next, unless live FIFO implementation criteria are explicitly approved separately.

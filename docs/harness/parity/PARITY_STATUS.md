@@ -26,6 +26,9 @@
 - specific fixture parity implementation proposal은 지금 필요하지 않으며, 향후 fixture parity 구현은 별도 guarded proposal 전까지 보류한다
 - 새 non-fixture Stage 6 parity candidate는 지금 선정하지 않으며, 다음 작업은 broader project status triage로 돌아간다
 - live status option confirmation은 기존 repo docs 기준으로 이미 resolved 상태이며, 이 PR에서 새 live Notion 확인은 필요하지 않다
+- force FIFO exposure/removal은 docs-only로 닫혔으며 force FIFO는 main admin UI에 노출하지 않는다
+- live FIFO criteria는 문서만으로 fully closed 상태가 아니며, 현재 안전한 boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
+- `check:fifo-trash-candidates`는 standalone live-read manual check로 유지하고 deterministic parity에서 제외한다
 
 ## Source Of Truth
 
@@ -43,4 +46,4 @@
 
 ## Next One Task
 
-- broader project status triage에서 live FIFO 기준 또는 강제 FIFO 노출/제거 중 다음 단일 후보를 정한다.
+- broader project status triage에서 Turnstile/MVP boundary를 다음 단일 후보로 정리한다.
