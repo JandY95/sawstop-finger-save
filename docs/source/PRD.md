@@ -368,6 +368,8 @@ MVP는 아래 범위까지만 포함한다.
 - FIFO 삭제는 휴지통을 거치지 않고 첨부 DB row를 `영구삭제` 상태로 정리한다.
 - 휴지통 / 복구 / 만료 삭제 / FIFO는 첨부 관련 상태 재반영의 트리거로 본다.
 - `check:fifo-trash-candidates` 같은 live-read 검증은 deterministic parity, scenario execution, baseline, CI, product wiring과 분리된 수동 확인 경계로 유지한다.
+- `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
+- `휴지통 이동 시각 + 7일`이 해당일 08:00보다 이르면 해당일 08:00, 정확히 08:00이면 같은 08:00, 해당일 08:00 이후이면 다음날 08:00을 사용한다.
 
 ### 10-6. live schema 우선 원칙
 - live Notion DB 실제 속성이 우선이다.
@@ -446,7 +448,7 @@ MVP는 아래 범위까지만 포함한다.
 | OI-21 | `첨부 최종 확인 완료` false reset의 최종 owner 분해 | 해제 조건만 존재 |
 | OI-22 | `R2 Key` 외 tmp key 별도 추적 여부 | 저장 키 구조만 존재 |
 
-`영구삭제 예정 시각` 계산식은 7일 복구 가능 기간과 오전 8시 정리 스케줄의 관계가 명시되어야 하므로, 이 문서에서는 아직 구현 기준으로 닫지 않는다.
+`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner와 OI-17 5GB R2/storage population 기준은 계속 open issue로 남긴다.
 
 ### 이번 개정판에서 잠근 항목
 - OI-04 사고 DB `첨부(선택)` file 속성의 역할

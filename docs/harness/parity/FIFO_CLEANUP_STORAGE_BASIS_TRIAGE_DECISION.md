@@ -17,9 +17,9 @@ No FIFO cleanup ownership decision is approved.
 
 No 5GB storage measurement basis decision is approved.
 
-No `영구삭제 예정 시각` calculation decision is approved.
+`영구삭제 예정 시각` calculation has since been decided docs-only as the first 08:00 Asia/Seoul cleanup boundary at or after the full 7-day restore window has elapsed from `휴지통 이동 시각`.
 
-A future narrow source-of-truth movement PR is required before implementation criteria can be closed.
+A later narrow decision/triage remains required before FIFO cleanup ownership and 5GB storage measurement basis implementation criteria can be closed.
 
 Do not implement behavior in this PR.
 
@@ -48,12 +48,11 @@ This decision does not approve:
 - live readiness behavior implementation
 - FIFO cleanup ownership implementation
 - 5GB storage measurement implementation
-- `영구삭제 예정 시각` calculation implementation
 - wiring into `npm test`, parity, scenario execution, CI, baseline, or live services
 - live Notion, R2, Queue, or Cloudflare access or writes
 
 ## Next Safe Step
 
-FIFO source-of-truth movement for the already-safe boundary has since been completed by PR #75.
+FIFO source-of-truth movement for the already-safe boundary has since been completed by PR #75, and `영구삭제 예정 시각` calculation has since been decided docs-only.
 
-A later narrow decision/triage is still required before closing FIFO cleanup ownership, 5GB storage measurement basis, or `영구삭제 예정 시각` implementation criteria.
+A later narrow decision/triage is still required before closing FIFO cleanup ownership or 5GB storage measurement basis implementation criteria.

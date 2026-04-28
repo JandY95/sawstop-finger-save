@@ -17,7 +17,7 @@ The current safe operating boundary is only:
 
 OI-16 and OI-17 remain unresolved.
 
-`영구삭제 예정 시각` calculation remains unresolved.
+`영구삭제 예정 시각` calculation has since been decided docs-only as the first 08:00 Asia/Seoul cleanup boundary at or after the full 7-day restore window has elapsed from `휴지통 이동 시각`.
 
 ## Boundary
 
@@ -33,7 +33,6 @@ This decision does not approve:
 - admin UI changes
 - backend behavior changes
 - FIFO candidate criteria changes
-- `영구삭제 예정 시각` calculation changes
 - cleanup ownership decisions
 - 5GB storage measurement basis decisions
 - wiring into `npm test`, parity, scenario execution, CI, baseline, or live services
