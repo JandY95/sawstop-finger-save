@@ -4,7 +4,7 @@ Project: SawStop Finger Save
 
 Read in this order:
 - README.md
-- .project-state.json
+- .project-state.json (if present; do not create it)
 - PLAN_PROMPT.txt
 - MVP_CHECKLIST.md
 - docs/source/
@@ -23,4 +23,3 @@ Rules:
 - Before large changes, update plan and state first.
 - Before stage change, run node scripts/verify-gates.js
 - Prefer handoff over expansion when usage budget is low.
-
