@@ -27,29 +27,34 @@
 
 ---
 
-## 2. 구현 착수 전 잠가야 하는 잔여 open issue
+## 2. Implementation prerequisite open-issue status
 
-아래는 **2026-04-11 잠금 결정 반영 후에도** 구현 시작 전에 최소한 확인이 필요한 항목이다.
+This section is a current implementation-readiness pointer, not a new decision source.
 
-| ID | 항목 | 구현에 영향 |
+Use the locked decision evidence in:
+
+- `docs/decisions/OPEN_ISSUES.md`
+- `docs/decisions/DECISIONS_LOCK.md`
+
+Resolved implementation prerequisites:
+
+| ID | Item | Current handling |
 |---|---|---|
-| OI-01 | 사고 DB `상태`의 실제 live status 옵션 전체 목록 | 신규 접수 저장값, 관리자 검색, 완료건 제외 조건 |
-| OI-02 | 첨부 DB `상태`의 실제 status 옵션 목록 | `손가락 사진 있음`, 휴지통/FIFO 판정 |
-| OI-03 | 첨부 DB `삭제 사유` select 옵션 목록 | 삭제/FIFO 기록값 |
-| OI-06 | 사고 페이지 본문 저장 형식의 구체 블록 구조 | “본문 저장 성공”의 코드 기준 |
+| OI-01 | Accident DB `status` options | Resolved / locked |
+| OI-02 | Attachment DB `status` options | Resolved / locked |
+| OI-03 | Attachment DB `delete reason` select options | Resolved / locked |
+| OI-04 | Accident DB optional attachment file property role | Resolved / locked |
+| OI-05 | `Date of Occurence` time-missing storage behavior | Resolved / locked |
+| OI-06 | Accident page body storage format | Resolved / locked |
+| OI-07 | Attachment ID generation rule | Resolved / locked |
+| OI-08 | Queue payload attachment reference shape | Resolved / locked |
+| OI-09 | Attachment display order storage rule | Resolved / locked |
+| OI-14 | Preview link / thumbnail generation behavior | Resolved / locked |
+| OI-19 | Customer follow-up attachment classification and storage behavior | Resolved / locked |
 
-잠금 완료 항목:
-- OI-04 사고 DB `첨부(선택)` file 속성 역할
-- OI-05 `Date of Occurence` 시간 미상 저장 방식
-- OI-07 `첨부 ID` 생성 규칙
-- OI-08 Queue payload 첨부 참조 shape
-- OI-09 첨부 `표시 순서` 산정 규칙
-- OI-14 `미리보기 링크` / `썸네일` 생성 방식
-- OI-19 고객 웹폼 첨부의 분류 전 저장 방식
+Any item that is still unresolved in the decision docs remains a blocker until explicitly resolved.
 
-권장 방식:
-- 위 항목은 `docs/OPEN_ISSUES.md` 또는 `docs/DECISIONS.md` 같은 1개 문서에 잠근다.
-- 잔여 항목은 확정 전까지 TODO가 아니라 **착수 차단 항목**으로 취급한다.
+This section does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, implementation changes, or OI-17 5GB basis selection.
 
 ---
 
