@@ -55,6 +55,8 @@ This proposal does not approve:
 
 ## Next Safe Step
 
-Use a later narrow approval PR to select one OI-16 cleanup owner candidate or explicitly keep OI-16 open.
+OI-16 cleanup ownership has since been reviewed against the prepared candidates, and no candidate is approved from existing docs alone.
+
+Keep OI-16 open until a later explicit product, operations, or source-of-truth decision selects the 8 AM expired trash cleanup owner.
 
 Keep OI-17 separate until a later PR explicitly scopes the 5GB R2/storage population measurement basis.

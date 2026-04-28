@@ -1,25 +1,25 @@
-# FIFO Cleanup Ownership Triage Decision
+# FIFO Cleanup Ownership Open Decision
 
 ## Decision
 
-PR #77 locked the `영구삭제 예정 시각` calculation boundary.
+No OI-16 FIFO / expired trash cleanup ownership candidate is approved from existing docs alone.
 
-Only two FIFO implementation criteria remain unresolved:
+The reviewed candidates remain unselected:
 
-- OI-16: FIFO / expired trash cleanup ownership
-- OI-17: 5GB R2/storage population measurement basis
+- scheduled Worker/Cron-owned cleanup
+- manual operator-owned cleanup
+- separate operational runbook-owned cleanup
 
-OI-16 cleanup ownership is the next single live-readiness candidate because it is narrower than OI-17.
+Current source docs lock the cleanup timing boundary and ordering only:
 
-This decision splits OI-16 from OI-17 for the next decision path.
+- `영구삭제 예정 시각` uses the first 08:00 Asia/Seoul cleanup boundary at or after `휴지통 이동 시각 + 7 days`
+- expired trash cleanup precedes FIFO
 
-This PR does not decide the actual cleanup owner.
+Current source docs do not identify which system or operator owns the 8 AM expired trash cleanup.
 
-This PR does not close OI-16.
+OI-16 remains open.
 
-This PR does not close OI-17.
-
-OI-17 remains out of scope except to state that it remains unresolved.
+OI-17 remains out of scope and unresolved.
 
 No source-of-truth movement is approved in this PR.
 
@@ -48,10 +48,6 @@ This decision does not approve:
 - live Notion, R2, Queue, or Cloudflare access or writes
 
 ## Next Safe Step
-
-OI-16 cleanup ownership has since been reviewed as not safely decidable from existing docs alone.
-
-The prepared owner candidates have also since been reviewed, and no candidate is approved from existing docs alone.
 
 Keep OI-16 open until a later explicit product, operations, or source-of-truth decision selects the 8 AM expired trash cleanup owner.
 
