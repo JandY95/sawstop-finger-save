@@ -34,15 +34,15 @@
 - PR #67-#71 broader triage loop는 닫혔으며 parity candidate selection은 이 PR에서 다시 열지 않는다
 - current parity status는 stable and guarded 상태로 유지한다
 - fixture expansion은 별도 guarded proposal 전까지 separated and blocked 상태로 유지한다
-- FIFO cleanup ownership / 5GB storage measurement basis는 기존 docs만으로 fully closed 상태가 아니며, OI-16과 OI-17은 unresolved 상태로 유지한다
+- FIFO cleanup ownership owner selection is now resolved as manual operator-owned cleanup; 5GB storage measurement basis remains unresolved and OI-17 remains open.
 - PR #75는 이미 안전한 FIFO/trash operating boundary를 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다
 - source docs에 반영된 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
 - `영구삭제 예정 시각` calculation boundary는 docs-only로 결정됐으며, `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계를 사용한다
-- FIFO cleanup ownership decision은 승인되지 않았고, PR #84에서 5GB storage measurement basis는 기존 docs만으로 선택하지 않고 open 유지로 결정했다
-- OI-16 cleanup ownership은 OI-17 5GB storage measurement basis와 분리되어 다음 단일 live-readiness 후보로 선정됐다
-- OI-16은 계속 unresolved 상태이며, OI-17은 PR #84로 open 유지가 명시됐고 다음 OI-16 triage 범위 밖에 둔다
-- OI-16 cleanup ownership은 기존 docs만으로 안전하게 결정할 수 없으며, scheduled Worker/Cron, manual operator, separate operational runbook 같은 owner 후보만 proposal로 준비됐다
-- PR #79의 OI-16 owner 후보는 모두 기존 docs만으로 승인되지 않았으며, OI-16은 explicit product/ops/source-of-truth decision 전까지 open 상태로 유지한다
+- FIFO cleanup ownership decision is approved as manual operator-owned cleanup; PR #84 keeps 5GB storage measurement basis open.
+- OI-16 cleanup ownership was separated from OI-17 and is now selected as manual operator-owned cleanup.
+- OI-16 ownership selection is no longer unresolved; OI-17 remains open and out of this decision scope.
+- OI-16 cleanup ownership selects manual operator-owned cleanup. The manual operator is the final live cleanup approval owner; CLI-assisted candidate generation, dry-run, verification, and audit logging may be proposed later.
+- Scheduled Worker/Cron-owned cleanup remains a later automation maturity candidate and is not approved for live execution now.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다
 
 ## Source Of Truth

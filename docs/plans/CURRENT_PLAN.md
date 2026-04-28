@@ -67,9 +67,9 @@
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
 - PR #75로 source docs에 반영된 live FIFO safe boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
-- FIFO cleanup ownership과 5GB storage measurement basis는 unresolved live-readiness 후보로 남아 있다.
-- OI-16과 OI-17은 unresolved 상태로 유지되며, FIFO cleanup ownership implementation과 5GB storage measurement implementation은 승인되지 않았다.
-- OI-16은 8 AM expired trash cleanup owner가 아직 미확정이라 open 상태로 유지하며, scheduled Worker/Cron, manual operator, separate operational runbook 중 어떤 후보도 기존 docs만으로 승인되지 않았다.
+- FIFO cleanup ownership owner selection is resolved by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`; 5GB storage measurement basis remains unresolved.
+- OI-16 ownership selection is resolved as manual operator-owned cleanup; OI-17 remains unresolved, and FIFO cleanup implementation / 5GB storage measurement implementation are not approved.
+- OI-16 selects manual operator-owned cleanup as the 8 AM expired trash cleanup owner. Manual operator means final approval owner, not repeated hand cleanup. Scheduled Worker/Cron-owned cleanup remains a later automation candidate.
 - PR #84에서 OI-17 5GB threshold에 포함되는 R2/storage population은 기존 docs만으로 선택하지 않고 open 유지로 결정했으며, 후속 explicit product/ops/source-of-truth approval PR 전까지 implementation과 source-of-truth movement를 차단한다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
 - 이번 결정은 live access, behavior change, implementation change를 승인하지 않는다.
