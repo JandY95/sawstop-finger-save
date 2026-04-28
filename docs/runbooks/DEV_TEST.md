@@ -52,7 +52,7 @@
 - `npm run smoke:admin-search`
 - `npm run smoke:admin-upload`
 
-## TODO / OPEN ISSUE
+## Known Boundaries
 - Turnstile is still not wired to admin login and remains open.
 - Completed-record exclusion search now follows D-08: use the current admin search path that excludes completed records.
 - `dev:remote` multipart preview stability remains pending verification.
