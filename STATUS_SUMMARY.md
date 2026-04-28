@@ -83,4 +83,4 @@
 
 ## live 환경 확인이 필요한 항목
 - FIFO 후보 조회/처리 시 live 첨부 DB의 `영구삭제 예정 시각` 값 형식과 현재 코드가 일치하는지
-- 5GB storage measurement basis; FIFO 8 AM cleanup implementation remains unapproved after manual operator ownership selection
+- OI-17 5GB storage measurement basis remains open and unapproved; FIFO 8 AM cleanup implementation remains unapproved after manual operator ownership selection.
