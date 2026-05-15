@@ -53,6 +53,7 @@
 - PR #96 aligned `scenario-index.yaml` with current OI-16/OI-17 status; OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 remains open.
 - PR #97 clarified older parity decision notes as historical OI-16 records without approving live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, or OI-17 basis selection.
 - PR #98 refreshed top-level status pointers after PR #97 and did not change source docs, product behavior, cleanup execution posture, or the OI-17 open decision.
+- TDD guard Changed Push Observation v1 uses this docs-only status marker to observe the target-local report-only pre-push hook; it does not change product behavior, app code, hook configuration, runner activation, block mode, hard block, CI required checks, Core registry, or Core state.
 
 ## Source Of Truth
 
