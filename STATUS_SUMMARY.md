@@ -51,6 +51,7 @@
 - `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_OPEN_DECISION.md`에서 PR #79의 OI-16 owner 후보 중 어떤 것도 기존 docs만으로 승인하지 않고 OI-16을 open 상태로 유지하기로 정리했다.
 
 ## 아직 안 된 것
+- PR #117 이후 tdd-guard observation은 formal non-required evidence 6/3 distinct PRs, 6/10 consecutive passes 상태다. Required-check candidate review is still blocked until 2026-05-22 KST or later, and this status does not approve workflow, hook, config, app code, required-check, branch-protection, runner, block mode, or hard-block changes.
 - Customer webform Turnstile은 별도 흐름이며 이번 broader triage closure로 약화하거나 재정의하지 않는다.
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
 - PR #75로 source docs에 반영된 안전한 FIFO/trash boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
