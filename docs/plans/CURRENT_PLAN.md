@@ -82,6 +82,7 @@
 - PR #97 clarified older parity decision notes as historical OI-16 status records. It did not move source docs, approve live cleanup, approve execute mode, approve scheduled Worker/Cron cleanup, or select an OI-17 5GB basis.
 - 이번 결정은 live access, behavior change, implementation change를 승인하지 않는다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
+- PR #116 이후 tdd-guard observation은 formal non-required evidence 5/3 distinct PRs, 5/10 consecutive passes 상태다. Required-check candidate review is still blocked until 2026-05-22 KST or later, and this status does not approve workflow, hook, config, app code, required-check, branch-protection, runner, block mode, or hard-block changes.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.
 
 ## 다음 단일 후보
