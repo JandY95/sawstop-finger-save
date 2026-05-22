@@ -1,4 +1,17 @@
 {
-  "hooks": {},
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /home/uandme/vibe/harness-os-core/scripts/project-feedback-scheduler-session-start-hook.js --target /home/uandme/vibe/sawstop-finger-save --dry-run --json",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
   "note": "Add narrowly-scoped hooks after security review."
 }
