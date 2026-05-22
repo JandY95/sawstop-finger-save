@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "session_start": [
+      {
+        "name": "project-feedback-scheduler-session-start-hook-v1",
+        "mode": "report-only",
+        "command": "node /home/uandme/vibe/harness-os-core/scripts/project-feedback-scheduler-session-start-hook.js --target /home/uandme/vibe/sawstop-finger-save --dry-run --json",
+        "writesFiles": false,
+        "createsPr": false,
+        "mergesPr": false,
+        "appliesSync": false,
+        "fallbackCommand": "node /home/uandme/vibe/harness-os-core/scripts/project-feedback-scheduler-session-start-hook.js --target /home/uandme/vibe/sawstop-finger-save --dry-run --json"
+      }
+    ]
+  }
+}

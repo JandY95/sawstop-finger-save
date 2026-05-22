@@ -1,0 +1,41 @@
+{
+  "reportId": "session-start-hook-opt-in-v1",
+  "targetProject": "/home/uandme/vibe/sawstop-finger-save",
+  "corePath": "/home/uandme/vibe/harness-os-core",
+  "sourceCoreMarker": "PROJECT_FEEDBACK_SCHEDULER_SESSION_START_HOOK_V1_DONE",
+  "mode": "opt-in",
+  "hookMode": "report-only",
+  "hookCommand": "node /home/uandme/vibe/harness-os-core/scripts/project-feedback-scheduler-session-start-hook.js --target /home/uandme/vibe/sawstop-finger-save --dry-run --json",
+  "appliedFiles": [
+    ".codex/hooks.json",
+    ".claude/settings.json"
+  ],
+  "preservePolicy": {
+    "existingCodexHooksJson": "absent",
+    "existingClaudeSettingsJson": "merged",
+    "existingSettingsOverwritten": false,
+    "reviewNeededFiles": []
+  },
+  "safetyBoundary": {
+    "reportOnly": true,
+    "dryRun": true,
+    "writesFiles": false,
+    "createsPr": false,
+    "mergesPr": false,
+    "appliesSync": false,
+    "mutatesCore": false,
+    "mutatesTargetAppCode": false,
+    "mutatesPackageOrWorkflow": false
+  },
+  "operatorSummary": {
+    "pendingRsiEventCount": 0,
+    "pendingFeedbackCount": 0,
+    "schemaArtifactsSkipped": 1,
+    "nextSafeAction": "Run the session-start scheduler hook in report-only dry-run mode and review the operator summary."
+  },
+  "contextHandoff": {
+    "clearEquivalentRecorded": true,
+    "literalClearExecuted": false
+  },
+  "finalMarker": "TARGET_PROJECT_SESSION_START_SCHEDULER_HOOK_OPT_IN_APPLY_V1_DONE"
+}
