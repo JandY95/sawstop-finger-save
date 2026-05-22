@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "directory": ".harness/pending-rsi-events",
+  "rawFileContentStored": false,
+  "secretLikeValuesStored": false,
+  "corePromotionDefault": "candidate-only"
+}

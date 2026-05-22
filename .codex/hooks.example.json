@@ -1,0 +1,4 @@
+{
+  "comment": "Example only. Do not overwrite an existing .codex/hooks.json.",
+  "coreToProjectSyncRunner": "node scripts/core-to-project-sync-reinforcement.js --dry-run --json"
+}

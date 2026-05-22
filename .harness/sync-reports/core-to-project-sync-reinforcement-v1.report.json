@@ -1,0 +1,7 @@
+{
+  "syncReinforcementId": "core-to-project-sync-reinforcement-v1",
+  "mode": "dry-run",
+  "sourceOfTruth": "Core/machine/core-to-project-sync-reinforcement-v1.json",
+  "appCodeMutationAllowed": false,
+  "importedSnapshotPolicy": "imported snapshots are not project source of truth"
+}
