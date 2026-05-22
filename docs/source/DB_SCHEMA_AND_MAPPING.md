@@ -752,7 +752,7 @@ true 조건:
 - `check:fifo-trash-candidates` 같은 live-read 검증은 deterministic parity, scenario execution, baseline, CI, product wiring과 분리된 수동 확인 경계로 유지한다.
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계다.
 - `휴지통 이동 시각 + 7일`이 해당일 08:00보다 이르면 해당일 08:00, 정확히 08:00이면 같은 08:00, 해당일 08:00 이후이면 다음날 08:00을 사용한다.
-- 오전 8시 정리 스케줄의 실제 cleanup owner와 5GB 판단에 포함할 R2/storage population은 아직 구현 기준으로 닫지 않는다.
+- 오전 8시 정리 스케줄의 cleanup owner는 manual operator-owned cleanup으로 닫혔다. 이는 최종 결정 owner 결정이며, live cleanup, execute mode, scheduled Worker/Cron 자동화는 승인하지 않는다. 5GB 판단에 포함할 R2/storage population은 아직 구현 기준으로 닫지 않는다.
 
 ---
 
@@ -880,14 +880,14 @@ Queue 메시지는 접수건당 1개이며, 아래 스키마로 잠근다.
 | OI-11 | button이 실제로 함께 수정하는 속성 범위 | 상태 전환 구현 시 오작동 방지 | button 존재만 확인 |
 | OI-12 | `영문 초안 생성 요청`의 처리 주체 | 수동 체크인지 자동 생성 트리거인지 구분 필요 | live 존재만 확인 |
 | OI-13 | `오류 플래그`와 `오류 사유`의 자동 세팅 규칙 | 오류 처리 일관성 필요 | 속성 존재만 확인 |
-| OI-16 | 휴지통 만료 삭제 스케줄의 실제 실행 주체 | 오전 8시 정리 스케줄 구현 필요 | 오전 8시 정리 시각은 있으나 cleanup owner는 미확정 |
+| OI-16 | 휴지통 만료 삭제 스케줄의 실제 실행 주체 | 오전 8시 정리 스케줄 구현 시 최종 결정 owner 기준 필요 | manual operator-owned cleanup으로 결정됨. 이는 최종 결정 owner를 뜻하며 live cleanup, execute mode, scheduled Worker/Cron 자동화는 승인하지 않음 |
 | OI-17 | FIFO 5GB 초과 판단의 저장소 측정 기준 | 삭제 트리거 정확성 필요 | 5GB 기준은 있으나 포함할 R2/storage population은 미확정 |
 | OI-18 | 공식 영문명 사전 저장 위치 | 영문화 모드 구현 시 필요 | 운영 원칙만 있고 저장 위치 미기재 |
 | OI-20 | `손가락 사진 있음` checkbox write-back의 최종 owner 분해 | 첨부 이벤트 후 누가 값을 쓰는지 확정해야 누락 방지 가능 | 계산 규칙만 존재 |
 | OI-21 | `첨부 최종 확인 완료` false reset의 최종 owner 분해 | 새 첨부/삭제/복구/FIFO 후 누가 false로 내리는지 확정 필요 | 해제 조건만 존재 |
 | OI-22 | 첨부 DB `R2 Key` 외에 tmp key를 별도 추적할지 여부 | 디버깅/정리 작업에 영향 | 저장 키 구조만 존재 |
 
-`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner와 OI-17 5GB R2/storage population 기준은 계속 open issue로 남긴다.
+`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 결정 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 5GB R2/storage population 기준은 계속 open issue로 남긴다.
 
 ---
 

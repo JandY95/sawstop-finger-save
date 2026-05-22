@@ -607,7 +607,7 @@ SawStop Finger Save 시스템은 국내 사용자의 사고 정보를 **한국�
 - FIFO 삭제 시 첨부 DB `상태 = 영구삭제`로 정리
 - 필요 시 `삭제 사유` 또는 `검수 메모`로 이력을 남긴다.
 - `check:fifo-trash-candidates` 같은 live-read 검증은 deterministic parity, scenario execution, baseline, CI, product wiring과 분리된 수동 확인 경계로 유지한다.
-- 오전 8시 정리 스케줄의 실제 cleanup owner와 5GB 판단에 포함할 R2/storage population은 아직 구현 기준으로 닫지 않는다.
+- 오전 8시 정리 스케줄의 cleanup owner는 manual operator-owned cleanup으로 닫혔다. 이는 최종 결정 owner 결정이며, live cleanup, execute mode, scheduled Worker/Cron 자동화는 승인하지 않는다. 5GB 판단에 포함할 R2/storage population은 아직 구현 기준으로 닫지 않는다.
 
 ---
 
@@ -836,13 +836,13 @@ SawStop Finger Save 시스템은 국내 사용자의 사고 정보를 **한국�
 | OI-12 | `영문 초안 생성 요청`의 처리 주체와 의미 | 수동 체크인지 자동 트리거인지 미확정 |
 | OI-13 | `오류 플래그`와 `오류 사유`의 자동 세팅 규칙 | 오류 처리 일관성에 영향 |
 | OI-15 | 관리자 업로드 session cookie 이름/만료/잠금 해제 세부 | 보안 구현 세부 미확정 |
-| OI-16 | 휴지통 만료 삭제 스케줄의 실제 실행 주체 | 오전 8시 정리 시각은 있으나 cleanup owner는 미확정 |
+| OI-16 | 휴지통 만료 삭제 스케줄의 실제 실행 주체 | manual operator-owned cleanup으로 결정됨. 이는 최종 결정 owner를 뜻하며 live cleanup, execute mode, scheduled Worker/Cron 자동화는 승인하지 않음 |
 | OI-17 | FIFO 5GB 초과 판단의 저장소 측정 기준 | 5GB 기준은 있으나 포함할 R2/storage population은 미확정 |
 | OI-18 | 공식 영문명 사전의 저장 위치 | 영문화 모드 구현에 필요 |
 | OI-20 | `손가락 사진 있음` checkbox write-back의 최종 owner 분해 | 이벤트 후 누가 값을 쓰는지 확정 필요 |
 | OI-21 | `첨부 최종 확인 완료` false reset의 최종 owner 분해 | 해제 조건만 있고 최종 owner 미확정 |
 
-`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner와 OI-17 5GB R2/storage population 기준은 계속 open issue로 남긴다.
+`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 결정 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 5GB R2/storage population 기준은 계속 open issue로 남긴다.
 
 ### 이번 개정판에서 잠근 항목
 - OI-04 사고 DB `첨부(선택)` file 속성의 실제 역할
