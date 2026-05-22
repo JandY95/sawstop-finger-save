@@ -1,0 +1,4 @@
+{
+  "comment": "Example only. Do not overwrite an existing .claude/settings.json.",
+  "coreToProjectSyncRunner": "node scripts/core-to-project-sync-reinforcement.js --dry-run --json"
+}
