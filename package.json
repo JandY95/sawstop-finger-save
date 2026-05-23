@@ -1,6 +1,7 @@
 {
   "name": "sawstop-finger-save",
   "private": true,
+  "type": "module",
   "version": "0.0.0",
   "description": "Minimal local harness for SawStop Finger Save verification scripts.",
   "scripts": {
