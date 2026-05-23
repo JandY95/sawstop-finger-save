@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 const file = path.join(process.cwd(), 'FRONTEND_START_PROMPT.txt');
 if (!fs.existsSync(file)) {
   console.error('FRONTEND_START_PROMPT.txt not found in project root.');
