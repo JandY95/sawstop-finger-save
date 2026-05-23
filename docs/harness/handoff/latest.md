@@ -10,6 +10,7 @@
   - 로컬 `.project-state.json`은 reference-only 상태 파일로 유지한다
   - tracked repo에 parity runner script, baseline 파일, GitHub Actions workflow를 추가했다
   - `npm run parity` local run/compare와 GitHub Actions `Parity Harness` 1회 성공이 확인됐다
+- tdd-guard changed-push observation v1 second marker: `tdd-guard-changed-push-observation-v1-2-20260515` docs-only marker.
 
 ## Locked
 
