@@ -9,9 +9,14 @@ import {
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
   ADMIN_PAGE_ROUTE,
+  ADMIN_REPORT_ROUTE,
   ADMIN_UPLOAD_ROUTE,
   ATTACHMENT_UPLOAD_STATUS,
+  CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS,
+  CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES,
   CUSTOMER_ATTACHMENT_FIELD_NAME,
+  CUSTOMER_ATTACHMENT_MAX_COUNT,
+  CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES,
   CUSTOMER_FAILURE_MESSAGE,
   CUSTOMER_SUCCESS_MESSAGE,
   SUBMIT_ROUTE
@@ -31,6 +36,7 @@ import { handleAdminRestoreAttachment } from "./admin/restore-attachment";
 import { handleAdminAccidentSearch } from "./admin/search";
 import { handleAdminUpdateAccidentStatus } from "./admin/update-accident-status";
 import { handleAdminUpdateAttachmentType } from "./admin/update-attachment-type";
+import { renderAdminReportPage } from "./admin/report";
 import { handleAdminUpload } from "./admin/upload";
 import { consumeAttachmentBatch } from "./consumer";
 import { buildAccidentDbProperties } from "./mapper";
@@ -43,6 +49,7 @@ import {
 } from "./queue";
 import { buildReceiptNumber } from "./receipt";
 import { uploadAttachmentToTmpR2 } from "./r2";
+import { verifyTurnstileSubmit, TURNSTILE_RESPONSE_FIELD_NAME } from "./turnstile";
 import { validateSubmitInput } from "./validate";
 import type {
   CustomerSubmitFailureResponse,
@@ -80,6 +87,34 @@ function getSubmitAttachmentFiles(formData: FormData) {
       (value): value is File => typeof File !== "undefined" && value instanceof File
     )
     .filter((file) => file.size > 0);
+}
+
+function hasAllowedAttachmentName(fileName: string) {
+  const normalizedName = fileName.toLowerCase();
+  return CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS.some((extension) =>
+    normalizedName.endsWith(extension)
+  );
+}
+
+function hasAllowedAttachmentType(file: File) {
+  const normalizedType = file.type.toLowerCase();
+  return (
+    CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES.includes(
+      normalizedType as (typeof CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES)[number]
+    ) || hasAllowedAttachmentName(file.name)
+  );
+}
+
+function validateSubmitAttachmentFiles(files: File[]) {
+  return (
+    files.length <= CUSTOMER_ATTACHMENT_MAX_COUNT &&
+    files.every(
+      (file) =>
+        file.size > 0 &&
+        file.size <= CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES &&
+        hasAllowedAttachmentType(file)
+    )
+  );
 }
 
 async function uploadSubmitAttachmentsToTmpR2(
@@ -189,7 +224,34 @@ async function handleSubmit(
 
   try {
     const formData = await request.formData();
+    const turnstileValid = await verifyTurnstileSubmit(
+      env,
+      formData.get(TURNSTILE_RESPONSE_FIELD_NAME),
+      request
+    );
+
+    if (!turnstileValid) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: CUSTOMER_FAILURE_MESSAGE
+        },
+        400
+      );
+    }
+
     const attachmentFiles = getSubmitAttachmentFiles(formData);
+
+    if (!validateSubmitAttachmentFiles(attachmentFiles)) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: CUSTOMER_FAILURE_MESSAGE
+        },
+        400
+      );
+    }
+
     const preparedAttachmentFiles = await prepareSubmitAttachmentFiles(
       attachmentFiles
     );
@@ -250,7 +312,7 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === "GET" && url.pathname === "/") {
-      return renderCustomerPage();
+      return renderCustomerPage({ turnstileSiteKey: env.TURNSTILE_SITE_KEY });
     }
 
     if (request.method === "POST" && url.pathname === SUBMIT_ROUTE) {
@@ -268,6 +330,15 @@ export default {
 
     if (request.method === "POST" && url.pathname === ADMIN_LOGOUT_ROUTE) {
       return handleAdminLogout(request);
+    }
+
+    if (request.method === "GET" && url.pathname === ADMIN_REPORT_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return renderAdminReportPage(request, env);
     }
 
     if (request.method === "GET" && url.pathname === ADMIN_ACCIDENT_SEARCH_ROUTE) {

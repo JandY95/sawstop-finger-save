@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "static-contract-guard-evidence-boundary-2026-05-25",
+  "sourceInputKind": "docs-feedback",
+  "summary": "Repo-local static contract guards can verify structural source boundaries, but operator reports should label them as structural evidence rather than runtime-service proof or release readiness proof.",
+  "commonCoreValue": true,
+  "reusableCoreCandidate": true,
+  "reusableEvidence": true,
+  "validation": {
+    "status": "pass",
+    "evidence": [
+      "repo-local static contract checks exited 0"
+    ]
+  },
+  "suggestedCoreArtifacts": [
+    "guard",
+    "runbook"
+  ],
+  "failureClasses": [
+    "output_contract_gap",
+    "verification_evidence_boundary_gap"
+  ],
+  "reinforcementArtifacts": [
+    "guard"
+  ],
+  "notes": [
+    "Separate repo-local structural checks from runtime-service evidence.",
+    "Separate count, size, and type allowlist upload checks from stronger content-inspection guarantees.",
+    "Keep completion-gap reports split across repo-local closure, external-service verification, open-issue decisions, Core feedback, and propagation approval."
+  ],
+  "rawFileContentStored": false,
+  "corePromotionDefault": "candidate-only"
+}

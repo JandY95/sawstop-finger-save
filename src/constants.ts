@@ -128,6 +128,7 @@ export const ADMIN_ATTACHMENT_RESTORE_ROUTE = "/admin/attachments/restore";
 export const ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE = "/admin/attachments/fifo/process";
 // TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명과 허용값은
 // 라이브 첨부 DB 스키마 확정 전까지 runtime write 대상으로 사용하지 않는다.
+export const ADMIN_REPORT_ROUTE = "/admin/report";
 export const ADMIN_PAGE_ROUTE = "/admin";
 export const ADMIN_LOGIN_ROUTE = "/admin/login";
 export const ADMIN_LOGOUT_ROUTE = "/admin/logout";
@@ -137,6 +138,23 @@ export const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
 export const ADMIN_LOGIN_FAILURE_LIMIT = 5;
 export const ADMIN_LOGIN_LOCK_SECONDS = 60 * 15;
 export const CUSTOMER_ATTACHMENT_FIELD_NAME = "attachments";
+export const CUSTOMER_ATTACHMENT_MAX_COUNT = 4;
+export const CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+export const CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif"
+] as const;
+export const CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".heic",
+  ".heif"
+] as const;
 export const R2_TMP_PREFIX = "tmp";
 export const R2_ATTACHMENTS_PREFIX = "attachments";
 export const ATTACHMENT_PROCESSING_QUEUE_NAME = "sawstop-attachment-processing";

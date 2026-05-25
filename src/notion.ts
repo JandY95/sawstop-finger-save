@@ -12,6 +12,8 @@ import {
 } from "./constants.ts";
 import type {
   AdminAttachmentListItem,
+  AccidentPageBodyBlockSummary,
+  AccidentReportPropertySummary,
   CreateAttachmentPageRecordInput,
   CreateAccidentPageInput,
   NotionAttachmentDbPropertiesPayload,
@@ -324,6 +326,16 @@ function buildParagraphBlock(content: string) {
   } satisfies NotionParagraphBlock;
 }
 
+function buildEmptyParagraphBlock() {
+  return {
+    object: "block",
+    type: "paragraph",
+    paragraph: {
+      rich_text: []
+    }
+  } satisfies NotionParagraphBlock;
+}
+
 function buildHeading2Block(content: string) {
   return {
     object: "block",
@@ -334,7 +346,7 @@ function buildHeading2Block(content: string) {
   } satisfies NotionHeading2Block;
 }
 
-function buildDefaultAccidentPageBodyChildren() {
+export function buildDefaultAccidentPageBodyChildren() {
   const children: NotionDefaultBodyBlock[] = [
     buildParagraphBlock("Report a Save (Known or Suspected Finger Contact)")
   ];
@@ -343,6 +355,8 @@ function buildDefaultAccidentPageBodyChildren() {
     children.push(buildHeading2Block(section.heading));
     children.push(buildParagraphBlock(section.lines.join("\n")));
   }
+
+  children.push(buildEmptyParagraphBlock());
 
   return children;
 }
@@ -360,6 +374,178 @@ async function listBlockChildren(env: WorkerEnv, blockId: string) {
   }
 
   return (await response.json()) as NotionBlockChildrenListResponse;
+}
+
+function richTextToPlainText(richText = [] as Array<{ plain_text?: string; text?: { content?: string } }>) {
+  return richText
+    .map((entry) => entry.plain_text ?? entry.text?.content ?? "")
+    .join("");
+}
+
+function summarizeAccidentPageBodyBlock(block: { id?: string; type?: string; paragraph?: { rich_text?: Array<{ plain_text?: string; text?: { content?: string } }> }; heading_1?: { rich_text?: Array<{ plain_text?: string; text?: { content?: string } }> }; heading_2?: { rich_text?: Array<{ plain_text?: string; text?: { content?: string } }> }; heading_3?: { rich_text?: Array<{ plain_text?: string; text?: { content?: string } }> } }): AccidentPageBodyBlockSummary | null {
+  const type = block.type;
+  if (!type) {
+    return null;
+  }
+
+  const richText =
+    type === "paragraph"
+      ? block.paragraph?.rich_text
+      : type === "heading_1"
+        ? block.heading_1?.rich_text
+        : type === "heading_2"
+          ? block.heading_2?.rich_text
+          : type === "heading_3"
+            ? block.heading_3?.rich_text
+            : undefined;
+
+  return {
+    id: block.id,
+    type,
+    text: richTextToPlainText(richText ?? [])
+  };
+}
+
+export async function getAccidentPageBodyBlocks(env: WorkerEnv, pageId: string) {
+  const children = await listBlockChildren(env, pageId);
+  return (children.results ?? [])
+    .map(summarizeAccidentPageBodyBlock)
+    .filter((block): block is AccidentPageBodyBlockSummary => block !== null);
+}
+
+type NotionPagePropertyValue = {
+  type?: string;
+  title?: Array<{ plain_text?: string; text?: { content?: string } }>;
+  rich_text?: Array<{ plain_text?: string; text?: { content?: string } }>;
+  status?: { name?: string | null } | null;
+  select?: { name?: string | null } | null;
+  multi_select?: Array<{ name?: string | null }>;
+  date?: { start?: string | null } | null;
+  phone_number?: string | null;
+  email?: string | null;
+  number?: number | null;
+  checkbox?: boolean | null;
+  files?: Array<{ name?: string | null }>;
+};
+
+async function getAccidentPageProperties(env: WorkerEnv, pageId: string) {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const response = await fetch(`${NOTION_API_BASE_URL}/pages/${pageId}`, {
+    method: "GET",
+    headers: getNotionHeaders(token)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Notion get accident page failed: ${await readNotionError(response)}`);
+  }
+
+  const data = (await response.json()) as {
+    properties?: Record<string, NotionPagePropertyValue>;
+  };
+
+  return data.properties ?? {};
+}
+
+function propertyToPlainText(property: NotionPagePropertyValue | undefined) {
+  if (!property) {
+    return "";
+  }
+
+  const type = property.type;
+  if (type === "title") {
+    return richTextToPlainText(property.title ?? []);
+  }
+  if (type === "rich_text") {
+    return richTextToPlainText(property.rich_text ?? []);
+  }
+  if (type === "status") {
+    return property.status?.name ?? "";
+  }
+  if (type === "select") {
+    return property.select?.name ?? "";
+  }
+  if (type === "multi_select") {
+    return (property.multi_select ?? []).map((entry) => entry.name ?? "").filter(Boolean).join(", ");
+  }
+  if (type === "date") {
+    return property.date?.start ?? "";
+  }
+  if (type === "phone_number") {
+    return property.phone_number ?? "";
+  }
+  if (type === "email") {
+    return property.email ?? "";
+  }
+  if (type === "number") {
+    return property.number === null || property.number === undefined ? "" : String(property.number);
+  }
+  if (type === "checkbox") {
+    return property.checkbox ? "Yes" : "No";
+  }
+  if (type === "files") {
+    return (property.files ?? []).map((file) => file.name ?? "").filter(Boolean).join(", ");
+  }
+
+  return "";
+}
+
+function addReportProperty(
+  output: AccidentReportPropertySummary[],
+  properties: Record<string, NotionPagePropertyValue>,
+  label: string,
+  propertyName: string
+) {
+  const value = propertyToPlainText(properties[propertyName]).trim();
+  if (value.length > 0) {
+    output.push({ label, value });
+  }
+}
+
+function extractAccidentReportProperties(
+  properties: Record<string, NotionPagePropertyValue>
+): AccidentReportPropertySummary[] {
+  const output: AccidentReportPropertySummary[] = [];
+
+  addReportProperty(output, properties, "Receipt Number", ACCIDENT_DB_PROPERTY_NAMES.receiptNumber);
+  addReportProperty(output, properties, "Status", ACCIDENT_DB_PROPERTY_NAMES.status);
+  addReportProperty(output, properties, "Date of Occurence", ACCIDENT_DB_PROPERTY_NAMES.occurredAt);
+  addReportProperty(output, properties, "Business or School Name", ACCIDENT_DB_PROPERTY_NAMES.businessOrSchoolName);
+  addReportProperty(output, properties, "Operator Name", ACCIDENT_DB_PROPERTY_NAMES.operatorName);
+  addReportProperty(output, properties, "Name of Person Who Touched the Blade", ACCIDENT_DB_PROPERTY_NAMES.touchedPersonName);
+  addReportProperty(output, properties, "Phone", ACCIDENT_DB_PROPERTY_NAMES.phone);
+  addReportProperty(output, properties, "Email", ACCIDENT_DB_PROPERTY_NAMES.email);
+  addReportProperty(output, properties, "Consent for Promotional Use", ACCIDENT_DB_PROPERTY_NAMES.promotionalConsent);
+  addReportProperty(output, properties, "Body Part Contacted", ACCIDENT_DB_PROPERTY_NAMES.bodyPartContacted);
+  addReportProperty(output, properties, "Was There A Visible Injury Mark?", ACCIDENT_DB_PROPERTY_NAMES.visibleInjuryMark);
+  addReportProperty(output, properties, "Wound treatment methods", ACCIDENT_DB_PROPERTY_NAMES.woundTreatmentMethods);
+  addReportProperty(output, properties, "Estimated Injury Without SawStop", ACCIDENT_DB_PROPERTY_NAMES.estimatedInjuryWithoutSawStop);
+  addReportProperty(output, properties, "Saw Serial Number", ACCIDENT_DB_PROPERTY_NAMES.sawSerialNumber);
+  addReportProperty(output, properties, "Brake Cartridge Serial Number", ACCIDENT_DB_PROPERTY_NAMES.brakeCartridgeSerialNumber);
+  addReportProperty(output, properties, "Type of blade being used", ACCIDENT_DB_PROPERTY_NAMES.bladeType);
+  addReportProperty(output, properties, "Saw Blade Details", ACCIDENT_DB_PROPERTY_NAMES.bladeDetails);
+  addReportProperty(output, properties, "Type of Material Being Cut?", ACCIDENT_DB_PROPERTY_NAMES.materialType);
+  addReportProperty(output, properties, "Workpiece Size & Cut Type", ACCIDENT_DB_PROPERTY_NAMES.workpieceSizeAndCutType);
+  addReportProperty(output, properties, "Safety Device Status", ACCIDENT_DB_PROPERTY_NAMES.safetyDeviceStatus);
+  addReportProperty(output, properties, "Other Devices Used", ACCIDENT_DB_PROPERTY_NAMES.otherDevicesUsed);
+  addReportProperty(output, properties, "Wearing Gloves", ACCIDENT_DB_PROPERTY_NAMES.wearingGloves);
+  addReportProperty(output, properties, "Approximate Feed Rate", ACCIDENT_DB_PROPERTY_NAMES.approximateFeedRate);
+  addReportProperty(output, properties, "Cause of the Incident", ACCIDENT_DB_PROPERTY_NAMES.incidentCause);
+  addReportProperty(output, properties, "Incident Description", ACCIDENT_DB_PROPERTY_NAMES.incidentDescription);
+  addReportProperty(output, properties, "Attachment Upload Status", ACCIDENT_DB_PROPERTY_NAMES.attachmentUploadStatus);
+
+  return output;
+}
+
+export async function getAccidentPageReportData(env: WorkerEnv, pageId: string) {
+  const [blocks, pageProperties] = await Promise.all([
+    getAccidentPageBodyBlocks(env, pageId),
+    getAccidentPageProperties(env, pageId)
+  ]);
+
+  return {
+    blocks,
+    properties: extractAccidentReportProperties(pageProperties)
+  };
 }
 
 export function getAccidentDatabaseParent(env: WorkerEnv): NotionAccidentDbParent {
