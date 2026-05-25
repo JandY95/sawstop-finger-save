@@ -11,6 +11,7 @@ import type { NormalizedSubmitInput, SubmitValidationResult } from "./types";
 const SAW_SERIAL_NUMBER_PATTERN = /^[IPC]\d{9}$/;
 const PHONE_PATTERN = /^0\d{1,2}-\d{3,4}-\d{4}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const OCCURRENCE_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function hasAllowedSingleValue<T extends readonly string[]>(
   value: string | null | undefined,
@@ -30,6 +31,14 @@ function hasAllowedMultiValues<T extends readonly string[]>(
   );
 }
 
+function hasOccurrenceTimeOrUnknown(normalized: NormalizedSubmitInput) {
+  return (
+    normalized.timeUnknown === true ||
+    (typeof normalized.occurredTime === "string" &&
+      OCCURRENCE_TIME_PATTERN.test(normalized.occurredTime))
+  );
+}
+
 export function validateSubmitInput(
   normalized: NormalizedSubmitInput
 ): SubmitValidationResult {
@@ -39,6 +48,7 @@ export function validateSubmitInput(
       normalized.email &&
       EMAIL_PATTERN.test(normalized.email) &&
       normalized.occurredDate &&
+      hasOccurrenceTimeOrUnknown(normalized) &&
       normalized.bodyPartContacted &&
       normalized.sawSerialNumber &&
       SAW_SERIAL_NUMBER_PATTERN.test(normalized.sawSerialNumber) &&

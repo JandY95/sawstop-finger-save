@@ -138,6 +138,23 @@ export const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
 export const ADMIN_LOGIN_FAILURE_LIMIT = 5;
 export const ADMIN_LOGIN_LOCK_SECONDS = 60 * 15;
 export const CUSTOMER_ATTACHMENT_FIELD_NAME = "attachments";
+export const CUSTOMER_ATTACHMENT_MAX_COUNT = 4;
+export const CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+export const CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif"
+] as const;
+export const CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".heic",
+  ".heif"
+] as const;
 export const R2_TMP_PREFIX = "tmp";
 export const R2_ATTACHMENTS_PREFIX = "attachments";
 export const ATTACHMENT_PROCESSING_QUEUE_NAME = "sawstop-attachment-processing";

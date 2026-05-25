@@ -18,15 +18,18 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#39;");
 }
 
-function buildRadioGroup(name: string, options: readonly string[]) {
+function buildRadioGroup(name: string, options: readonly string[], required = false) {
   return options
     .map(
-      (option, index) => `
+      (option, index) => {
+        const requiredAttribute = index === 0 && required ? " required" : "";
+        return `
         <label class="choice-item" for="${name}-${index}">
-          <input id="${name}-${index}" type="radio" name="${name}" value="${escapeHtml(option)}" />
+          <input id="${name}-${index}" type="radio" name="${name}" value="${escapeHtml(option)}"${requiredAttribute} />
           <span>${escapeHtml(option)}</span>
         </label>
-      `
+      `;
+      }
     )
     .join("");
 }
@@ -44,10 +47,14 @@ function buildCheckboxGroup(name: string, options: readonly string[]) {
     .join("");
 }
 
-export function renderCustomerPage() {
+export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) {
+  const turnstileWidget = options.turnstileSiteKey
+    ? `<div class="cf-turnstile" data-sitekey="${escapeHtml(options.turnstileSiteKey)}"></div>`
+    : `<p class="helper">Turnstile site key가 설정되지 않아 제출 검증을 완료할 수 없습니다.</p>`;
   const visibleInjuryOptions = buildRadioGroup(
     "visibleInjuryMark",
-    VISIBLE_INJURY_MARK_OPTIONS
+    VISIBLE_INJURY_MARK_OPTIONS,
+    true
   );
   const otherDeviceOptions = buildCheckboxGroup(
     "otherDevicesUsed",
@@ -56,7 +63,8 @@ export function renderCustomerPage() {
   const glovesOptions = buildRadioGroup("wearingGloves", GLOVES_OPTIONS);
   const promotionalConsentOptions = buildRadioGroup(
     "promotionalConsent",
-    PROMOTIONAL_CONSENT_OPTIONS
+    PROMOTIONAL_CONSENT_OPTIONS,
+    true
   );
 
   return new Response(
@@ -66,6 +74,7 @@ export function renderCustomerPage() {
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>SAWSTOP “Finger Save” 사례 접수</title>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
         <style>
           :root {
             --bg: #f6f2ea;
@@ -845,6 +854,7 @@ export function renderCustomerPage() {
             <section class="submit-bar">
               <div class="hint">접수 후 접수번호를 바로 확인하실 수 있습니다. 사진이 없어도 먼저 접수하실 수 있습니다.</div>
               <div id="customer-submit-error" class="submit-error"></div>
+              ${turnstileWidget}
               <button type="submit">안심하고 접수하기</button>
             </section>
           </form>
@@ -1188,6 +1198,73 @@ export function renderCustomerPage() {
               sawSerialNumberInput.setCustomValidity(message);
             }
             return valid;
+          }
+
+          function validateRequiredFormFields() {
+            const requiredFieldChecks = [
+              {
+                selector: "#occurred-date",
+                focusSelector: "#occurred-date-display",
+                message: "사고 발생일을 선택해 주세요."
+              },
+              {
+                validate: validateOccurredTime,
+                focusElement: occurredTimeMeridiem,
+                message: "사고 발생 시간을 입력하거나 시간 미상을 선택해 주세요."
+              },
+              {
+                selector: "#body-part-contacted",
+                message: "톱날에 닿은 부위를 입력해 주세요."
+              },
+              {
+                selector: "input[name=\"visibleInjuryMark\"]:checked",
+                focusSelector: "input[name=\"visibleInjuryMark\"]",
+                message: "상처가 보였는지 선택해 주세요."
+              },
+              {
+                selector: "#material-type",
+                message: "절단한 재료를 입력해 주세요."
+              },
+              {
+                selector: "#incident-description",
+                message: "사고 설명을 입력해 주세요."
+              },
+              {
+                selector: "input[name=\"promotionalConsent\"]:checked",
+                focusSelector: "input[name=\"promotionalConsent\"]",
+                message: "홍보 활용 동의 여부를 선택해 주세요."
+              }
+            ];
+
+            for (const check of requiredFieldChecks) {
+              if (check.validate) {
+                if (check.validate()) {
+                  continue;
+                }
+                setSubmitError(check.message);
+                if (check.focusElement instanceof HTMLElement) {
+                  check.focusElement.focus();
+                }
+                return false;
+              }
+
+              const matched = document.querySelector(check.selector);
+              const isTextControl = matched instanceof HTMLInputElement || matched instanceof HTMLTextAreaElement;
+              const valid = Boolean(matched) && (!isTextControl || matched.value.trim().length > 0);
+
+              if (valid) {
+                continue;
+              }
+
+              setSubmitError(check.message);
+              const firstInvalid = document.querySelector(check.focusSelector ?? check.selector);
+              if (firstInvalid instanceof HTMLElement) {
+                firstInvalid.focus();
+              }
+              return false;
+            }
+
+            return true;
           }
 
           function clearFormErrors() {
@@ -1672,15 +1749,16 @@ export function renderCustomerPage() {
 
           if (form) {
             form.addEventListener("submit", async (event) => {
-              const phoneValid = validatePhone();
-              const emailValid = validateEmail();
-              const occurredTimeValid = validateOccurredTime();
-              const sawSerialValid = validateSawSerialNumber();
-
               event.preventDefault();
               setSubmitError("");
 
-              if (phoneValid && emailValid && occurredTimeValid && sawSerialValid) {
+              const phoneValid = validatePhone();
+              const emailValid = validateEmail();
+              const requiredFieldsValid = validateRequiredFormFields();
+              const occurredTimeValid = validateOccurredTime();
+              const sawSerialValid = validateSawSerialNumber();
+
+              if (phoneValid && emailValid && requiredFieldsValid && occurredTimeValid && sawSerialValid) {
                 try {
                   syncAttachmentInputFiles();
                   const response = await fetch(form.action, {
@@ -1709,6 +1787,10 @@ export function renderCustomerPage() {
 
               if (!emailValid && emailInput) {
                 emailInput.focus();
+                return;
+              }
+
+              if (!requiredFieldsValid) {
                 return;
               }
 

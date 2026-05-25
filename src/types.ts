@@ -209,6 +209,8 @@ export interface WorkerEnv {
   ADMIN_SESSION_SECRET: string;
   ATTACHMENT_BUCKET: R2Bucket;
   ATTACHMENT_PROCESSING_QUEUE: QueueBinding<SubmitAttachmentPayload>;
+  TURNSTILE_SITE_KEY?: string;
+  TURNSTILE_SECRET_KEY?: string;
 }
 
 export interface WorkerExecutionContext {
