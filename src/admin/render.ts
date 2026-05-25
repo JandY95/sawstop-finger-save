@@ -89,8 +89,13 @@ export function renderAdminPage(
             </select>
 
             <label for="files">파일</label>
-            <input id="files" name="files" type="file" multiple required />
+            <div id="admin-upload-drop-zone" class="file-drop-zone" role="button" tabindex="0" aria-controls="files">
+              <strong>파일을 드래그하거나 클릭해 선택하세요.</strong>
+              <span>이미지는 업로드 전 썸네일로 확인할 수 있습니다.</span>
+            </div>
+            <input id="files" class="file-input" name="files" type="file" multiple required />
             <div id="file-summary" class="hint file-summary">선택된 파일 없음</div>
+            <div id="file-preview-grid" class="file-preview-grid" aria-live="polite"></div>
 
             <button id="upload-submit-button" type="submit" disabled>업로드</button>
 
@@ -131,6 +136,8 @@ export function renderAdminPage(
         const attachmentTypeSelect = document.getElementById("attachment-type");
         const filesInput = document.getElementById("files");
         const fileSummary = document.getElementById("file-summary");
+        const filePreviewGrid = document.getElementById("file-preview-grid");
+        const adminUploadDropZone = document.getElementById("admin-upload-drop-zone");
         const uploadSubmitButton = document.getElementById("upload-submit-button");
         const attachmentListMessage = document.getElementById("attachment-list-message");
         const attachmentContext = document.getElementById("attachment-context");
@@ -375,6 +382,7 @@ export function renderAdminPage(
 
         function updateFileSummary() {
           const files = filesInput.files || [];
+          filePreviewGrid.innerHTML = "";
           if (files.length === 0) {
             fileSummary.textContent = "선택된 파일 없음";
             return;
@@ -384,6 +392,29 @@ export function renderAdminPage(
             files.length === 1
               ? files[0].name
               : files[0].name + " 외 " + (files.length - 1) + "개";
+
+          Array.from(files).forEach((file) => {
+            const preview = document.createElement("div");
+            preview.className = "file-preview-item";
+
+            if (file.type && file.type.startsWith("image/")) {
+              const img = document.createElement("img");
+              img.src = URL.createObjectURL(file);
+              img.alt = file.name;
+              img.addEventListener("load", () => URL.revokeObjectURL(img.src), { once: true });
+              preview.appendChild(img);
+            } else {
+              const placeholder = document.createElement("div");
+              placeholder.className = "file-preview-placeholder";
+              placeholder.textContent = "FILE";
+              preview.appendChild(placeholder);
+            }
+
+            const caption = document.createElement("span");
+            caption.textContent = file.name;
+            preview.appendChild(caption);
+            filePreviewGrid.appendChild(preview);
+          });
         }
 
         function updateUploadSubmitState() {
@@ -833,6 +864,38 @@ export function renderAdminPage(
           }
         });
 
+        function handleUploadDropFiles(fileList) {
+          if (!fileList || fileList.length === 0) {
+            return;
+          }
+
+          const transfer = new DataTransfer();
+          Array.from(fileList).forEach((file) => transfer.items.add(file));
+          filesInput.files = transfer.files;
+          updateFileSummary();
+          updateUploadSubmitState();
+        }
+
+        adminUploadDropZone.addEventListener("click", () => filesInput.click());
+        adminUploadDropZone.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            filesInput.click();
+          }
+        });
+        adminUploadDropZone.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          adminUploadDropZone.classList.add("drag-over");
+        });
+        adminUploadDropZone.addEventListener("dragleave", () => {
+          adminUploadDropZone.classList.remove("drag-over");
+        });
+        adminUploadDropZone.addEventListener("drop", (event) => {
+          event.preventDefault();
+          adminUploadDropZone.classList.remove("drag-over");
+          handleUploadDropFiles(event.dataTransfer && event.dataTransfer.files);
+        });
+
         attachmentTypeSelect.addEventListener("change", updateUploadSubmitState);
         filesInput.addEventListener("change", () => {
           updateFileSummary();
@@ -1141,6 +1204,65 @@ export function renderAdminPage(
           }
           .file-summary {
             margin-top: -6px;
+            overflow-wrap: anywhere;
+          }
+          .file-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+          }
+          .file-drop-zone {
+            display: grid;
+            gap: 6px;
+            padding: 18px;
+            border: 2px dashed var(--line);
+            border-radius: 14px;
+            background: #fbf8f1;
+            color: var(--ink);
+            cursor: pointer;
+          }
+          .file-drop-zone span {
+            color: var(--muted);
+            font-size: 13px;
+          }
+          .file-drop-zone:focus,
+          .file-drop-zone.drag-over {
+            outline: 3px solid rgba(22, 99, 163, 0.18);
+            border-color: var(--accent);
+            background: #eef5fb;
+          }
+          .file-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+          }
+          .file-preview-item {
+            display: grid;
+            gap: 6px;
+            padding: 8px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fff;
+            min-width: 0;
+          }
+          .file-preview-item img,
+          .file-preview-placeholder {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 8px;
+            background: #ece6d8;
+            object-fit: cover;
+          }
+          .file-preview-placeholder {
+            display: grid;
+            place-items: center;
+            color: var(--muted);
+            font-weight: 800;
+          }
+          .file-preview-item span {
+            font-size: 12px;
             overflow-wrap: anywhere;
           }
           h1 { margin: 0 0 8px; font-size: 28px; }

@@ -134,7 +134,7 @@ async function getAccidentPageReceiptNumber(env: WorkerEnv, pageId: string) {
 }
 
 export async function handleAdminUpload(request: Request, env: WorkerEnv) {
-  // TODO: 관리자 업로드 라우트에는 인증/잠금 로직이 필요하다.
+  // Admin API authentication is enforced in the route dispatcher before this handler runs.
   const contentType = request.headers.get("content-type") || "";
   if (!contentType.toLowerCase().includes("multipart/form-data")) {
     return jsonResponse(
