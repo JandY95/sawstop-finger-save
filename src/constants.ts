@@ -128,6 +128,7 @@ export const ADMIN_ATTACHMENT_RESTORE_ROUTE = "/admin/attachments/restore";
 export const ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE = "/admin/attachments/fifo/process";
 // TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명과 허용값은
 // 라이브 첨부 DB 스키마 확정 전까지 runtime write 대상으로 사용하지 않는다.
+export const ADMIN_REPORT_ROUTE = "/admin/report";
 export const ADMIN_PAGE_ROUTE = "/admin";
 export const ADMIN_LOGIN_ROUTE = "/admin/login";
 export const ADMIN_LOGOUT_ROUTE = "/admin/logout";

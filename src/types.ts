@@ -224,8 +224,48 @@ export interface SaveAccidentPageDefaultBodyInput {
   pageId: string;
 }
 
+export interface NotionRichTextItem {
+  plain_text?: string;
+  text?: {
+    content?: string;
+  };
+}
+
+export interface NotionBlockChildResult {
+  id?: string;
+  type?: string;
+  paragraph?: {
+    rich_text?: NotionRichTextItem[];
+  };
+  heading_1?: {
+    rich_text?: NotionRichTextItem[];
+  };
+  heading_2?: {
+    rich_text?: NotionRichTextItem[];
+  };
+  heading_3?: {
+    rich_text?: NotionRichTextItem[];
+  };
+}
+
 export interface NotionBlockChildrenListResponse {
-  results?: Array<{ id?: string; type?: string }>;
+  results?: NotionBlockChildResult[];
+}
+
+export interface AccidentPageBodyBlockSummary {
+  id?: string;
+  type: string;
+  text: string;
+}
+
+export interface AccidentReportPropertySummary {
+  label: string;
+  value: string;
+}
+
+export interface AccidentPageReportData {
+  blocks: AccidentPageBodyBlockSummary[];
+  properties: AccidentReportPropertySummary[];
 }
 
 export interface NotionPageSummary {

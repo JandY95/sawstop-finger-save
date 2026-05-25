@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "sourceDecision": "docs/decisions/DECISIONS_LOCK.md#D-11",
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Report a Save (Known or Suspected Finger Contact)"
+    },
+    {
+      "type": "heading_2",
+      "text": "Incident Information"
+    },
+    {
+      "type": "paragraph",
+      "text": "Date of Occurence:\nBusiness or School Name (NA if Not Applicable):"
+    },
+    {
+      "type": "heading_2",
+      "text": "People / Contact Information"
+    },
+    {
+      "type": "paragraph",
+      "text": "Operator Name:\nName of Person Who Touched the Blade:\nPhone:\nEmail:\nConsent for Promotional Use:"
+    },
+    {
+      "type": "heading_2",
+      "text": "Injury Information"
+    },
+    {
+      "type": "paragraph",
+      "text": "Body Part Contacted (right or left hand, finger, thumb, etc.):\nWas There A Visible Injury Mark?:\nWound treatment methods:\nEstimate of the injury if it were to have occured while using a non-SawStop saw:"
+    },
+    {
+      "type": "heading_2",
+      "text": "Saw / Cartridge Information"
+    },
+    {
+      "type": "paragraph",
+      "text": "Saw Serial Number:\nBrake Cartridge Serial Number:\nType of blade being used:\nSaw Blade Details:"
+    },
+    {
+      "type": "heading_2",
+      "text": "Material / Setup / Conditions"
+    },
+    {
+      "type": "paragraph",
+      "text": "Type of Material Being Cut?:\nWorkpiece Size & Cut Type:\nWas a Blade Guard, Riving Knife or Splitter in Place? (please specify which, if any):\nWere There Other Devices Being Used When the Cut was Made?:\nWas the saw operator wearing gloves at the time?:\nWhat was the approximate feed rate of the material when the accident occured (inches per second)?:"
+    },
+    {
+      "type": "heading_2",
+      "text": "Incident Description"
+    },
+    {
+      "type": "paragraph",
+      "text": "Cause of the Incident (Customer Feedback):\nTo the best of your ability, please describe the circumstances of how the accident happened:"
+    },
+    {
+      "type": "heading_2",
+      "text": "Attachments"
+    },
+    {
+      "type": "paragraph",
+      "text": "첨부(선택):"
+    },
+    {
+      "type": "paragraph",
+      "text": ""
+    }
+  ]
+}

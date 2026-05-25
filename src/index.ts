@@ -9,6 +9,7 @@ import {
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
   ADMIN_PAGE_ROUTE,
+  ADMIN_REPORT_ROUTE,
   ADMIN_UPLOAD_ROUTE,
   ATTACHMENT_UPLOAD_STATUS,
   CUSTOMER_ATTACHMENT_FIELD_NAME,
@@ -31,6 +32,7 @@ import { handleAdminRestoreAttachment } from "./admin/restore-attachment";
 import { handleAdminAccidentSearch } from "./admin/search";
 import { handleAdminUpdateAccidentStatus } from "./admin/update-accident-status";
 import { handleAdminUpdateAttachmentType } from "./admin/update-attachment-type";
+import { renderAdminReportPage } from "./admin/report";
 import { handleAdminUpload } from "./admin/upload";
 import { consumeAttachmentBatch } from "./consumer";
 import { buildAccidentDbProperties } from "./mapper";
@@ -268,6 +270,15 @@ export default {
 
     if (request.method === "POST" && url.pathname === ADMIN_LOGOUT_ROUTE) {
       return handleAdminLogout(request);
+    }
+
+    if (request.method === "GET" && url.pathname === ADMIN_REPORT_ROUTE) {
+      const unauthorizedResponse = await requireAdminApiAuth(request, env);
+      if (unauthorizedResponse) {
+        return unauthorizedResponse;
+      }
+
+      return renderAdminReportPage(request, env);
     }
 
     if (request.method === "GET" && url.pathname === ADMIN_ACCIDENT_SEARCH_ROUTE) {
