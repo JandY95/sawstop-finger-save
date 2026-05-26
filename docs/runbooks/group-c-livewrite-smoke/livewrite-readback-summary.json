@@ -1,0 +1,40 @@
+{
+  "scope": "Group C minimal no-attachment customer submit live-write smoke",
+  "marker": "HERMES-GROUP-C-20260525143238-8cb587",
+  "receiptNumber": "202605252332-3238",
+  "pageIdSuffix": "506ae7",
+  "submitStatus": 200,
+  "submitOk": true,
+  "notionAccidentQueryStatus": 200,
+  "matchingAccidentPages": 1,
+  "representativeProperties": {
+    "receipt": "202605252332-3238",
+    "status": "접수",
+    "bodyPartContainsMarker": true,
+    "incidentDescriptionContainsMarker": true,
+    "materialContainsMarker": true,
+    "sawSerialNumber": "C123456789",
+    "attachmentUploadStatus": "완료",
+    "promotionalConsent": "미동의 (NO)"
+  },
+  "attachmentRelationQueryStatus": 200,
+  "attachmentRowsForPage": 0,
+  "reportStatus": 200,
+  "reportContainsPopulatedReportValues": true,
+  "reportContainsReceipt": true,
+  "reportContainsMarker": true,
+  "reportContainsFailureMessage": false,
+  "files": {
+    "reportRaw": "/home/uandme/vibe/sawstop-finger-save/docs/runbooks/group-c-livewrite-smoke/report-raw.html",
+    "reportRedacted": "/home/uandme/vibe/sawstop-finger-save/docs/runbooks/group-c-livewrite-smoke/report-redacted.html"
+  },
+  "nonApprovals": [
+    "admin upload",
+    "attachment update/type/trash/restore/FIFO POST",
+    "deploy",
+    "cleanup execution",
+    "propagation",
+    "OI/Core mutation",
+    "destructive commands"
+  ]
+}

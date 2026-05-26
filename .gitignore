@@ -6,6 +6,10 @@ node_modules/
 *.log
 .tmp-*
 
+# Local-only verification captures (keep redacted summaries/artifacts in docs instead)
+/docs/runbooks/**/report-raw.html
+/docs/runbooks/group-b-browser-proof/admin.html
+
 # parity generated outputs
 /docs/harness/parity/latest-run.json
 /docs/harness/parity/latest-compare.json

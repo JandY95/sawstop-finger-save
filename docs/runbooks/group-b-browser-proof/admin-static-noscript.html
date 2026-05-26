@@ -1,0 +1,527 @@
+<!doctype html>
+    <html lang="ko">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>SawStop Admin</title>
+        <style>
+          :root {
+            --bg: #f7f4ed;
+            --panel: #fffdf8;
+            --ink: #1d1b18;
+            --muted: #6b655d;
+            --line: #d9cfbe;
+            --accent: #205493;
+            --accent-2: #9f2f22;
+            --success: #1f6f43;
+          }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            font-family: "Segoe UI", "Noto Sans KR", sans-serif;
+            color: var(--ink);
+            background:
+              radial-gradient(circle at top left, #efe5d3 0, transparent 32%),
+              linear-gradient(180deg, #fbf8f1 0%, var(--bg) 100%);
+          }
+          .panel {
+            width: min(1100px, calc(100% - 32px));
+            margin: 24px auto;
+            padding: 24px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+          }
+          .panel.narrow { width: min(480px, calc(100% - 32px)); }
+          .panel-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+          }
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+          }
+          .card {
+            display: grid;
+            gap: 12px;
+            padding: 18px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+          }
+          .attachment-card {
+            grid-column: 1 / -1;
+          }
+          .upload-target {
+            display: grid;
+            gap: 8px;
+            min-height: 52px;
+            padding: 12px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #fbf8f1;
+          }
+          .upload-target.selected {
+            border-style: solid;
+            background: #f8f3ea;
+            color: var(--ink);
+          }
+          .upload-target-title {
+            font-weight: 800;
+            overflow-wrap: anywhere;
+          }
+          .upload-target-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px 12px;
+            font-weight: 400;
+          }
+          .upload-target-fields span {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+          .upload-target-fields b {
+            display: block;
+            margin-bottom: 2px;
+            color: var(--muted);
+            font-size: 12px;
+          }
+          .upload-result-row {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            background: #f8f3ea;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+          }
+          .upload-result-row strong {
+            overflow-wrap: anywhere;
+          }
+          .upload-result-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px 12px;
+            margin: 0;
+          }
+          .upload-result-fields div {
+            min-width: 0;
+          }
+          .upload-result-fields dt {
+            margin: 0 0 2px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+          }
+          .upload-result-fields dd {
+            margin: 0;
+            overflow-wrap: anywhere;
+          }
+          .empty-state {
+            padding: 14px 16px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #fbf8f1;
+            color: var(--muted);
+          }
+          .context-line {
+            padding: 8px 10px;
+            border-left: 4px solid var(--accent);
+            border-radius: 10px;
+            background: #eef5fb;
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+          }
+          .context-line:empty {
+            display: none;
+          }
+          .attachment-summary {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+          }
+          .attachment-summary:empty {
+            display: none;
+          }
+          .summary-metric {
+            min-width: 0;
+            padding: 9px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+          }
+          .summary-metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+          }
+          .summary-metric strong {
+            display: block;
+            margin-top: 3px;
+            color: var(--ink);
+            font-size: 16px;
+            overflow-wrap: anywhere;
+          }
+          .summary-metric.ok {
+            border-color: #5f8a3b;
+            background: #eef7e7;
+          }
+          .summary-metric.ok strong {
+            color: #315b16;
+          }
+          .summary-metric.warning {
+            border-color: #b3483f;
+            background: #fff0ee;
+          }
+          .summary-metric.warning strong {
+            color: #7a2119;
+          }
+          .attachment-row {
+            display: grid;
+            gap: 10px;
+            padding: 12px;
+            background: #f8f3ea;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+          }
+          .attachment-row.needs-classification {
+            border-color: #c47f00;
+            background: #fff8e6;
+          }
+          .attachment-meta {
+            display: grid;
+            gap: 8px;
+          }
+          .attachment-heading {
+            display: flex;
+            gap: 10px;
+            align-items: baseline;
+            min-width: 0;
+          }
+          .attachment-heading strong {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+          .attachment-order {
+            flex: 0 0 auto;
+            padding: 3px 8px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+          }
+          .attachment-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 14px;
+            margin: 0;
+          }
+          .attachment-fields div {
+            min-width: 0;
+          }
+          .attachment-fields dt {
+            margin: 0 0 2px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+          }
+          .attachment-fields dd {
+            margin: 0;
+            overflow-wrap: anywhere;
+          }
+          .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: 3px 8px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+          }
+          .pending-classification-badge {
+            border-color: #c47f00;
+            background: #fff0bf;
+            color: #6f4300;
+          }
+          .attachment-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+          }
+          .attachment-actions select {
+            flex: 1;
+          }
+          .trash-reason-control {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex: 1;
+            min-width: 220px;
+          }
+          .trash-reason-control span {
+            flex: 0 0 auto;
+            color: var(--muted);
+            font-size: 13px;
+          }
+          .trash-reason-control select {
+            min-width: 0;
+          }
+          .file-summary {
+            margin-top: -6px;
+            overflow-wrap: anywhere;
+          }
+          .file-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+          }
+          .file-drop-zone {
+            display: grid;
+            gap: 6px;
+            padding: 18px;
+            border: 2px dashed var(--line);
+            border-radius: 14px;
+            background: #fbf8f1;
+            color: var(--ink);
+            cursor: pointer;
+          }
+          .file-drop-zone span {
+            color: var(--muted);
+            font-size: 13px;
+          }
+          .file-drop-zone:focus,
+          .file-drop-zone.drag-over {
+            outline: 3px solid rgba(22, 99, 163, 0.18);
+            border-color: var(--accent);
+            background: #eef5fb;
+          }
+          .file-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+          }
+          .file-preview-item {
+            display: grid;
+            gap: 6px;
+            padding: 8px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fff;
+            min-width: 0;
+          }
+          .file-preview-item img,
+          .file-preview-placeholder {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 8px;
+            background: #ece6d8;
+            object-fit: cover;
+          }
+          .file-preview-placeholder {
+            display: grid;
+            place-items: center;
+            color: var(--muted);
+            font-weight: 800;
+          }
+          .file-preview-item span {
+            font-size: 12px;
+            overflow-wrap: anywhere;
+          }
+          h1 { margin: 0 0 8px; font-size: 28px; }
+          h2 { margin: 0; font-size: 20px; }
+          p { margin: 0; color: var(--muted); line-height: 1.5; }
+          label { font-weight: 700; }
+          input, select, button, pre { font: inherit; }
+          input[type="text"], input[type="password"], input[type="file"], select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fff;
+          }
+          .row {
+            display: flex;
+            gap: 10px;
+          }
+          .row > *:first-child { flex: 1; }
+          button {
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+          }
+          button:disabled, input:disabled, select:disabled {
+            cursor: not-allowed;
+            opacity: 0.58;
+          }
+          button.secondary {
+            background: #ece6d8;
+            color: var(--ink);
+          }
+          .result-item {
+            width: 100%;
+            text-align: left;
+            background: #f8f3ea;
+            color: var(--ink);
+            border: 1px solid var(--line);
+            display: grid;
+            gap: 8px;
+          }
+          .result-item.selected {
+            border-color: var(--accent);
+            background: #eef5fb;
+            box-shadow: inset 4px 0 0 var(--accent);
+          }
+          .accident-result-title {
+            font-weight: 800;
+            overflow-wrap: anywhere;
+          }
+          .accident-result-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px 12px;
+            color: var(--ink);
+            font-weight: 400;
+          }
+          .accident-result-fields span {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+          .accident-result-fields b {
+            display: block;
+            margin-bottom: 2px;
+            color: var(--muted);
+            font-size: 12px;
+          }
+          .results {
+            display: grid;
+            gap: 8px;
+            min-height: 24px;
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+          .message {
+            min-height: 24px;
+            padding: 8px 10px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            background: #fbf8f1;
+            color: var(--muted);
+          }
+          .message.error {
+            border-color: rgba(159, 47, 34, 0.28);
+            background: #fff2ef;
+            color: var(--accent-2);
+          }
+          .message.success {
+            border-color: rgba(31, 111, 67, 0.26);
+            background: #eff8f2;
+            color: var(--success);
+          }
+          .hint { font-size: 13px; color: var(--muted); }
+          @media (max-width: 840px) {
+            .grid { grid-template-columns: 1fr; }
+            .panel-head { flex-direction: column; }
+            .row { flex-direction: column; }
+            .attachment-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .attachment-actions { flex-direction: column; align-items: stretch; }
+            .upload-target-fields { grid-template-columns: 1fr; }
+            .upload-result-fields { grid-template-columns: 1fr; }
+            .accident-result-fields { grid-template-columns: 1fr; }
+          }
+        </style>
+      </head>
+      <body>
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h1>Admin Upload</h1>
+            <p>receiptNumber 또는 phone 으로 사고건을 찾고 파일을 업로드합니다.</p>
+          </div>
+          <form method="post" action="/admin/logout">
+            <button type="submit" class="secondary">로그아웃</button>
+          </form>
+        </div>
+
+        <div class="grid">
+          <form id="search-form" class="card">
+            <label for="query">사고건 검색</label>
+            <div class="row">
+              <input id="query" name="query" type="text" placeholder="receiptNumber 또는 phone 입력" required />
+              <button type="submit">검색</button>
+            </div>
+            <p class="hint">완료 상태 사고건은 검색 결과에서 제외됩니다.</p>
+            <div id="search-message" class="message"></div>
+            <div id="search-results" class="results"></div>
+          </form>
+
+          <form id="upload-form" class="card">
+            <input id="selected-page-id" name="pageId" type="hidden" required />
+            <label>첨부 업로드 대상</label>
+            <div id="selected-summary" class="upload-target hint">아직 선택된 사고건이 없습니다.</div>
+
+            <label for="attachment-type">첨부 유형</label>
+            <select id="attachment-type" name="attachmentType" required>
+              <option value="">선택</option>
+              <option value="손가락 사진">손가락 사진</option><option value="브레이크 카트리지 사진">브레이크 카트리지 사진</option><option value="기타">기타</option>
+            </select>
+
+            <label for="files">파일</label>
+            <div id="admin-upload-drop-zone" class="file-drop-zone" role="button" tabindex="0" aria-controls="files">
+              <strong>파일을 드래그하거나 클릭해 선택하세요.</strong>
+              <span>이미지는 업로드 전 썸네일로 확인할 수 있습니다.</span>
+            </div>
+            <input id="files" class="file-input" name="files" type="file" multiple required />
+            <div id="file-summary" class="hint file-summary">선택된 파일 없음</div>
+            <div id="file-preview-grid" class="file-preview-grid" aria-live="polite"></div>
+
+            <button id="upload-submit-button" type="submit" disabled>업로드</button>
+
+            <div id="upload-message" class="message"></div>
+            <div id="upload-context" class="context-line"></div>
+            <div id="upload-results" class="results"></div>
+          </form>
+
+          <section class="card attachment-card">
+            <h2>현재 첨부 목록</h2>
+            <p class="hint">사고건을 선택하면 첨부 목록을 불러옵니다.</p>
+            <div id="attachment-list-message" class="message"></div>
+            <div id="attachment-context" class="context-line"></div>
+            <div id="attachment-summary" class="attachment-summary"></div>
+            <div id="attachment-list" class="results"></div>
+          </section>
+
+          <section class="card attachment-card">
+            <h2>FIFO 실행</h2>
+            <p>휴지통 상태이며 영구삭제 예정 시각이 지난 첨부를 실제 처리합니다.</p>
+            <div id="fifo-message" class="message"></div>
+            <div id="fifo-results" class="results"></div>
+            <div>
+              <button id="fifo-process-button" type="button">FIFO 실행</button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- scripts removed for read-only static visual proof -->
+
+    </body>
+    </html>

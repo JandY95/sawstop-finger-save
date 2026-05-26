@@ -85,8 +85,9 @@
   - 옵션: `화질 불량` / `기타` / `불필요` / `오업로드` / `중복`
 - 삭제, 휴지통 이동, FIFO 영구삭제에서 삭제 사유를 기록할 때 위 옵션명 외 문자열을 임의로 쓰지 않는다.
 
-### D-11. 사고 페이지 본문 block 구조
-- 실제 사고 페이지 본문 block 구조는 아래 순서로 잠근다.
+### D-11. 영문 리포트 본문 block 구조
+- 신규 접수 시점에는 고객이 입력한 한국어 원문을 사고 DB 속성에 저장하고, 아래 영문 리포트 본문 template을 자동으로 노출/삽입하지 않는다.
+- 아래 구조는 접수 이후 운영자가 한국어 내용을 영문으로 번역해 본사 제출용 리포트를 만들 때 사용하는 같은 사고 페이지 본문 template으로 잠근다.
   - `Report a Save (Known or Suspected Finger Contact)`
   - `Incident Information`
   - `People / Contact Information`
@@ -96,7 +97,7 @@
   - `Incident Description`
   - `Attachments`
   - 마지막에 `첨부(선택):` 후 빈 블록 1개
-- 이 구조는 사고 DB 페이지 본문 저장 성공 판정의 운영 기준이다.
+- 이 구조는 영문 리포트 작성/출력 판정의 운영 기준이며, 신규 접수 성공 기준은 사고 DB 페이지 속성 저장 성공이다.
 
 ### D-12. 관리자 인증 정책
 - 관리자 인증은 Cloudflare Workers Secrets의 `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`를 사용한다.
