@@ -11,6 +11,7 @@
     "check:fifo-trash-candidates": "node --experimental-strip-types scripts/check-fifo-trash-candidates.ts",
     "check:queue-payload-fixtures": "node scripts/check-queue-payload-fixtures.js",
     "check:submit-fixtures": "node scripts/check-submit-fixtures.js",
+    "check:submit-no-default-report-body": "node scripts/check-submit-no-default-report-body.js",
     "check:submit-validation-contract": "node scripts/check-submit-validation-contract.js",
     "check:submit-attachment-contract": "node scripts/check-submit-attachment-contract.js",
     "check:customer-form-required-contract": "node scripts/check-customer-form-required-contract.js",
@@ -38,7 +39,7 @@
     "dev:fully-local": "npx wrangler dev --local",
     "dev:remote": "npx wrangler dev --remote",
     "dev:recalculate-finger-photo": "node --experimental-strip-types --experimental-specifier-resolution=node scripts/recalculate-finger-photo.ts",
-    "test": "npm run check:notion-schema && npm run check:allowed-values && npm run smoke:submit && npm run smoke:admin-search && npm run smoke:admin-upload && npm run smoke:admin-list-attachments && npm run smoke:admin-update-accident-status && npm run smoke:admin-update-attachment-type && npm run smoke:admin-move-attachment-to-trash && npm run smoke:admin-restore-attachment && npm run smoke:admin-process-fifo-trash",
+    "test": "npm run check:notion-schema && npm run check:allowed-values && npm run check:submit-no-default-report-body && npm run smoke:submit && npm run smoke:admin-search && npm run smoke:admin-upload && npm run smoke:admin-list-attachments && npm run smoke:admin-update-accident-status && npm run smoke:admin-update-attachment-type && npm run smoke:admin-move-attachment-to-trash && npm run smoke:admin-restore-attachment && npm run smoke:admin-process-fifo-trash",
     "lint": "node --check scripts/verify-gates.js",
     "verify:gates": "node scripts/verify-gates.js --status",
     "cleanup:fifo-trash:dry-run": "node --experimental-strip-types scripts/fifo-cleanup-dry-run.ts"

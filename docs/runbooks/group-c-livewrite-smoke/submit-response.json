@@ -1,0 +1,13 @@
+{
+  "marker": "HERMES-GROUP-C-20260525143238-8cb587",
+  "submitStatus": 200,
+  "submitResponse": "{\"ok\":true,\"receiptNumber\":\"202605252332-3238\",\"message\":\"접수가 완료되었습니다.\"}",
+  "payloadSummary": {
+    "noAttachments": true,
+    "phoneSuffix": "3238",
+    "emailDomain": "example.com",
+    "sawSerialNumber": "C123456789",
+    "materialMarkerPresent": true,
+    "descriptionMarkerPresent": true
+  }
+}

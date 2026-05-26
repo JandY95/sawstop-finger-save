@@ -1,0 +1,18 @@
+{
+  "devVarsExists": true,
+  "backupExists": false,
+  "sha256": "c131721dff6b94e27951eed1838b2e32747e5f672b04d4df421c086cf9b15fc0",
+  "keysPresent": [
+    "ADMIN_PASSWORD",
+    "ADMIN_SESSION_SECRET",
+    "NOTION_ACCIDENT_DB_ID",
+    "NOTION_ATTACHMENT_DB_ID",
+    "NOTION_SETTINGS_DB_ID",
+    "NOTION_TOKEN",
+    "TURNSTILE_SECRET_KEY",
+    "TURNSTILE_SITE_KEY"
+  ],
+  "dummyTurnstileSiteKeyPresent": false,
+  "dummyTurnstileSecretKeyPresent": false,
+  "turnstileKeysPresent": true
+}

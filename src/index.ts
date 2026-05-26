@@ -41,7 +41,7 @@ import { handleAdminUpload } from "./admin/upload";
 import { consumeAttachmentBatch } from "./consumer";
 import { buildAccidentDbProperties } from "./mapper";
 import { normalizeSubmitFormData } from "./normalize";
-import { createAccidentPage, saveAccidentPageDefaultBody } from "./notion";
+import { createAccidentPage } from "./notion";
 import {
   buildSubmitAttachmentPayload,
   enqueueSubmitAttachmentPayload,
@@ -275,7 +275,6 @@ async function handleSubmit(
     });
 
     const page = await createAccidentPage(env, { properties });
-    await saveAccidentPageDefaultBody(env, { pageId: page.id });
 
     if (preparedAttachmentFiles.length > 0) {
       ctx.waitUntil(
