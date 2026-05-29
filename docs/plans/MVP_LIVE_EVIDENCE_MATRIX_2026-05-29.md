@@ -102,17 +102,17 @@ Live-read evidence already recorded:
 | 6.3 수동 발송 기본 유지 | repo-local guard partial / live-read config review possible | source docs and no explicit SMTP auto-send path noted in checklist; no deploy run | Static source scan and config read-only review next |
 | 7.1 손가락 사진 있음 write-back | Group D admin upload `CONDITIONAL_PASS` for admin-upload finger-photo path evidence | one synthetic `손가락 사진` upload succeeded and readback showed attachment relation/type/R2 key; accident DB boolean/formula-level `손가락 사진 있음=true` readback was not independently proven | Full formula/checkbox write-back, delete/type-change/customer attachment variants remain separate |
 | 7.2 첨부 최종 확인 완료 자동 해제 | Group D admin upload `PASS` for upload-triggered reset | accident page readback observed `attachmentFinalCheckResetObserved=true` after the one upload | Type-change/trash/restore/FIFO reset variants remain separate |
-| 7.3 미분류 고객 첨부 저장 | live-write evidence 필요 | D-07 locked; submit/admin upload smokes exist | Needs scoped customer submit with attachment + admin upload comparison |
-| 7.4 고객 화면 비노출 유지 | repo-local guard partial / Group B read-side `CONDITIONAL_PASS` plus Group C no-attachment submit | customer form HTML/DOM evidence collected; local no-attachment submit performed; no screenshot/pixel proof; no attachment submit | Keep read-side closed with no-pixel caveat; attachment behavior remains separate |
+| 7.3 미분류 고객 첨부 저장 | live-write evidence 필요 / Group E packet prepared-only `PASS` | D-07 locked; customer attachment submit packet prepared at `docs/runbooks/GROUP_E_CUSTOMER_ATTACHMENT_SUBMIT_APPROVAL_PACKET_2026-05-29.md`; Argus packet-boundary PASS `20260529_234448_bef8f8`; no execution | Needs explicit owner approval + Turnstile readiness before one customer attachment submit execution |
+| 7.4 고객 화면 비노출 유지 | repo-local guard partial / Group B read-side `CONDITIONAL_PASS` plus Group E packet prepared | customer form HTML/DOM evidence collected; local no-attachment submit performed; Group E packet preserves customer no-type-selection boundary; no customer attachment submit execution yet | Keep read-side closed with no-pixel caveat; attachment live behavior remains separate |
 | 8.1 schema drift 회귀 | repo-local guard 있음 | `npm run check:notion-schema` PASS; `npm run check:allowed-values` PASS | Keep as recurring preflight |
 | 8.2 고객 접수 회귀 | Group C local submit intake `PASS` | exactly one local fully-local no-attachment `/submit` smoke; Argus session `20260529_220552_72e9ac` | Production/deployed regression remains separate |
 | 8.3 관리자 업로드 회귀 | Group D admin upload `PASS` for one synthetic local fully-local case | `/admin/upload` exactly once, HTTP 200, success 1/failure 0, Argus PASS | Production/deployed and broad replay remain separate |
 | 8.4 relation / R2 Key 회귀 | Group D admin upload `PASS` for one synthetic local fully-local case | attachment relation and redacted R2 key presence observed via admin/Notion readback | Queue/FIFO finalization and cleanup/delete remain separate |
-| 8.5 write-back 회귀 | live-write evidence 필요 | admin update/trash/restore/FIFO scripts exist; not run | Scoped write-back regression packet required |
+| 8.5 write-back 회귀 | live-write evidence 필요 / Group F finalization skeleton prepared-only `PASS` | admin update/trash/restore/FIFO scripts exist; Queue/consumer finalization skeleton prepared at `docs/runbooks/GROUP_F_QUEUE_CONSUMER_FINALIZATION_PACKET_SKELETON_2026-05-29.md`; Argus skeleton PASS `20260529_234958_5b6a15`; no execution | Group F execution requires completed Group E evidence + explicit owner approval; type-change/trash/restore/FIFO variants remain separate |
 
 ## Recommended next step
 
-Recommended safe next action is **customer attachment submit packet preparation or Queue/R2 finalization packet preparation**, not immediate execution.
+Recommended safe next action is **Group E customer attachment submit execution approval review**, not autonomous execution.
 
 Reason:
 
@@ -121,13 +121,15 @@ Reason:
 - Selected safe TEST page report route fidelity is `PASS` under approved secret-silent read-only admin auth.
 - Group C local fully-local no-attachment submit intake write-path is scoped `PASS` under Argus session `20260529_220552_72e9ac`.
 - Group D local fully-local admin upload write/readback is scoped `PASS` under Argus session `20260529_232252_e7ca90`.
-- Remaining MVP gaps that materially change completion status now center on customer attachment submit, Queue/FIFO finalization, production/deployed proof, and cleanup/delete.
-- Live-write remains a hard boundary whenever scope expands beyond the already executed local no-attachment submit and one admin upload; each expansion needs its own packet, stop conditions, redaction rules, and Argus(아르거스)-검증 총괄 책임자 review before execution.
+- Group E customer attachment submit packet is prepared-only and Argus-reviewed as `PASS` under session `20260529_234448_bef8f8`; it has not been executed.
+- Group F Queue/consumer finalization skeleton is prepared-only and Argus-reviewed as `PASS` under session `20260529_234958_5b6a15`; it is intentionally not executable until Group E evidence exists.
+- Remaining MVP gaps that materially change completion status now center on customer attachment submit execution, Queue/FIFO finalization, production/deployed proof, and cleanup/delete.
+- Live-write remains a hard boundary whenever scope expands beyond the already executed local no-attachment submit and one admin upload; the next such boundary is Group E execution and needs explicit owner approval plus Turnstile readiness before execution.
 
 Suggested next packet scope:
 
 ```text
-Prepare the next write-boundary packet only after choosing scope: customer attachment submit proof, Queue/R2 finalization proof, production/deployed no-attachment submit proof, or cleanup/delete of exact generated test artifacts. Packet preparation only unless separately approved. Preserve non-approvals for cleanup execute unless that is the chosen exact cleanup packet, scheduled automation, deploy, Core mutation, data deletion outside enumerated artifacts, and broad replay. Include object/record creation expectations, redaction rules, rollback/non-deletion policy, stop conditions, evidence paths, and Argus review request.
+If the owner approves the next live boundary, execute only the already prepared Group E scope: local fully-local, exactly one synthetic customer `/submit`, exactly one synthetic attachment, Turnstile test-key mode only if source-bypass-free, tmp R2 + Queue enqueue evidence only, no Queue consumer/finalization, no final R2/attachment DB finalization proof, no cleanup/delete, no deploy, no commit/push/PR. If approval is not available, only prepare dependent packet skeletons or status docs.
 ```
 
 ## Current HOLD boundaries
@@ -135,7 +137,7 @@ Prepare the next write-boundary packet only after choosing scope: customer attac
 The following remain HOLD until explicit approval:
 
 - production/deployed customer submit live-write smoke beyond the completed local no-attachment proof
-- customer attachment submit live-write smoke
+- customer attachment submit live-write smoke until explicit Group E execution approval and Turnstile readiness
 - attachment Queue/R2 finalization write/readback
 - type-change / trash / restore / FIFO process write-back regression
 - cleanup execute or any data deletion, including cleanup of generated Group C/D test artifacts
