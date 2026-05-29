@@ -134,7 +134,9 @@ SawStop Finger Save 프로젝트는 국내 SawStop 사용자 사고 정보를 **
 2. 삭제는 휴지통 이동을 기본으로 하며, 개별 첨부 단위로 처리한다.
 3. 휴지통 첨부는 7일 복구 가능 기간이 지나면 정리 대상이 된다.
 4. 만료된 휴지통 정리가 FIFO보다 먼저 적용된다.
-5. 만료 휴지통 정리 후에도 저장소가 5GB를 초과하는 경우에만 FIFO 삭제가 적용될 수 있다.
+5. 만료 휴지통 정리 후에도 OI-17 기준 active/current attachment corpus 저장소가 5GB를 초과하는 경우에만 FIFO 삭제가 적용될 수 있다.
+   - 5GB threshold에는 active/current attachment DB row에 연결된 current/live 원본 attachment object만 포함한다.
+   - tmp/upload-staging, draft/unfinalized, trash, `영구삭제` row 연결 object, orphan R2 object, unknown-prefix object는 5GB threshold numerator에서 제외하고 별도 운영 report 대상으로 분리한다.
 6. FIFO 삭제는 휴지통을 거치지 않고 첨부 DB row를 `영구삭제` 상태로 정리한다.
 7. 첨부 변경이 발생하면 `손가락 사진 있음`, `첨부 최종 확인 완료`, 발송 준비 관련 상태가 다시 반영된다.
 
@@ -247,7 +249,8 @@ MVP는 아래 범위까지만 포함한다.
 
 ### 7-5. 관리자 수동 보완 업로드
 - 공개 웹폼과 분리된 별도 관리자 업로드 페이지를 제공한다.
-- 접수번호 자동 포함 링크 지원, 비밀번호 + Turnstile + session cookie 인증, 5회 실패 시 10분 잠금 규칙을 따른다.
+- 접수번호 자동 포함 링크 지원, 비밀번호 + 서명된 session cookie 인증, 5회 실패 시 10분 잠금 규칙을 따른다.
+- D-12 기준 관리자 로그인에는 현재 Turnstile을 적용하지 않는다.
 - 검색은 완료건을 제외하고 접수번호/연락처 기준으로 사고건을 찾을 수 있어야 한다.
 - 관리자 업로드 페이지도 form UX 기준의 차분하고 신뢰감 있는 톤을 유지해야 한다.
 - 관리자 업로드 UI에는 드래그 앤 드롭 업로드 영역을 제공한다.
@@ -364,11 +367,12 @@ MVP는 아래 범위까지만 포함한다.
 - 삭제는 개별 첨부 단위로 처리한다.
 - 휴지통 첨부는 7일 동안 복구 가능하다.
 - 만료 휴지통 정리는 FIFO보다 먼저 적용된다.
-- FIFO는 만료 휴지통 정리 후에도 저장소가 5GB를 초과하는 경우에만 적용될 수 있다.
+- FIFO는 만료 휴지통 정리 후에도 OI-17 기준 active/current attachment corpus 저장소가 5GB를 초과하는 경우에만 적용될 수 있다.
 - FIFO 삭제는 휴지통을 거치지 않고 첨부 DB row를 `영구삭제` 상태로 정리한다.
 - 휴지통 / 복구 / 만료 삭제 / FIFO는 첨부 관련 상태 재반영의 트리거로 본다.
 - `check:fifo-trash-candidates` 같은 live-read 검증은 deterministic parity, scenario execution, baseline, CI, product wiring과 분리된 수동 확인 경계로 유지한다.
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
+- OI-17 기준으로 FIFO 5GB threshold에는 active/current attachment DB row에 연결된 current/live 원본 attachment object만 포함한다. tmp/upload-staging, draft/unfinalized, trash, `영구삭제` row 연결 object, orphan R2 object, unknown-prefix object는 threshold numerator에서 제외하고 별도 운영 report 대상으로 분리한다.
 - `휴지통 이동 시각 + 7일`이 해당일 08:00보다 이르면 해당일 08:00, 정확히 08:00이면 같은 08:00, 해당일 08:00 이후이면 다음날 08:00을 사용한다.
 
 ### 10-6. live schema 우선 원칙
@@ -428,27 +432,29 @@ MVP는 아래 범위까지만 포함한다.
 
 ## 12. 잔여 오픈 이슈
 
-아래 표는 **2026-04-11 잠금 결정 반영 후에도 남겨 둔 항목만** 정리한다.
+아래 표는 **2026-04-11 잠금 결정과 이후 D-08~D-12 반영 후에도 남겨 둔 항목만** 정리한다.
+
+닫힌 항목:
+- OI-01: 사고 DB `상태` 옵션은 D-08로 잠금
+- OI-02: 첨부 DB `상태` 옵션은 D-09로 잠금
+- OI-03: 첨부 DB `삭제 사유` property/type/options는 D-10으로 잠금
+- OI-06: 사고 페이지 본문 block 구조는 D-11로 잠금
+- OI-15: 관리자 인증 정책은 D-12로 잠금
+- OI-16: 휴지통 만료 삭제 스케줄의 최종 owner는 manual operator-owned cleanup으로 잠금. 이는 live cleanup, execute mode, scheduled Worker/Cron 자동화 승인이 아님
+- OI-17: FIFO 5GB threshold population은 active/current attachment DB row에 연결된 current/live 원본 attachment object로 잠금. 제외 population은 별도 운영 report 대상으로 분리
 
 | ID | 오픈 이슈 | 현재 상태 |
 |---|---|---|
-| OI-01 | 사고 DB `상태`의 실제 live status 옵션 전체 목록 | 일부 값만 문맥상 확인됨 |
-| OI-02 | 첨부 DB `상태`의 실제 status 옵션 전체 목록 | `현재 / 휴지통 / 영구삭제` 문맥만 확인됨 |
-| OI-03 | 첨부 DB `삭제 사유` select 옵션 목록 | 상세 값 미기재 |
-| OI-06 | 사고 페이지 본문의 구체 블록 구조 | 저장 성공 기준은 있으나 블록 형식 미확정 |
 | OI-10 | `반려 변경(자동) / 진행중 변경(자동) / 완료 변경(자동)` 갱신 주체 | “자동” 명칭만 존재 |
 | OI-11 | 상태 전환 button이 함께 수정하는 속성 범위 | button 존재만 확인 |
 | OI-12 | `영문 초안 생성 요청`의 처리 주체와 의미 | live 존재만 확인 |
 | OI-13 | `오류 플래그`와 `오류 사유`의 자동 세팅 규칙 | 속성 존재만 확인 |
-| OI-15 | 관리자 업로드 session cookie 이름/만료/잠금 해제 세부 | 개념만 존재 |
-| OI-16 | 휴지통 만료 삭제 스케줄의 실제 실행 주체 | manual operator-owned cleanup으로 결정됨. 이는 최종 결정 owner를 뜻하며 live cleanup, execute mode, scheduled Worker/Cron 자동화는 승인하지 않음 |
-| OI-17 | FIFO 5GB 초과 판단의 저장소 측정 기준 | 5GB 기준은 있으나 포함할 R2/storage population은 미확정 |
 | OI-18 | 공식 영문명 사전의 저장 위치 | 운영 원칙만 존재 |
 | OI-20 | `손가락 사진 있음` checkbox write-back의 최종 owner 분해 | 계산 규칙만 존재 |
 | OI-21 | `첨부 최종 확인 완료` false reset의 최종 owner 분해 | 해제 조건만 존재 |
 | OI-22 | `R2 Key` 외 tmp key 별도 추적 여부 | 저장 키 구조만 존재 |
 
-`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 결정 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 5GB R2/storage population 기준은 계속 open issue로 남긴다.
+`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 결정 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 5GB R2/storage population 기준은 active/current attachment corpus로 잠겼다. 이 source-of-truth movement는 구현 변경, live cleanup, execute mode, scheduled Worker/Cron 자동화, deploy, Core mutation을 승인하지 않는다.
 
 ### 이번 개정판에서 잠근 항목
 - OI-04 사고 DB `첨부(선택)` file 속성의 역할

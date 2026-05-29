@@ -50,11 +50,13 @@ Resolved implementation prerequisites:
 | OI-08 | Queue payload attachment reference shape | Resolved / locked |
 | OI-09 | Attachment display order storage rule | Resolved / locked |
 | OI-14 | Preview link / thumbnail generation behavior | Resolved / locked |
+| OI-15 | Admin authentication policy | Resolved / locked |
+| OI-17 | FIFO 5GB storage measurement basis | Resolved / locked |
 | OI-19 | Customer follow-up attachment classification and storage behavior | Resolved / locked |
 
 Any item that is still unresolved in the decision docs remains a blocker until explicitly resolved.
 
-This section does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, implementation changes, or OI-17 5GB basis selection.
+This section does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, implementation changes, deploy, or Core mutation. OI-17 basis selection is resolved at source-doc level only; implementation still requires a separate approval.
 
 ---
 
@@ -466,15 +468,14 @@ Phase 3. 관리자 보완 업로드 닫기
 ### 3. 수정/작성 대상
 - `src/admin-auth.ts`
 - `src/index.ts`
-- `src/turnstile.ts`
 - 필요 시 session/cookie 처리 함수
 
 필수 요구:
 - 숨은 경로 1개
 - 비밀번호 1개
-- Turnstile
-- session cookie
+- 서명된 session cookie
 - 5회 실패 시 10분 잠금
+- D-12 기준 관리자 로그인에는 현재 Turnstile을 적용하지 않음
 
 ### 4. 완료 확인 방법
 - 인증 성공 시에만 관리자 화면 진입 가능
