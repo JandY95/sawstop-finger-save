@@ -35,13 +35,13 @@
 - PR #67-#71 broader triage loop는 닫혔으며 parity candidate selection은 이 PR에서 다시 열지 않는다
 - current parity status는 stable and guarded 상태로 유지한다
 - fixture expansion은 별도 guarded proposal 전까지 separated and blocked 상태로 유지한다
-- FIFO cleanup ownership owner selection is now resolved as manual operator-owned cleanup; 5GB storage measurement basis remains unresolved and OI-17 remains open.
+- FIFO cleanup ownership owner selection is resolved as manual operator-owned cleanup; 5GB storage measurement basis is resolved by `DECISIONS_LOCK` D-13 and OI-17 is closed.
 - PR #75는 이미 안전한 FIFO/trash operating boundary를 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다
 - source docs에 반영된 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
 - `영구삭제 예정 시각` calculation boundary는 docs-only로 결정됐으며, `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계를 사용한다
 - FIFO cleanup ownership decision is approved as manual operator-owned cleanup; PR #84 keeps 5GB storage measurement basis open.
 - OI-16 cleanup ownership was separated from OI-17 and is now selected as manual operator-owned cleanup.
-- OI-16 ownership selection is no longer unresolved; OI-17 remains open and out of this decision scope.
+- OI-16 ownership selection is no longer unresolved; that OI-16 decision did not select OI-17, and OI-17 is now closed separately by `DECISIONS_LOCK` D-13.
 - OI-16 cleanup ownership selects manual operator-owned cleanup. The manual operator is the final live cleanup approval owner; CLI-assisted candidate generation, dry-run, verification, and audit logging may be proposed later.
 - Scheduled Worker/Cron-owned cleanup remains a later automation maturity candidate and is not approved for live execution now.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다
@@ -50,9 +50,9 @@
 - `cleanup:fifo-trash:dry-run`은 manual operator 검토용 dry-run-only wrapper다. deterministic parity, scenario execution, baseline, CI, product wiring, live cleanup, execute mode와 분리한다
 - `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` was added in PR #90 as the local Notion env setup runbook. It documents manual operator dry-run preparation only, and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
 - PR #92 made `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` path-agnostic by replacing the company-PC-specific absolute path with repo-root detection. It remains a manual operator dry-run preparation runbook only and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
-- PR #96 aligned `scenario-index.yaml` with current OI-16/OI-17 status; OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 remains open.
+- PR #96 aligned `scenario-index.yaml` with the then-current OI-16/OI-17 status; OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 is now closed separately by `DECISIONS_LOCK` D-13.
 - PR #97 clarified older parity decision notes as historical OI-16 records without approving live cleanup, execute mode, scheduled Worker/Cron cleanup, source-of-truth movement, or OI-17 basis selection.
-- PR #98 refreshed top-level status pointers after PR #97 and did not change source docs, product behavior, cleanup execution posture, or the OI-17 open decision.
+- PR #98 refreshed top-level status pointers after PR #97 and did not change source docs, product behavior, cleanup execution posture, or then-open OI-17 decision state.
 - TDD guard Changed Push Observation v1 uses this docs-only status marker to observe the target-local report-only pre-push hook; it does not change product behavior, app code, hook configuration, runner activation, block mode, hard block, CI required checks, Core registry, or Core state.
 
 ## Source Of Truth
@@ -71,4 +71,4 @@
 
 ## Next One Task
 
-- PR #84 이후 OI-17은 open 유지 상태로 잠겼으며, 다음 OI-17 작업은 별도 explicit approval 전까지 basis 선택이 아니라 pointer/status drift 방지로 제한한다.
+- PR #132 closed OI-17 by recording the active/current attachment DB row + current/live original attachment object basis in `DECISIONS_LOCK` D-13. Further implementation, live-write, cleanup execute, scheduled automation, deploy, Core mutation/propagation, data deletion, or branch cleanup remains separate approval-gated work.
