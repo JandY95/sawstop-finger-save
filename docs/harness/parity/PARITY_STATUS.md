@@ -39,7 +39,7 @@
 - PR #75는 이미 안전한 FIFO/trash operating boundary를 `docs/source/PRD.md`, `docs/source/TRD.md`, `docs/source/DB_SCHEMA_AND_MAPPING.md`로 이동했다
 - source docs에 반영된 safe operating boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다
 - `영구삭제 예정 시각` calculation boundary는 docs-only로 결정됐으며, `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계를 사용한다
-- FIFO cleanup ownership decision is approved as manual operator-owned cleanup; PR #84 keeps 5GB storage measurement basis open.
+- FIFO cleanup ownership decision is approved as manual operator-owned cleanup; PR #84 historically kept 5GB storage measurement basis open, and D-13 later resolved it.
 - OI-16 cleanup ownership was separated from OI-17 and is now selected as manual operator-owned cleanup.
 - OI-16 ownership selection is no longer unresolved; that OI-16 decision did not select OI-17, and OI-17 is now closed separately by `DECISIONS_LOCK` D-13.
 - OI-16 cleanup ownership selects manual operator-owned cleanup. The manual operator is the final live cleanup approval owner; CLI-assisted candidate generation, dry-run, verification, and audit logging may be proposed later.
