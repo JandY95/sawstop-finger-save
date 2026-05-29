@@ -86,33 +86,33 @@ Live-read evidence already recorded:
 | 2.4 Date of Occurence 시간 미상 저장 | Group C local submit intake `PASS` | Notion readback `Date of Occurence` present after `timeUnknown` submit; D-01 locked; schema/allowed-values PASS | Production/deployed proof remains separate |
 | 3.1 첨부 0건 처리 | Group C local submit intake `PASS` | No attachment field/files sent; Notion readback `첨부 업로드 상태=완료`; Argus session `20260529_220552_72e9ac` | Attachment upload/Queue/R2 remains separate |
 | 3.2 Queue payload 고정 스키마 | repo-local guard 있음 | `npm run check:queue-payload-fixtures` PASS; D-03 locked | No live action needed unless queue integration proof is requested |
-| 3.3 첨부 DB 1행 생성과 relation 연결 | live-write evidence 필요 | `npm run smoke:admin-upload`, `scripts/smoke-attachment-consumer.ts` exist | Needs scoped attachment/admin upload or consumer smoke approval |
-| 3.4 R2 Key 최종 경로 저장 | live-write evidence 필요 | source/contract coverage partial; R2 object write/readback needed | Needs scoped attachment write/readback approval |
+| 3.3 첨부 DB 1행 생성과 relation 연결 | Group D admin upload `PASS` for one synthetic local fully-local case | exactly one `/admin/upload` created one attachment DB row related to the synthetic Group C accident page; evidence `/home/jun/.hermes/diagnostics/sawstop-admin-upload-live-20260529/`; Argus `20260529_232252_e7ca90` | Customer attachment submit and Queue/FIFO finalization remain separate |
+| 3.4 R2 Key 최종 경로 저장 | Group D admin upload `PASS` for one synthetic local fully-local case | attachment DB direct readback observed redacted R2 final key presence for the uploaded synthetic file | Direct bucket cleanup/delete and production/deployed proof remain separate |
 | 3.5 일부 실패 분리 | 보류 / 별도 승인 필요 | failure injection can create partial live side effects | Prepare separate failure-injection packet before execution |
-| 4.1 관리자 인증 | Group B read-side `CONDITIONAL_PASS` | `npm run check:admin-upload-auth-contract` PASS; D-12 locked; unauth/authenticated admin shell evidence collected | Keep read-side closed with no-pixel caveat; writes remain Group C |
+| 4.1 관리자 인증 | Group D admin upload `PASS` for secret-silent local auth | admin readiness/login succeeded without persistent password/cookie/session evidence; `npm run check:admin-upload-auth-contract` PASS | Production/deployed auth remains separate |
 | 4.2 완료건 제외 검색 | repo-local/source status says implemented / live-read or live-write sample 필요 | `STATUS_SUMMARY.md` says current code excludes completed cases; `npm run smoke:admin-search` exists | Prefer live-read against known existing samples; creating samples needs approval |
-| 4.3 보완 업로드 저장 구조 | live-write evidence 필요 | `npm run smoke:admin-upload` exists | Scoped Group C admin upload approval required |
-| 4.4 관리자 업로드 즉시 유형 지정 | live-write evidence 필요 | `npm run smoke:admin-upload` exists; D-07 locked | Scoped admin upload approval required |
-| 4.5 관리자 업로드 UX | repo-local guard 있음 / Group B read-side `CONDITIONAL_PASS` | `npm run check:admin-upload-ux-contract` PASS; authenticated admin shell DOM/static evidence collected; no upload | Keep read-side closed with no-pixel caveat; upload execution remains Group C |
+| 4.3 보완 업로드 저장 구조 | Group D admin upload `PASS` for one synthetic local fully-local case | upload response success 1/failure 0; attachment DB row, relation, R2 key presence, accident status/final-check readback observed | Customer submit, production/deployed proof, cleanup/delete remain separate |
+| 4.4 관리자 업로드 즉시 유형 지정 | Group D admin upload `PASS` for one synthetic local fully-local case | uploaded synthetic file with attachment type `손가락 사진`; admin list/direct Notion readback observed matching type | Type-change mutation remains separate |
+| 4.5 관리자 업로드 UX | repo-local guard 있음 / Group B read-side `CONDITIONAL_PASS` plus Group D upload execution | `npm run check:admin-upload-ux-contract` PASS; authenticated admin shell DOM/static evidence collected; Group D proved one upload write/readback case | Keep read-side closed with no-pixel caveat; broader upload UX/pixel and production proof remain separate |
 | 5.1 같은 사고 페이지 본문 사용 | selected-record report fidelity `PASS` | approved safe TEST page `/admin/report?pageId=[SAFE_TEST_PAGE_ID]` returned 200 with populated values | Closed for selected local fully-local TEST page; global/live-write still separate |
 | 5.2 외부 제목과 기본 템플릿 | selected-record report fidelity `PASS` | report DOM showed `SawStop Report Preview`, `Populated Report Values`, representative TEST markers, and `@media print`; D-11 locked | Closed for selected local fully-local TEST page; production/global proof separate |
-| 5.3 보완 업로드 재진입 가능 | live-write evidence 필요 | admin upload smoke exists; route/browser proof prepared only | Needs scoped admin upload + page readback approval |
+| 5.3 보완 업로드 재진입 가능 | Group D admin upload `CONDITIONAL_PASS` for one synthetic local fully-local case | existing synthetic Group C accident page accepted one later admin upload after prior submit | Broader re-entry after report/default-body generation, multi-upload/retry, and production proof remain separate |
 | 6.1 같은 원본 본문 기준 출력 | selected-record report fidelity `PASS` / pixel proof optional | `npm run check:output-route-contract` PASS; report route DOM/static evidence returned 200 with populated values and `@media print` | Treat as selected-record read-side closed; browser pixel/PDF proof is optional hardening |
 | 6.2 발송 준비 완료 formula 판정 | live-read evidence needed / possible live-write sample matrix | schema/allowed-values PASS; formula is live Notion behavior | Start with live-read existing records if available; writes need approval |
 | 6.3 수동 발송 기본 유지 | repo-local guard partial / live-read config review possible | source docs and no explicit SMTP auto-send path noted in checklist; no deploy run | Static source scan and config read-only review next |
-| 7.1 손가락 사진 있음 write-back | live-write evidence 필요 | `dev:recalculate-finger-photo` exists; admin/upload scripts exist | Needs scoped attachment add/delete/type-change approval |
-| 7.2 첨부 최종 확인 완료 자동 해제 | live-write evidence 필요 | source status says reset is connected; smoke scripts exist | Needs scoped type-change/trash/restore/FIFO dry-run or write approval |
+| 7.1 손가락 사진 있음 write-back | Group D admin upload `CONDITIONAL_PASS` for admin-upload finger-photo path evidence | one synthetic `손가락 사진` upload succeeded and readback showed attachment relation/type/R2 key; accident DB boolean/formula-level `손가락 사진 있음=true` readback was not independently proven | Full formula/checkbox write-back, delete/type-change/customer attachment variants remain separate |
+| 7.2 첨부 최종 확인 완료 자동 해제 | Group D admin upload `PASS` for upload-triggered reset | accident page readback observed `attachmentFinalCheckResetObserved=true` after the one upload | Type-change/trash/restore/FIFO reset variants remain separate |
 | 7.3 미분류 고객 첨부 저장 | live-write evidence 필요 | D-07 locked; submit/admin upload smokes exist | Needs scoped customer submit with attachment + admin upload comparison |
 | 7.4 고객 화면 비노출 유지 | repo-local guard partial / Group B read-side `CONDITIONAL_PASS` plus Group C no-attachment submit | customer form HTML/DOM evidence collected; local no-attachment submit performed; no screenshot/pixel proof; no attachment submit | Keep read-side closed with no-pixel caveat; attachment behavior remains separate |
 | 8.1 schema drift 회귀 | repo-local guard 있음 | `npm run check:notion-schema` PASS; `npm run check:allowed-values` PASS | Keep as recurring preflight |
 | 8.2 고객 접수 회귀 | Group C local submit intake `PASS` | exactly one local fully-local no-attachment `/submit` smoke; Argus session `20260529_220552_72e9ac` | Production/deployed regression remains separate |
-| 8.3 관리자 업로드 회귀 | live-write evidence 필요 | `npm run smoke:admin-upload` exists; not run in this scope | Scoped Group C admin upload approval required |
-| 8.4 relation / R2 Key 회귀 | live-write evidence 필요 | attachment/admin upload smokes exist; not run | Scoped attachment write/readback approval required |
+| 8.3 관리자 업로드 회귀 | Group D admin upload `PASS` for one synthetic local fully-local case | `/admin/upload` exactly once, HTTP 200, success 1/failure 0, Argus PASS | Production/deployed and broad replay remain separate |
+| 8.4 relation / R2 Key 회귀 | Group D admin upload `PASS` for one synthetic local fully-local case | attachment relation and redacted R2 key presence observed via admin/Notion readback | Queue/FIFO finalization and cleanup/delete remain separate |
 | 8.5 write-back 회귀 | live-write evidence 필요 | admin update/trash/restore/FIFO scripts exist; not run | Scoped write-back regression packet required |
 
 ## Recommended next step
 
-Recommended safe next action is **separate attachment/admin upload or production/deployed submit packet preparation**, not immediate execution.
+Recommended safe next action is **customer attachment submit packet preparation or Queue/R2 finalization packet preparation**, not immediate execution.
 
 Reason:
 
@@ -120,13 +120,14 @@ Reason:
 - Customer/admin DOM/static proof is sufficient for read-side planning with a no-pixel caveat.
 - Selected safe TEST page report route fidelity is `PASS` under approved secret-silent read-only admin auth.
 - Group C local fully-local no-attachment submit intake write-path is scoped `PASS` under Argus session `20260529_220552_72e9ac`.
-- Remaining MVP gaps that materially change completion status require controlled production/deployed submit proof or attachment/admin upload writeback evidence.
-- Live-write remains a harder boundary whenever scope expands beyond the already executed local no-attachment submit; each expansion needs its own packet, stop conditions, redaction rules, and Argus(아르거스)-검증 총괄 책임자 review before execution.
+- Group D local fully-local admin upload write/readback is scoped `PASS` under Argus session `20260529_232252_e7ca90`.
+- Remaining MVP gaps that materially change completion status now center on customer attachment submit, Queue/FIFO finalization, production/deployed proof, and cleanup/delete.
+- Live-write remains a hard boundary whenever scope expands beyond the already executed local no-attachment submit and one admin upload; each expansion needs its own packet, stop conditions, redaction rules, and Argus(아르거스)-검증 총괄 책임자 review before execution.
 
 Suggested next packet scope:
 
 ```text
-Prepare the next write-boundary packet only after choosing scope: production/deployed no-attachment submit proof, customer attachment submit proof, or admin upload proof. Packet preparation only unless separately approved. Preserve non-approvals for cleanup execute, scheduled automation, deploy, Core mutation, data deletion, and broad replay. Include object/record creation expectations, redaction rules, rollback/non-deletion policy, stop conditions, evidence paths, and Argus review request.
+Prepare the next write-boundary packet only after choosing scope: customer attachment submit proof, Queue/R2 finalization proof, production/deployed no-attachment submit proof, or cleanup/delete of exact generated test artifacts. Packet preparation only unless separately approved. Preserve non-approvals for cleanup execute unless that is the chosen exact cleanup packet, scheduled automation, deploy, Core mutation, data deletion outside enumerated artifacts, and broad replay. Include object/record creation expectations, redaction rules, rollback/non-deletion policy, stop conditions, evidence paths, and Argus review request.
 ```
 
 ## Current HOLD boundaries
@@ -134,10 +135,10 @@ Prepare the next write-boundary packet only after choosing scope: production/dep
 The following remain HOLD until explicit approval:
 
 - production/deployed customer submit live-write smoke beyond the completed local no-attachment proof
-- admin upload live-write smoke
+- customer attachment submit live-write smoke
 - attachment Queue/R2 finalization write/readback
 - type-change / trash / restore / FIFO process write-back regression
-- cleanup execute or any data deletion
+- cleanup execute or any data deletion, including cleanup of generated Group C/D test artifacts
 - deploy / wrangler publish
 - scheduled cleanup automation
 - Core mutation / propagation
