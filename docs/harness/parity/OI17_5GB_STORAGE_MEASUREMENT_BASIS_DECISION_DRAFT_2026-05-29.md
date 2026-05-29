@@ -1,6 +1,6 @@
 # OI-17 5GB Storage Measurement Basis Decision Draft
 
-Status: draft only / not final source-of-truth movement
+Status: evidence included / final closure pending / OI-17 remains unresolved
 Generated: 2026-05-29 15:45 KST
 Approval basis: operator approved the agent-deliberated recommendation to prepare an OI-17 decision draft and run live-read proof only.
 
@@ -48,7 +48,7 @@ The operator-facing report should show excluded populations as warnings or infor
 This draft does not approve:
 
 - OI-17 final closure
-- source-of-truth movement into `docs/source/*`
+- final source-of-truth movement or OI-17 final closure
 - implementation changes
 - script changes
 - package or CI wiring changes
@@ -68,4 +68,4 @@ Before OI-17 can close, request a separate explicit approval to either:
 2. choose a different basis from the known candidates, or
 3. keep OI-17 open pending more live inventory evidence.
 
-A separate implementation approval is still required after any source-of-truth basis is selected.
+A separate implementation approval is still required after any source-of-truth basis is selected. Any `docs/source/*` references in this PR are evidence-inclusion wording only, not final closure or implementation approval.
