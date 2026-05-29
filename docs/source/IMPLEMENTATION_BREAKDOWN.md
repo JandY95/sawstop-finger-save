@@ -51,12 +51,12 @@ Resolved implementation prerequisites:
 | OI-09 | Attachment display order storage rule | Resolved / locked |
 | OI-14 | Preview link / thumbnail generation behavior | Resolved / locked |
 | OI-15 | Admin authentication policy | Resolved / locked |
-| OI-17 | FIFO 5GB storage measurement basis | Evidence included / final closure pending |
+| OI-17 | FIFO 5GB storage measurement basis | Resolved / locked by `DECISIONS_LOCK` D-13 |
 | OI-19 | Customer follow-up attachment classification and storage behavior | Resolved / locked |
 
 Any item that is still unresolved in the decision docs remains a blocker until explicitly resolved.
 
-This section does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, implementation changes, deploy, or Core mutation. OI-17 active/current corpus evidence is included for review, but OI-17 remains unresolved until separate final-closure approval; implementation still requires a separate approval.
+This section does not approve live cleanup, execute mode, scheduled Worker/Cron cleanup, implementation changes, deploy, or Core mutation. OI-17 active/current corpus basis is resolved by `DECISIONS_LOCK` D-13; implementation still requires a separate approval.
 
 ---
 

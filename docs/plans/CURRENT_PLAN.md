@@ -68,17 +68,17 @@
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
 - PR #75로 source docs에 반영된 live FIFO safe boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
-- FIFO cleanup ownership owner selection is resolved by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`; 5GB storage measurement basis remains unresolved.
-- OI-16 ownership selection is resolved as manual operator-owned cleanup; OI-17 remains unresolved, and FIFO cleanup implementation / 5GB storage measurement implementation are not approved.
+- FIFO cleanup ownership owner selection is resolved by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`; OI-17 5GB storage measurement basis is resolved by `DECISIONS_LOCK` D-13 as active/current attachment corpus only.
+- OI-16 ownership selection is resolved as manual operator-owned cleanup; OI-17 final basis selection is resolved, but FIFO cleanup implementation / 5GB storage measurement implementation are not approved.
 - OI-16 selects manual operator-owned cleanup as the 8 AM expired trash cleanup owner. Manual operator means final approval owner, not repeated hand cleanup. Scheduled Worker/Cron-owned cleanup remains a later automation candidate.
-- PR #84에서 OI-17 5GB threshold에 포함되는 R2/storage population은 기존 docs만으로 선택하지 않고 open 유지로 결정했으며, 후속 explicit product/ops/source-of-truth approval PR 전까지 implementation과 source-of-truth movement를 차단한다.
+- PR #84에서는 당시 OI-17 5GB threshold에 포함되는 R2/storage population을 기존 docs만으로 선택하지 않고 open 유지로 결정했지만, 현재 final basis selection은 PR #130/#131 evidence/proposal을 거쳐 `DECISIONS_LOCK` D-13으로 닫혔다. implementation은 여전히 별도 승인 전까지 차단한다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
 - `docs/harness/parity/FIFO_CLEANUP_CLI_ASSISTED_DRY_RUN_DESIGN.md`에서 manual operator의 반복 피로도를 낮추기 위한 CLI-assisted cleanup dry-run 설계 경계를 문서화한다. 이 설계는 구현, live cleanup, scheduled Worker/Cron, source-of-truth movement, OI-17 basis 선택을 승인하지 않는다.
 - `docs/harness/parity/FIFO_CLEANUP_CLI_ASSISTED_WRAPPER_IMPLEMENTATION_DECISION.md`에서 dry-run-only CLI wrapper 구현 경계를 승인한다. 이 결정은 wrapper 구현 PR의 범위만 열며 live cleanup, execute mode, scheduled automation, OI-17 basis 선택은 승인하지 않는다.
 - `cleanup:fifo-trash:dry-run`은 manual operator 검토용 dry-run-only wrapper로 추가된다. 이 wrapper는 `check:fifo-trash-candidates` 기반 후보 조회를 보조하되 live cleanup, execute mode, scheduled automation, OI-17 basis 선택을 수행하지 않는다.
 - PR #90 added `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` as the local Notion env setup runbook. It documents DB IDs and session-only token setup, and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
 - PR #92 made `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` path-agnostic by replacing the company-PC-specific absolute path with repo-root detection. It remains limited to manual operator dry-run preparation and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
-- PR #96 aligned `docs/harness/parity/scenario-index.yaml` with current OI-16/OI-17 status. OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 remains open.
+- PR #96 aligned `docs/harness/parity/scenario-index.yaml` with the then-current OI-16/OI-17 status. OI-16 is manual operator-owned cleanup, and current OI-17 final basis selection is now resolved by `DECISIONS_LOCK` D-13.
 - PR #97 clarified older parity decision notes as historical OI-16 status records. It did not move source docs, approve live cleanup, approve execute mode, approve scheduled Worker/Cron cleanup, or select an OI-17 5GB basis.
 - 이번 결정은 live access, behavior change, implementation change를 승인하지 않는다.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
@@ -86,6 +86,6 @@
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, `check:queue-payload-fixtures`, live-read checks, `check:submit-fixtures`는 standalone manual tooling으로 유지한다.
 
 ## 다음 단일 후보
-- PR #84 이후 OI-17은 open 유지 상태로 잠겼으며, 다음 OI-17 작업은 별도 explicit approval 전까지 basis 선택이 아니라 pointer/status drift 방지로 제한한다.
+- OI-17 final basis selection은 `DECISIONS_LOCK` D-13으로 닫혔다. 다음 OI-17 관련 작업은 별도 explicit approval 전까지 implementation, live cleanup, execute mode, scheduled automation, deploy, Core mutation이 아니라 status/source drift 방지와 검증 보고로 제한한다.
 - 2026-05-25 completion gap analysis 기준, OI-17보다 먼저 repo-local P0 correctness를 닫았다. D-11 default accident page body final empty block fixture/check, output route evidence, admin upload UX/stale-auth TODO cleanup도 닫혔다. Live verification packet은 prepared-only 문서/guard로 준비됐고, 실제 live 실행은 별도 승인 전까지 보류한다. 다음 자동 진행 후보는 Core feedback 후보를 안전하게 보강/분류하는 것이다.
 - 이번 세션에서 서버 submit validation의 `발생 시간 또는 시간 미상` 필수 경계, 고객 첨부 `최대 4장/파일당 10MB/이미지 형식` 경계, 고객 form required/focus 경계, customer Turnstile submit verification 경계, D-11 default accident page body final empty block 경계, output route evidence 경계, admin upload drag/drop/thumbnail UX 및 stale auth TODO 경계, live verification prepared-only boundary는 `src/validate.ts`, `src/index.ts`, `src/render.ts`, `src/turnstile.ts`, `src/types.ts`, `src/notion.ts`, `src/admin/report.ts`, `src/admin/render.ts`, `src/admin/upload.ts`, `docs/runbooks/LIVE_VERIFICATION_PACKET_2026-05-25.md`, `check:submit-validation-contract`, `check:submit-attachment-contract`, `check:customer-form-required-contract`, `check:customer-turnstile-contract`, `check:default-accident-page-body-fixture`, `check:output-route-contract`, `check:admin-upload-ux-contract`, `check:admin-upload-auth-contract`, `check:live-verification-packet-contract`로 보강됐다. 상세 분석은 `docs/plans/COMPLETION_GAP_ANALYSIS_2026-05-25.md`를 본다.
