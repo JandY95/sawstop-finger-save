@@ -56,8 +56,8 @@
 - 강제 FIFO는 운영 main UI에 노출하지 않는 것으로 정리됐지만, 백엔드 옵션 제거는 승인되지 않았다.
 - PR #75로 source docs에 반영된 안전한 FIFO/trash boundary는 만료 휴지통 정리 선행, 5GB 초과 후 FIFO, 휴지통 미경유, 첨부 row `영구삭제` 처리까지다.
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계로 계산한다.
-- FIFO cleanup ownership owner selection is resolved by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`; 5GB storage measurement basis remains unresolved.
-- OI-16 ownership selection is resolved as manual operator-owned cleanup; OI-17 remains unresolved, and FIFO cleanup implementation / 5GB storage measurement implementation are not approved.
+- FIFO cleanup ownership owner selection is resolved by `docs/harness/parity/FIFO_CLEANUP_OWNERSHIP_MANUAL_OPERATOR_DECISION.md`; 5GB storage measurement basis is resolved by `DECISIONS_LOCK` D-13.
+- OI-16 ownership selection is resolved as manual operator-owned cleanup; OI-17 is closed by D-13, while FIFO cleanup implementation / 5GB storage measurement implementation remain separate and not approved.
 - OI-16 selects manual operator-owned cleanup as the 8 AM expired trash cleanup owner. Manual operator means final approval owner, not repeated hand cleanup. Scheduled Worker/Cron-owned cleanup remains a later automation candidate.
 - 2026-05-25 repo-local completion gap analysis exists at `docs/plans/COMPLETION_GAP_ANALYSIS_2026-05-25.md`.
 - Server submit validation now explicitly requires either a valid `HH:mm` occurrence time or `timeUnknown === true`, guarded by `npm run check:submit-validation-contract`.
@@ -68,7 +68,7 @@
 - Output route evidence is now repo-local guarded: authenticated `GET /admin/report?pageId=...` renders the same Notion accident page body blocks as an HTML webview with print CSS, without a separate English report DB/source store; guarded by `npm run check:output-route-contract`. Live Notion read/browser/PDF proof remains separate.
 - Admin upload UX is now repo-local guarded: the authenticated admin upload form has keyboard/click/drop file selection, drag-over state, image thumbnail previews, non-image placeholders, and responsive preview grid; stale upload-auth TODO wording was replaced with dispatcher-owned auth boundary wording and guarded by `npm run check:admin-upload-ux-contract` plus `npm run check:admin-upload-auth-contract`. Browser visual proof remains separate.
 - Live verification is partially executed under explicit approval: Group A live-read only passed, Group B local browser/read proof received Argus CONDITIONAL PASS, Group C-1 no-attachment customer submit live-write received Argus CONDITIONAL PASS for submit/page creation, and Group C-2 populated report fidelity received Argus CONDITIONAL PASS after a repo-local fix. The created TEST Notion accident page is `36b6eb7f-574c-8163-862c-dc2b4b6fb26b` with receipt `202605251552-0000`; do not delete until evidence is no longer needed. The report route now renders property-backed `Populated Report Values` above the original body block preview and was read-only verified against that TEST page. Deploy, cleanup execution, admin upload/R2 attachment/Queue attachment processing, OI-17 movement, and Core mutation remain unapproved/not run.
-- PR #84에서 OI-17 5GB threshold에 포함되는 R2/storage population은 기존 docs만으로 선택하지 않고 open 유지로 결정했으며, 후속 explicit product/ops/source-of-truth approval PR 전까지 implementation과 source-of-truth movement를 차단한다.
+- PR #132 closed OI-17 by recording the active/current attachment DB row + current/live original attachment object basis in `DECISIONS_LOCK` D-13. Further implementation, live-write, cleanup execute, scheduled automation, deploy, Core mutation/propagation, data deletion, or branch cleanup remains separate approval-gated work.
 - stage-6 parity 운영 기준은 현재 deterministic baseline 유지로 결정했다.
 - fixture 기반 시나리오 확장은 baseline 변경 전 별도 설계가 필요하며, 현재 Queue payload validator, live-read checks, submit fixture validator는 standalone manual tooling boundary까지 정리됐다.
 - `check:fifo-trash-candidates`는 deterministic parity, scenario execution, baseline, CI, product wiring 밖의 standalone live-read manual validation으로 유지한다.
@@ -77,7 +77,7 @@
 - `cleanup:fifo-trash:dry-run`은 manual operator 검토용 dry-run-only wrapper로 추가된다. 이 wrapper는 `check:fifo-trash-candidates` 기반 후보 조회를 보조하되 live cleanup, execute mode, scheduled automation, OI-17 basis 선택을 수행하지 않는다.
 - PR #90 added `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` as the local Notion env setup runbook. It documents DB IDs and session-only token setup, and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
 - PR #92 made `docs/runbooks/LOCAL_NOTION_ENV_SETUP.md` path-agnostic by replacing the company-PC-specific absolute path with repo-root detection. It remains limited to manual operator dry-run preparation and does not approve live cleanup, execute mode, scheduled automation, source-of-truth movement, or OI-17 basis selection.
-- PR #96 aligned `docs/harness/parity/scenario-index.yaml` with current OI-16/OI-17 status. OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 remains open.
+- PR #96 aligned `docs/harness/parity/scenario-index.yaml` with the then-current OI-16/OI-17 status. OI-16 is manual operator-owned cleanup in parity/status docs, and OI-17 is now closed separately by `DECISIONS_LOCK` D-13.
 - PR #97 clarified older parity decision notes as historical OI-16 status records. It did not move source docs, approve live cleanup, approve execute mode, approve scheduled Worker/Cron cleanup, or select an OI-17 5GB basis.
 - broader project status triage는 live status option confirmation, force FIFO exposure/removal, live FIFO criteria, Turnstile/MVP boundary 네 후보 기준으로 닫혔다.
 
@@ -88,9 +88,9 @@
 - `.project-state.json`이 현재 checkout에 복구됐거나 유지된다고 전제하지 않는다.
 
 ## 지금 바로 수정해도 안전한 항목
-- OI-16 cleanup ownership is selected as manual operator-owned cleanup by explicit operator/ops decision; OI-17 remains separate and open.
+- OI-16 cleanup ownership is selected as manual operator-owned cleanup by explicit operator/ops decision; OI-17 is closed separately by `DECISIONS_LOCK` D-13.
 - `npm test`, `npm run parity`, CI, runner/compare, `parity-baseline.json`, `scenario-index.yaml` 실행 연결은 별도 승인 전까지 보류
 
 ## live 환경 확인이 필요한 항목
 - FIFO 후보 조회/처리 시 live 첨부 DB의 `영구삭제 예정 시각` 값 형식과 현재 코드가 일치하는지
-- OI-17 5GB storage measurement basis remains open and unapproved; FIFO 8 AM cleanup implementation remains unapproved after manual operator ownership selection.
+- OI-17 5GB storage measurement basis is closed by `DECISIONS_LOCK` D-13; FIFO 8 AM cleanup implementation remains unapproved after manual operator ownership selection.
