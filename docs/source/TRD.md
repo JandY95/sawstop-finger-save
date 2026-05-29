@@ -113,7 +113,7 @@ SawStop Finger Save 시스템은 국내 사용자의 사고 정보를 **한국�
 6. FIFO 삭제는 휴지통을 거치지 않고 첨부 DB row를 `영구삭제` 상태로 정리한다.
 7. 삭제/복구/FIFO는 모두 관련 checkbox와 rollup 반영 누락 없이 상태를 다시 계산해야 한다.
 
-주의: OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 승인 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 active/current attachment corpus 기준은 evidence included 상태이며 final closure pending이다. OI-17은 별도 최종 승인 전까지 unresolved로 유지하고, 이 반영은 구현 변경, live cleanup, execute mode, scheduled Worker/Cron 자동화, deploy, Core mutation을 승인하지 않는다.
+주의: OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 승인 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 active/current attachment corpus 기준은 `DECISIONS_LOCK` D-13으로 닫혔다. 이 반영은 구현 변경, live cleanup, execute mode, scheduled Worker/Cron 자동화, deploy, Core mutation을 승인하지 않는다.
 
 ---
 
@@ -603,13 +603,13 @@ SawStop Finger Save 시스템은 국내 사용자의 사고 정보를 **한국�
 - `영구삭제 예정 시각`은 `휴지통 이동 시각 + 7일`이 지난 뒤 도달하는 첫 08:00 Asia/Seoul 정리 경계다.
 - `휴지통 이동 시각 + 7일`이 해당일 08:00보다 이르면 해당일 08:00, 정확히 08:00이면 같은 08:00, 해당일 08:00 이후이면 다음날 08:00을 사용한다.
 - 만료 휴지통 정리는 FIFO보다 먼저 적용
-- 휴지통 만료 삭제 후에도 OI-17 evidence packet의 active/current attachment corpus 후보 기준 저장소가 5GB 초과일 때만 FIFO 검토
+- 휴지통 만료 삭제 후에도 D-13의 active/current attachment corpus 기준 저장소가 5GB 초과일 때만 FIFO 검토
 - FIFO 삭제는 휴지통을 거치지 않음
 - FIFO 삭제 시 첨부 DB `상태 = 영구삭제`로 정리
 - 필요 시 `삭제 사유` 또는 `검수 메모`로 이력을 남긴다.
 - `check:fifo-trash-candidates` 같은 live-read 검증은 deterministic parity, scenario execution, baseline, CI, product wiring과 분리된 수동 확인 경계로 유지한다.
 - 오전 8시 정리 스케줄의 cleanup owner는 manual operator-owned cleanup으로 닫혔다. 이는 최종 결정 owner 결정이며, live cleanup, execute mode, scheduled Worker/Cron 자동화는 승인하지 않는다.
-- OI-17 evidence packet 후보 기준으로 FIFO 5GB threshold에는 active/current attachment DB row에 연결된 current/live 원본 attachment object만 포함한다. tmp/upload-staging, draft/unfinalized, trash, `영구삭제` row 연결 object, orphan R2 object, unknown-prefix object는 threshold numerator에서 제외하고 별도 operator-facing report 대상으로 분리한다. 이 문서 반영은 final closure가 아니며, OI-17은 별도 최종 승인 전까지 unresolved로 유지한다.
+- OI-17/D-13 기준으로 FIFO 5GB threshold에는 active/current attachment DB row에 연결된 current/live 원본 attachment object만 포함한다. tmp/upload-staging, draft/unfinalized, trash, `영구삭제` row 연결 object, orphan R2 object, unknown-prefix object는 threshold numerator에서 제외하고 별도 operator-facing report 대상으로 분리한다. OI-17 final basis selection은 `DECISIONS_LOCK` D-13으로 닫혔으며, 이 반영은 구현 변경, live cleanup, execute mode, scheduled Worker/Cron 자동화, deploy, Core mutation을 승인하지 않는다.
 
 ---
 
@@ -841,12 +841,12 @@ SawStop Finger Save 시스템은 국내 사용자의 사고 정보를 **한국�
 | OI-11 | 상태 전환 button이 함께 수정하는 속성 범위 | button 존재만 확인됨 |
 | OI-12 | `영문 초안 생성 요청`의 처리 주체와 의미 | 수동 체크인지 자동 트리거인지 미확정 |
 | OI-13 | `오류 플래그`와 `오류 사유`의 자동 세팅 규칙 | 오류 처리 일관성에 영향 |
-| OI-17 | FIFO 5GB 초과 판단의 저장소 측정 기준 | active/current attachment corpus 후보 evidence included; final closure pending; 별도 최종 승인 전까지 unresolved |
+| OI-17 | FIFO 5GB 초과 판단의 저장소 측정 기준 | Resolved / locked by `DECISIONS_LOCK` D-13: active/current attachment corpus only; excluded populations report/manual-classification 대상 |
 | OI-18 | 공식 영문명 사전의 저장 위치 | 영문화 모드 구현에 필요 |
 | OI-20 | `손가락 사진 있음` checkbox write-back의 최종 owner 분해 | 이벤트 후 누가 값을 쓰는지 확정 필요 |
 | OI-21 | `첨부 최종 확인 완료` false reset의 최종 owner 분해 | 해제 조건만 있고 최종 owner 미확정 |
 
-`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 결정 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 active/current attachment corpus 기준은 evidence included 상태이며 final closure pending이다. OI-17은 별도 최종 승인 전까지 unresolved로 유지하고, 이 반영은 구현 변경, live cleanup, execute mode, scheduled Worker/Cron 자동화, deploy, Core mutation을 승인하지 않는다.
+`영구삭제 예정 시각` 계산 경계는 7일 복구 가능 기간과 08:00 Asia/Seoul 정리 스케줄 기준으로 잠겼다. OI-16 cleanup owner는 manual operator-owned cleanup으로 닫혔지만, 이는 최종 결정 owner 결정일 뿐 live cleanup, execute mode, scheduled Worker/Cron 자동화를 승인하지 않는다. OI-17 active/current attachment corpus 기준은 `DECISIONS_LOCK` D-13으로 닫혔다. 이 반영은 구현 변경, live cleanup, execute mode, scheduled Worker/Cron 자동화, deploy, Core mutation을 승인하지 않는다.
 
 ### 이번 개정판에서 잠근 항목
 - OI-04 사고 DB `첨부(선택)` file 속성의 실제 역할

@@ -103,3 +103,23 @@
 - 관리자 인증은 Cloudflare Workers Secrets의 `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`를 사용한다.
 - 관리자 로그인은 비밀번호 로그인 + 서명된 세션 쿠키 + 로그인 실패 잠금으로 잠근다.
 - 관리자 로그인에는 현재 Turnstile을 적용하지 않는다.
+
+### D-13. OI-17 FIFO 5GB threshold 저장소 측정 기준
+- FIFO 5GB threshold numerator에는 **active/current attachment DB row에 연결된 current/live 원본 attachment object만** 포함한다.
+- 아래 population은 FIFO 5GB threshold numerator에서 제외한다.
+  - tmp/upload-staging object
+  - draft/unfinalized object
+  - trash object
+  - `영구삭제` row에 연결된 object
+  - active/current attachment DB row에 연결되지 않은 orphan R2 object
+  - 별도 reconciliation policy로 분류되지 않은 unknown-prefix object
+- 제외 population은 자동 삭제 근거가 아니라 operator-facing report / manual classification 대상으로 분리한다.
+- 이 결정은 OI-17 final basis selection만 잠그며, 아래를 승인하지 않는다.
+  - implementation change
+  - live-write
+  - cleanup execute / execute mode
+  - scheduled Worker/Cron cleanup
+  - deploy
+  - Core mutation/propagation
+  - data deletion in Notion, R2, Queue, or Cloudflare
+- Evidence basis: PR #130 live-read evidence inclusion, PR #131 proposal packet, Group A live-read proof PASS, `check:fifo-trash-candidates` totalCandidates `0`, `cleanup:fifo-trash:dry-run` dry-run/read-only boundary PASS.

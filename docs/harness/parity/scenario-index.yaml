@@ -83,22 +83,22 @@ notes:
   - PR #67-#71 broader triage loop is closed and parity candidate selection is not reopened
   - current parity status remains stable and guarded
   - fixture expansion remains separated and blocked until a separate guarded proposal
-  - FIFO cleanup ownership is resolved as manual operator-owned cleanup; OI-17 5GB storage measurement basis remains open
+  - FIFO cleanup ownership is resolved as manual operator-owned cleanup; OI-17 5GB storage measurement basis is resolved by `DECISIONS_LOCK` D-13 as active/current attachment corpus only
   - PR #75 moved the already-safe FIFO/trash operating boundary into docs/source/PRD.md, docs/source/TRD.md, and docs/source/DB_SCHEMA_AND_MAPPING.md
   - source docs now carry the FIFO safe operating boundary
   - `영구삭제 예정 시각` calculation boundary is decided docs-only as the first 08:00 Asia/Seoul cleanup boundary at or after `휴지통 이동 시각 + 7 days`
-  - PR #84 explicitly keeps OI-17 5GB storage measurement basis open without selecting a basis
+  - PR #84 historically kept OI-17 5GB storage measurement basis open without selecting a basis; PR #130/#131 later supplied evidence/proposal, and D-13 now selects the basis
   - OI-16 cleanup ownership is split from OI-17 5GB storage measurement basis and is selected as manual operator-owned cleanup
   - manual operator-owned cleanup means the operator owns final approval for live cleanup execution
   - scheduled Worker/Cron-owned cleanup remains a later automation maturity candidate and is not approved now
   - check:fifo-trash-candidates remains standalone live-read manual validation outside deterministic parity, scenario execution, baseline, CI, and product wiring
-  - OI-17 5GB R2/storage population basis remains separate and out of scope for the next OI-16 path
-  - OI-17 5GB storage measurement basis cannot be safely decided from existing docs alone
-  - OI-17 measurement candidates are prepared, and PR #84 keeps the basis unselected and open
+  - OI-17 5GB R2/storage population basis is selected by `DECISIONS_LOCK` D-13; implementation/live cleanup remains out of scope for the next OI-16 path
+  - OI-17 5GB storage measurement basis was not safely decidable from older docs alone; current closure relies on PR #130 live-read evidence and PR #131 proposal packet
+  - OI-17 measurement candidates are resolved into D-13 as active/current attachment corpus only
   - PR #96 aligned scenario status pointers with the current OI-16/OI-17 split
   - PR #97 clarified older parity decision notes as historical OI-16 records without approving source-of-truth movement or cleanup execution
   - PR #98 refreshed top-level status pointers after PR #97 without selecting an OI-17 5GB basis
   - this decision does not approve live access, behavior changes, implementation changes, or parity/product wiring
   - current baseline is verified by a successful `npm run parity`
   - GitHub Actions `Parity Harness` also verified the same baseline once
-next_one_task: keep PR #84 OI-17 open decision reflected in pointer/status docs until a later explicit approval PR selects a 5GB storage measurement basis
+next_one_task: OI-17 final basis selection is resolved by DECISIONS_LOCK D-13; keep implementation, live cleanup, scheduled automation, deploy, and Core mutation behind separate approvals
