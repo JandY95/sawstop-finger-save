@@ -5,16 +5,18 @@
   "submitInput": {
     "businessOrSchoolName": "YJ Woodshop",
     "operatorName": "Fixture Operator",
-    "personWhoTouchedBlade": "Fixture Person",
+    "touchedPersonName": "Fixture Person",
     "phone": "010-0000-0000",
     "email": "fixture@example.test",
-    "incidentDate": "2026-04-03",
-    "incidentTime": null,
-    "incidentTimeUnknown": true,
+    "occurredDate": "2026-04-03",
+    "occurredTime": null,
+    "timeUnknown": true,
     "bodyPartContacted": "left index finger",
     "visibleInjuryMark": "예 (YES)",
-    "consentForPromotionalUse": "미동의 (NO)",
-    "accidentDescription": "Deterministic fixture submit with unknown occurrence time.",
+    "promotionalConsent": "미동의 (NO)",
+    "sawSerialNumber": "C123456789",
+    "materialType": "synthetic plywood",
+    "incidentDescription": "Deterministic fixture submit with unknown occurrence time.",
     "attachments": []
   }
 }

@@ -33,18 +33,20 @@ const expectedTopLevelFields = [
 ];
 
 const submitInputAllowedFields = [
-  'accidentDescription',
   'attachments',
   'bodyPartContacted',
   'businessOrSchoolName',
-  'consentForPromotionalUse',
   'email',
-  'incidentDate',
-  'incidentTime',
-  'incidentTimeUnknown',
+  'incidentDescription',
+  'materialType',
+  'occurredDate',
+  'occurredTime',
   'operatorName',
-  'personWhoTouchedBlade',
   'phone',
+  'promotionalConsent',
+  'sawSerialNumber',
+  'timeUnknown',
+  'touchedPersonName',
   'visibleInjuryMark',
 ];
 
