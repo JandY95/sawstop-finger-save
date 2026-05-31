@@ -9,6 +9,8 @@ Update after continued safe handoff work:
 - Group F Queue/consumer finalization skeleton prepared: `docs/runbooks/GROUP_F_QUEUE_CONSUMER_FINALIZATION_PACKET_SKELETON_2026-05-29.md`
 - Group F skeleton preflight: `/home/jun/.hermes/diagnostics/sawstop-group-f-finalization-skeleton-20260529/group-f-skeleton-preflight-redacted.json`
 - Group F Argus(아르거스)-검증 총괄 책임자 skeleton-boundary PASS: session `20260529_234958_5b6a15`
+- Turnstile boolean-only readiness preflight prepared: `/home/jun/.hermes/diagnostics/sawstop-group-e-turnstile-readiness-20260530/turnstile-readiness-boolean-only.json`
+- Turnstile readiness Argus(아르거스)-검증 총괄 책임자 PASS: session `20260530_074705_335f45`; verdict is `PASS_WITH_LOCAL_OVERLAY_REQUIRED`, not execution approval.
 
 ## What just completed
 
@@ -59,11 +61,13 @@ It would **not** prove unless a separate packet approves it:
 
 ## Important caveat for next operator
 
-`TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` were absent in the prepared-only preflight. This is not a blocker for packet PASS, but it is a hard readiness check before actual execution.
+`TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` were absent in the prepared-only preflight. This is not a blocker for packet PASS, but it remains a hard readiness check before actual execution.
+
+Boolean-only readiness preflight now confirms provider-documented local Turnstile test-key mode is possible without source bypass, and Argus(아르거스)-검증 총괄 책임자 reviewed that preflight as PASS in session `20260530_074705_335f45`. Because current `.dev.vars` lacks Turnstile keys, execution still requires a temporary local-only overlay or equivalent secret injection. Raw keys/tokens must not be printed or stored.
 
 Before any Group E live execution, confirm one of these without printing raw key/token values:
 
-1. provider-documented local Turnstile test-key mode can be used without source bypass/code edit; or
+1. temporary local-only overlay or equivalent secret injection can be applied without raw key/token disclosure; or
 2. execution must HOLD.
 
 Do not edit source to bypass Turnstile under Group E.
@@ -79,7 +83,7 @@ Required owner approval must explicitly include:
 - `EVIDENCE_DIR=/home/jun/.hermes/diagnostics/sawstop-group-e-customer-attachment-live-20260529/`
 - exactly one synthetic TEST submission
 - exactly one synthetic no-real-data allowed attachment
-- local Turnstile test-key mode only if source bypass is unnecessary
+- local Turnstile test-key mode via temporary local-only overlay or equivalent secret injection; source bypass is unnecessary and forbidden
 - no admin upload
 - no Queue consumer/finalization
 - no cleanup/delete

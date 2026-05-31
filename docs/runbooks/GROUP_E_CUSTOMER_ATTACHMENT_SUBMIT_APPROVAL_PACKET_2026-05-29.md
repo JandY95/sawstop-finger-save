@@ -11,6 +11,8 @@ Related completed scopes:
 
 Prepared-only preflight artifact: `/home/jun/.hermes/diagnostics/sawstop-group-e-customer-attachment-packet-20260529/group-e-packet-preflight-redacted.json`
 Argus(아르거스)-검증 총괄 책임자 packet-boundary PASS: session `20260529_234448_bef8f8`
+Turnstile boolean-only readiness preflight: `/home/jun/.hermes/diagnostics/sawstop-group-e-turnstile-readiness-20260530/turnstile-readiness-boolean-only.json`
+Turnstile readiness Argus(아르거스)-검증 총괄 책임자 PASS: session `20260530_074705_335f45` (`PASS_WITH_LOCAL_OVERLAY_REQUIRED`; execution still requires explicit approval and local-only overlay)
 Related matrix: `docs/plans/MVP_LIVE_EVIDENCE_MATRIX_2026-05-29.md`
 
 ## Boundary statement
@@ -99,7 +101,7 @@ These values are a proposal for a future explicit owner approval. They are not c
 - attachment count: exactly one
 - fixture: tiny synthetic no-real-data allowed file, preferably text/image with clearly fake content
 - form data: synthetic TEST values only, no real customer/person/school/contact/incident data
-- Turnstile handling: use approved local test-key mode only if already supported by environment without source bypass; otherwise HOLD
+- Turnstile handling: boolean-only readiness preflight PASS confirms provider-documented local test-key mode is possible without source bypass; current `.dev.vars` lacks Turnstile keys, so execution requires a temporary local-only overlay or equivalent secret injection; otherwise HOLD
 - readback: read-only Notion/R2/Queue evidence only as explicitly listed in the future approval
 
 ## Allowed actions after separate execution approval
