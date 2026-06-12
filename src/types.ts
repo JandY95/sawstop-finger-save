@@ -211,6 +211,8 @@ export interface WorkerEnv {
   ATTACHMENT_PROCESSING_QUEUE: QueueBinding<SubmitAttachmentPayload>;
   TURNSTILE_SITE_KEY?: string;
   TURNSTILE_SECRET_KEY?: string;
+  SAWSTOP_REPORT_WRITER_ENDPOINT?: string;
+  SAWSTOP_REPORT_WRITER_TOKEN?: string;
 }
 
 export interface WorkerExecutionContext {

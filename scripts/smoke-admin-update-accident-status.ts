@@ -135,6 +135,22 @@ async function run() {
     const accidentPatchBodies: Array<Record<string, unknown>> = [];
     const mockResponses: Response[] = [
       buildPageResponse(ACCIDENT_STATUS.received),
+      buildPageResponse(ACCIDENT_STATUS.received),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { results: [] }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { results: Array.from({ length: 16 }, (_, index) => ({ id: `block-${index}` })) }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { id: "accident-page-1" }
+      }),
       createMockResponse({
         ok: true,
         status: 200,
@@ -172,9 +188,10 @@ async function run() {
     expect(successResponse.status === 200, "status update should return 200");
     expect(successBody.ok === true, "status update should return ok=true");
     expect(successBody.status === ACCIDENT_STATUS.inProgress, "status update should return new status");
-    expect(accidentPatchBodies.length === 1, "accident page should be patched once");
+    expect(accidentPatchBodies.length === 2, "accident page should be patched twice: review reset then status");
+    const mergedPatchBody = Object.assign({}, ...accidentPatchBodies);
     expect(
-      JSON.stringify(accidentPatchBodies[0]?.[ACCIDENT_DB_PROPERTY_NAMES.status]) ===
+      JSON.stringify(mergedPatchBody[ACCIDENT_DB_PROPERTY_NAMES.status]) ===
         JSON.stringify({ status: { name: ACCIDENT_STATUS.inProgress } }),
       "accident patch should include target status"
     );

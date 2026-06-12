@@ -1,41 +1,92 @@
-﻿# Handoff
+# Handoff
 
-## Current Status
+Status: SawStop English report draft flow PR candidate / local mock-only verified / no deploy / no live write
+Updated: 2026-06-13T07:29:30+09:00
+Repo: `/srv/harness-lab/repos/sawstop-finger-save`
+Branch: `feature/sawstop-report-draft-contract-flow`
+PR: https://github.com/JandY95/sawstop-finger-save/pull/138
+Base: `origin/main` `d34841346caa542a1d6f8a691051dc9256f2eb15`
 
-- 기준 판단: `stage-6 parity` 정식 구현 1차 로컬/CI 검증 완료
-- 편입 절차: 종료
-- 현재 실작업 방향: `sawstop-finger-save` deterministic parity 로컬/CI 실행 경로 유지
-- 현재 확인된 정합성 상태:
-  - tracked 기준 현재 stage는 `stage-6-parity-harness`
-  - 로컬 `.project-state.json`은 reference-only 상태 파일로 유지한다
-  - tracked repo에 parity runner script, baseline 파일, GitHub Actions workflow를 추가했다
-  - `npm run parity` local run/compare와 GitHub Actions `Parity Harness` 1회 성공이 확인됐다
-- tdd-guard changed-push observation v1 second marker: `tdd-guard-changed-push-observation-v1-2-20260515` docs-only marker.
+## Read first
 
-## Locked
+- Result package: `docs/runbooks/SAWSTOP_REPORT_DRAFT_RESULT_PACKAGE_2026-06-13.md`
+- Existing readiness packet: `docs/runbooks/PR_READINESS_PACKET_sawstop_report_draft_option_b_2026-06-12.md`
+- Contract check: `scripts/check-admin-status-report-draft-contract.ts`
 
-- `harness-os-core`는 상위 OS/코어 repo
-- `sawstop-finger-save`는 실작업 repo
-- 기존 프로젝트는 신규 생성보다 adopt + bridge + sync 우선
-- 코어 repo와 프로젝트 repo는 분리 운영
-- parity 1차 구현은 프로젝트 repo에서 검증 완료됐고, core에는 runbook/template 승격까지 반영했다
+## Current result
 
-## Current Finding
+A reviewable local/PR-candidate result is prepared for the SawStop English report draft flow.
 
-- 현재 deterministic parity 대상으로 바로 묶는 범위는 `package.json`의 local smoke/check chain이다
-- `check:attachment-source-live`, `check:fifo-trash-candidates`는 live 의존 성격이 있어서 현재 parity baseline에서는 제외한다
-- `docs/harness/parity/parity-baseline.json`을 machine source of truth로 둔다
-- `latest-run.json`, `latest-compare.json`은 generated 산출물로 보고 Git 추적 대상에서 제외한다
-- GitHub Actions `Parity Harness`도 동일 baseline 기준으로 1회 성공했다
-- OI-001~OI-005 운영 잠금 항목은 2026-04-23 확인값 기준으로 문서상 resolved 처리됐다
+The feature makes `접수 → 진행중` prepare/repair the English report draft in the same Notion accident page body, while preserving existing populated/manual drafts and preventing `진행중 → 완료` when `[검수]` markers remain.
 
-## This Batch Files
+After Byungjun review, the sample/output contract is now conservative about missing source values:
 
-- `project.profile.json`
-- `docs/harness/handoff/latest.md`
-- `docs/harness/parity/PARITY_STATUS.md`
-- `docs/harness/parity/scenario-index.yaml`
+```text
+Phone / Email missing -> [Needs follow-up]
+Wearing Gloves missing -> [Needs follow-up], not guessed YES/NO
+Type of blade being used missing -> [Needs follow-up], not guessed 10" Standard
+Saw Blade Details present -> translate only the provided details
+Attachment Upload Status: 완료 -> Completed metadata only
+Finger/brake cartridge photo evidence -> separate [Needs follow-up] lines before final report
+```
 
-## Next One Task
+## Confirmation artifact
 
-- 잔여 open issue는 `docs/source/DB_SCHEMA_AND_MAPPING.md`의 17장 기준으로 이어서 정리한다.
+Byungjun should inspect:
+
+```text
+docs/runbooks/SAWSTOP_REPORT_DRAFT_RESULT_PACKAGE_2026-06-13.md
+```
+
+It contains the human explanation, conservative sample input/output, before/after correction, duplicate-append behavior, review-marker behavior, HOLD exclusions, and revision path.
+
+## Safe verification scope
+
+Completed/expected safe checks for this lane are local/mock/static only:
+
+```text
+git diff --check
+npm run check:admin-status-report-draft-contract
+npm run smoke:admin-update-accident-status
+npm run parity
+npm test
+node --experimental-strip-types --check src/notion.ts
+node --experimental-strip-types --check src/admin/update-accident-status.ts
+node --experimental-strip-types --check scripts/check-admin-status-report-draft-contract.ts
+```
+
+Do not treat full smoke/live/deploy as implied by these checks.
+
+## Remaining HOLD / do not do without explicit result-level approval
+
+```text
+main merge
+wrangler deploy / 운영 서비스 deploy
+live Notion write
+R2 / Queue / customer submit / admin upload
+actual email sending
+data deletion / cleanup / archive
+secret / env / provider / auth change
+raw live evidence JSON output
+workers/report-writer/** operating worker inclusion
+scripts/smoke-admin-update-accident-status.ts live smoke execution; the tracked mock/local compatibility fix is included
+branch cleanup
+```
+
+## Dirty/HOLD lanes currently excluded from the PR result
+
+```text
+docs/working/SAWSTOP_REPORT_WRITER_SELECTION_2026-06-12.md
+docs/working/live-notion-*.json
+workers/report-writer/**
+```
+
+## Next safe action
+
+If Byungjun says the corrected result direction is good, the next gate is still result-level:
+
+```text
+A. keep as PR candidate / review only
+B. revise wording / marker choice / omitted-value handling and rerun local checks
+C. prepare actual deploy/live-write plan as a separate approval packet
+```
