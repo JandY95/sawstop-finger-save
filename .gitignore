@@ -5,6 +5,9 @@
 node_modules/
 *.log
 .tmp-*
+diagnostics/
+playwright-report/
+test-results/
 
 # Local-only verification captures (keep redacted summaries/artifacts in docs instead)
 /docs/runbooks/**/report-raw.html

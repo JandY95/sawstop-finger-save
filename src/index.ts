@@ -19,6 +19,7 @@ import {
   CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES,
   CUSTOMER_FAILURE_MESSAGE,
   CUSTOMER_SUCCESS_MESSAGE,
+  CUSTOMER_TURNSTILE_UNAVAILABLE_MESSAGE,
   SUBMIT_ROUTE
 } from "./constants";
 import { renderCustomerPage } from "./render";
@@ -234,7 +235,7 @@ async function handleSubmit(
       return jsonResponse(
         {
           ok: false,
-          message: CUSTOMER_FAILURE_MESSAGE
+          message: CUSTOMER_TURNSTILE_UNAVAILABLE_MESSAGE
         },
         400
       );

@@ -50,7 +50,7 @@ function buildCheckboxGroup(name: string, options: readonly string[]) {
 export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) {
   const turnstileWidget = options.turnstileSiteKey
     ? `<div class="cf-turnstile" data-sitekey="${escapeHtml(options.turnstileSiteKey)}"></div>`
-    : `<p class="helper">Turnstile site key가 설정되지 않아 제출 검증을 완료할 수 없습니다.</p>`;
+    : "";
   const visibleInjuryOptions = buildRadioGroup(
     "visibleInjuryMark",
     VISIBLE_INJURY_MARK_OPTIONS,
@@ -85,6 +85,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             --line: #d9d0c3;
             --accent: #21558c;
             --accent-soft: #eef4fb;
+            --focus-ring: rgba(33, 85, 140, 0.18);
           }
           * { box-sizing: border-box; }
           body {
@@ -175,6 +176,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           .field input,
           .field select,
           .field textarea {
+            box-sizing: border-box;
             width: 100%;
             padding: 14px 16px;
             border: 1px solid var(--line);
@@ -182,12 +184,99 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             background: #fff;
             color: var(--ink);
             font: inherit;
+            transition: none;
+          }
+          .field > input,
+          .field select {
+            min-height: 52px;
+          }
+          .field input:focus,
+          .field select:focus,
+          .field textarea:focus {
+            border-color: var(--accent);
+            outline: 0;
+            box-shadow: 0 0 0 3px var(--focus-ring);
           }
           .date-input-shell {
             position: relative;
+            display: block;
+            min-height: 52px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #fff;
+            cursor: pointer;
+          }
+          .date-input-shell:focus-within {
+            border-color: var(--accent);
+            outline: 0;
+            box-shadow: 0 0 0 3px var(--focus-ring);
+          }
+          .date-input-shell::after {
+            content: "";
+            position: absolute;
+            z-index: 2;
+            top: 50%;
+            right: 16px;
+            width: 18px;
+            height: 18px;
+            transform: translateY(-50%);
+            border: 2px solid var(--muted);
+            border-top-width: 5px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            pointer-events: none;
           }
           .date-input-native {
-            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            min-height: 52px;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            opacity: 0;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            caret-color: transparent;
+            cursor: pointer;
+          }
+          .date-input-native:focus {
+            border-color: transparent;
+            outline: 0;
+            box-shadow: none;
+          }
+          .date-input-native::-webkit-datetime-edit,
+          .date-input-native::-webkit-datetime-edit-fields-wrapper,
+          .date-input-native::-webkit-datetime-edit-text,
+          .date-input-native::-webkit-datetime-edit-year-field,
+          .date-input-native::-webkit-datetime-edit-month-field,
+          .date-input-native::-webkit-datetime-edit-day-field,
+          .date-input-native::-webkit-calendar-picker-indicator {
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+          }
+          .date-input-display {
+            position: absolute;
+            z-index: 2;
+            top: 50%;
+            left: 16px;
+            right: 46px;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.4;
+            pointer-events: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+          }
+          .date-input-shell.has-value .date-input-display {
+            color: var(--ink);
           }
           .date-display-button {
             width: 100%;
@@ -296,15 +385,22 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             min-height: 132px;
             resize: vertical;
           }
+          .date-time-grid {
+            align-items: start;
+          }
           .time-grid {
             display: grid;
-            grid-template-columns: 120px 1fr 1fr;
-            gap: 10px;
-            align-items: end;
+            grid-template-columns: minmax(96px, 0.9fr) minmax(82px, 1fr) minmax(82px, 1fr);
+            gap: 8px;
+            align-items: start;
           }
           .time-part {
             display: grid;
             gap: 6px;
+          }
+          .time-part select {
+            min-height: 52px;
+            padding: 14px 14px;
           }
           .time-helper-row {
             display: grid;
@@ -362,6 +458,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             flex: 1 1 calc(50% - 4px);
           }
           .choice-item {
+            box-sizing: border-box;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -376,12 +473,49 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             flex: 0 1 180px;
             max-width: 100%;
             min-height: 42px;
+            transition: none;
+          }
+          .choice-item:hover {
+            border-color: #c9bba9;
+            background: #fbf7f0;
+          }
+          .choice-item:focus-within {
+            border-color: var(--accent);
+            background: #f8fbff;
+            box-shadow: 0 0 0 3px var(--focus-ring);
+          }
+          .choice-item:has(input:checked) {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+            box-shadow: inset 0 0 0 1px rgba(33, 85, 140, 0.12);
+          }
+          .choice-item:has(input[aria-invalid="true"]) {
+            border-color: #b84032;
+            background: #fff8f7;
+          }
+          .choice-item:has(input:disabled) {
+            border-color: #e2d8ca;
+            background: #f2eee8;
+            color: var(--muted);
+            cursor: not-allowed;
+            opacity: 0.72;
           }
           .choice-item input {
+            box-sizing: border-box;
+            inline-size: 16px;
+            block-size: 16px;
             width: 16px;
             height: 16px;
+            min-width: 16px;
             margin: 0;
-            flex: 0 0 auto;
+            flex: 0 0 16px;
+            align-self: center;
+            accent-color: var(--accent);
+            transform: none;
+          }
+          .choice-item input:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
           }
           .choice-item span {
             min-width: 0;
@@ -593,15 +727,15 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                 <div class="field-grid two-up contact-row">
                   <div class="field">
                     <label for="phone">연락처 *</label>
-                    <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" pattern="^(?:01(?:0|1|6|7|8|9)-\\d{3,4}-\\d{4}|02-\\d{3,4}-\\d{4}|0\\d{2}-\\d{3}-\\d{4})$" required />
+                    <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" pattern="^(?:010-\\d{4}-\\d{4}|02-\\d{3,4}-\\d{4}|(?:03[1-3]|04[1-4]|05[1-5]|06[1-4])-\\d{3,4}-\\d{4})$" aria-describedby="phone-error" required />
                     <div class="hint field-meta"></div>
-                    <div id="phone-error" class="field-error"></div>
+                    <div id="phone-error" class="field-error" role="alert"></div>
                   </div>
                   <div class="field">
                     <label for="email">이메일 *</label>
-                    <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" required />
+                    <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" aria-describedby="email-error" required />
                     <div class="hint field-meta"></div>
-                    <div id="email-error" class="field-error"></div>
+                    <div id="email-error" class="field-error" role="alert"></div>
                   </div>
                 </div>
               </div>
@@ -611,33 +745,14 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               <h2>2. 사고가 발생한 때와 사람</h2>
               <p>사고가 언제 일어났는지와 관련된 사람 정보를 적어 주세요.</p>
               <div class="field-grid">
-                <div class="field-grid two-up">
+                <div class="field-grid two-up date-time-grid">
                   <div class="field">
                     <label for="occurred-date">사고 발생일 *</label>
-                    <div class="date-input-shell">
-                      <input id="occurred-date" class="date-input-native" name="occurredDate" type="date" required tabindex="-1" aria-hidden="true" />
-                      <button id="occurred-date-display" class="date-display-button" type="button" aria-haspopup="dialog" aria-expanded="false">
-                        <span id="occurred-date-display-value" class="date-display-value is-placeholder">YYYY-MM-DD</span>
-                        <span class="date-display-icon" aria-hidden="true">📅</span>
-                      </button>
-                      <div id="occurred-date-picker" class="date-picker-panel" hidden>
-                        <div class="date-picker-header">
-                          <button id="occurred-date-prev-month" class="date-picker-nav" type="button" aria-label="이전 달">‹</button>
-                          <div id="occurred-date-month-label" class="date-picker-month-label"></div>
-                          <button id="occurred-date-next-month" class="date-picker-nav" type="button" aria-label="다음 달">›</button>
-                        </div>
-                        <div class="date-picker-weekdays">
-                          <div class="date-picker-weekday">일</div>
-                          <div class="date-picker-weekday">월</div>
-                          <div class="date-picker-weekday">화</div>
-                          <div class="date-picker-weekday">수</div>
-                          <div class="date-picker-weekday">목</div>
-                          <div class="date-picker-weekday">금</div>
-                          <div class="date-picker-weekday">토</div>
-                        </div>
-                        <div id="occurred-date-picker-grid" class="date-picker-grid"></div>
-                      </div>
+                    <div id="occurred-date-shell" class="date-input-shell">
+                      <input id="occurred-date" class="date-input-native" name="occurredDate" type="date" required aria-describedby="occurred-date-error" />
+                      <span id="occurred-date-display" class="date-input-display" aria-hidden="true">사고 발생일을 선택해 주세요.</span>
                     </div>
+                    <div id="occurred-date-error" class="field-error" role="alert"></div>
                   </div>
                   <div class="field">
                     <label for="occurred-time-meridiem">발생 시간 *</label>
@@ -714,14 +829,15 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               <div class="field-grid">
                 <div class="field">
                   <label for="body-part-contacted">어느 부위가 톱날에 닿았나요? *</label>
-                  <input id="body-part-contacted" name="bodyPartContacted" type="text" required />
-                  <div class="hint">예: 오른손 검지, 왼손 엄지</div>
+                  <input id="body-part-contacted" name="bodyPartContacted" type="text" required placeholder="예: 오른손 검지, 왼손 엄지" aria-describedby="body-part-contacted-error" />
+                  <div id="body-part-contacted-error" class="field-error" role="alert"></div>
                 </div>
                 <div class="field">
                   <label for="visible-injury-mark">상처가 보였나요? *</label>
                   <div id="visible-injury-mark" class="choice-group duo compact">
                     ${visibleInjuryOptions}
                   </div>
+                  <div id="visible-injury-mark-error" class="field-error" role="alert"></div>
                 </div>
                 <div class="field">
                   <label for="wound-treatment-methods">상처 치료 방법</label>
@@ -740,9 +856,9 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               <div class="field-grid">
                 <div class="field">
                   <label for="saw-serial-number">기계 시리얼 번호 *</label>
-                  <input id="saw-serial-number" name="sawSerialNumber" type="text" placeholder="예: C123456789" pattern="^[CPI]\\d{9}$" required />
+                  <input id="saw-serial-number" name="sawSerialNumber" type="text" placeholder="예: C123456789" pattern="^[CPI]\\d{9}$" required aria-describedby="saw-serial-number-error" />
                   <div class="hint">영문 C, P, I 중 하나로 시작하는 시리얼 번호를 입력해 주세요. 예: C123456789 / P123456789 / I123456789</div>
-                  <div id="saw-serial-number-error" class="field-error"></div>
+                  <div id="saw-serial-number-error" class="field-error" role="alert"></div>
                 </div>
                 <div class="field">
                   <label for="brake-cartridge-serial-number">브레이크 카트리지 시리얼 번호</label>
@@ -768,7 +884,8 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               <div class="field-grid">
                 <div class="field">
                   <label for="material-type">절단한 재료 *</label>
-                  <input id="material-type" name="materialType" type="text" placeholder="예: 원목 / 합판 / MDF" required />
+                  <input id="material-type" name="materialType" type="text" placeholder="예: 원목 / 합판 / MDF" required aria-describedby="material-type-error" />
+                  <div id="material-type-error" class="field-error" role="alert"></div>
                 </div>
                 <div class="field">
                   <label for="workpiece-size-and-cut-type">재료 크기와 절단 방식</label>
@@ -784,6 +901,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                   <div class="choice-group two-two-one compact">
                     ${otherDeviceOptions}
                   </div>
+                  <div id="other-devices-used-error" class="field-error"></div>
                 </div>
                 <div class="field">
                   <label for="approximate-feed-rate">재료 이송 속도</label>
@@ -810,7 +928,8 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                 </div>
                 <div class="field">
                   <label for="incident-description">사고 설명 *</label>
-                  <textarea id="incident-description" name="incidentDescription" placeholder="예: 재료를 밀면서 작업하던 중 재료가 흔들렸고, 손이 앞으로 나가 톱날에 닿았습니다. 이후 기계가 바로 멈췄습니다." required></textarea>
+                  <textarea id="incident-description" name="incidentDescription" placeholder="예: 재료를 밀면서 작업하던 중 재료가 흔들렸고, 손이 앞으로 나가 톱날에 닿았습니다. 이후 기계가 바로 멈췄습니다." required aria-describedby="incident-description-error"></textarea>
+                  <div id="incident-description-error" class="field-error" role="alert"></div>
                 </div>
               </div>
             </section>
@@ -823,7 +942,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                   <div id="customer-attachment-upload-zone" class="attachment-upload-zone">
                     <div class="attachment-upload-copy">
                       <div class="attachment-upload-title">사진을 추가하려면 이 영역을 눌러 주세요.</div>
-                      <div class="hint">손가락 사진이나 브레이크 카트리지 사진이 있으시면 첨부해 주세요. 사진이 없어도 접수는 가능합니다.</div>
+                      <div class="hint">손가락 사진이나 브레이크 카트리지 시리얼 번호가 보이는 사진이 있으시면 첨부해 주세요.<br />사진이 없어도 접수는 가능합니다.</div>
                     </div>
                     <div class="attachment-upload-meta">
                       <span id="customer-attachment-count">0/4</span>
@@ -847,12 +966,13 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                   <div id="promotional-consent" class="choice-group duo compact">
                     ${promotionalConsentOptions}
                   </div>
+                  <div id="promotional-consent-error" class="field-error" role="alert"></div>
                 </div>
               </div>
             </section>
 
             <section class="submit-bar">
-              <div class="hint">접수 후 접수번호를 바로 확인하실 수 있습니다. 사진이 없어도 먼저 접수하실 수 있습니다.</div>
+              <div class="hint">접수 후 접수번호를 바로 확인하실 수 있습니다. 손가락 또는 브레이크 카트리지 사진이 없어도 먼저 접수하실 수 있습니다.</div>
               <div id="customer-submit-error" class="submit-error"></div>
               ${turnstileWidget}
               <button type="submit">안심하고 접수하기</button>
@@ -869,8 +989,14 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           const phoneInput = document.getElementById("phone");
           const sawSerialNumberInput = document.getElementById("saw-serial-number");
           const emailInput = document.getElementById("email");
+          const bodyPartContactedInput = document.getElementById("body-part-contacted");
+          const materialTypeInput = document.getElementById("material-type");
+          const incidentDescriptionInput = document.getElementById("incident-description");
           const occurredDateInput = document.getElementById("occurred-date");
-          const occurredDateDisplayButton = document.getElementById("occurred-date-display");
+          const occurredDateShell = document.getElementById("occurred-date-shell");
+          const occurredDateDisplay = document.getElementById("occurred-date-display");
+          const occurredDateDisplayPlaceholder = "사고 발생일을 선택해 주세요.";
+          const occurredDateDisplayButton = null;
           const occurredDateDisplayValue = document.getElementById("occurred-date-display-value");
           const occurredDatePicker = document.getElementById("occurred-date-picker");
           const occurredDateMonthLabel = document.getElementById("occurred-date-month-label");
@@ -893,11 +1019,23 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           const phoneError = document.getElementById("phone-error");
           const emailError = document.getElementById("email-error");
           const sawSerialNumberError = document.getElementById("saw-serial-number-error");
+          const occurredDateError = document.getElementById("occurred-date-error");
+          const bodyPartContactedError = document.getElementById("body-part-contacted-error");
+          const visibleInjuryMarkError = document.getElementById("visible-injury-mark-error");
+          const materialTypeError = document.getElementById("material-type-error");
+          const incidentDescriptionError = document.getElementById("incident-description-error");
+          const promotionalConsentError = document.getElementById("promotional-consent-error");
+          const otherDevicesUsedError = document.getElementById("other-devices-used-error");
+          const otherDeviceInputs = Array.from(document.querySelectorAll('input[name="otherDevicesUsed"]'));
+          const visibleInjuryMarkInputs = Array.from(document.querySelectorAll('input[name="visibleInjuryMark"]'));
+          const promotionalConsentInputs = Array.from(document.querySelectorAll('input[name="promotionalConsent"]'));
           const occurredTimeError = document.getElementById("occurred-time-error");
           const selectedFiles = [];
-          const phonePattern = /^(?:01(?:0|1|6|7|8|9)-\\d{3,4}-\\d{4}|02-\\d{3,4}-\\d{4}|0\\d{2}-\\d{3}-\\d{4})$/;
-          const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+          const phonePattern = /^(?:010-\\d{4}-\\d{4}|02-\\d{3,4}-\\d{4}|(?:03[1-3]|04[1-4]|05[1-5]|06[1-4])-\\d{3,4}-\\d{4})$/;
+          const emailPattern = /^[A-Za-z0-9](?:[A-Za-z0-9._%+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}$/;
           const sawSerialPattern = /^[CPI]\\d{9}$/;
+          const landlinePrefixes = ["02", "031", "032", "033", "041", "042", "043", "044", "051", "052", "053", "054", "055", "061", "062", "063", "064"];
+          const noOtherDeviceValue = "사용하지 않음 (None)";
           const maxAttachmentCount = 4;
           const maxAttachmentBytes = 10 * 1024 * 1024;
           const firstSawSerialCharacterMap = {
@@ -920,6 +1058,59 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             errorNode.textContent = message;
             input.classList.toggle("invalid", Boolean(message));
             input.setAttribute("aria-invalid", message ? "true" : "false");
+          }
+
+          function setRequiredFieldError(input, errorNode, message) {
+            setFieldError(input, errorNode, message);
+            if (input && typeof input.setCustomValidity === "function") {
+              input.setCustomValidity(message);
+            }
+          }
+
+          function setChoiceGroupError(inputs, errorNode, message) {
+            if (errorNode) {
+              errorNode.textContent = message;
+            }
+            inputs.forEach((input) => {
+              input.setAttribute("aria-invalid", message ? "true" : "false");
+            });
+          }
+
+          function validateRequiredField(input, errorNode, message) {
+            const valid = Boolean(input && input.value.trim().length > 0);
+            setRequiredFieldError(input, errorNode, valid ? "" : message);
+            return valid;
+          }
+
+          function validateRequiredChoiceGroup(inputs, errorNode, message) {
+            const valid = inputs.some((input) => input.checked);
+            setChoiceGroupError(inputs, errorNode, valid ? "" : message);
+            return valid;
+          }
+
+          function clearRequiredFieldErrorWhenFilled(input, errorNode) {
+            if (input && input.value.trim().length > 0) {
+              setRequiredFieldError(input, errorNode, "");
+            }
+          }
+
+          function clearChoiceGroupErrorWhenSelected(inputs, errorNode) {
+            if (inputs.some((input) => input.checked)) {
+              setChoiceGroupError(inputs, errorNode, "");
+            }
+          }
+
+          function focusInvalidField(element) {
+            if (!(element instanceof HTMLElement)) {
+              return;
+            }
+
+            element.scrollIntoView({ block: "center", inline: "nearest" });
+            try {
+              element.focus({ preventScroll: true });
+            } catch {
+              element.focus();
+            }
           }
 
           function setSubmitError(message) {
@@ -945,13 +1136,27 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           }
 
           function syncAttachmentInputFiles() {
-            if (!attachmentInput) {
+            if (!attachmentInput || typeof DataTransfer === "undefined") {
               return;
             }
 
-            const transfer = new DataTransfer();
-            selectedFiles.forEach((file) => transfer.items.add(file));
-            attachmentInput.files = transfer.files;
+            try {
+              const transfer = new DataTransfer();
+              selectedFiles.forEach((file) => transfer.items.add(file));
+              attachmentInput.files = transfer.files;
+            } catch {
+              // Some browsers restrict programmatic FileList assignment. Submit uses
+              // buildCustomerSubmitFormData() below so dropped/selected files are still sent.
+            }
+          }
+
+          function buildCustomerSubmitFormData() {
+            const formData = new FormData(form);
+            formData.delete("${CUSTOMER_ATTACHMENT_FIELD_NAME}");
+            selectedFiles.forEach((file) => {
+              formData.append("${CUSTOMER_ATTACHMENT_FIELD_NAME}", file, file.name);
+            });
+            return formData;
           }
 
           function normalizeSawSerialFirstCharacter(character) {
@@ -1068,6 +1273,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                 selectedFiles.splice(index, 1);
                 syncAttachmentInputFiles();
                 updateAttachmentCount();
+                clearAttachmentMaxCountErrorIfRoom();
                 renderAttachmentPreview();
               });
 
@@ -1076,6 +1282,16 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               card.appendChild(removeButton);
               attachmentPreview.appendChild(card);
             });
+          }
+
+          function clearAttachmentMaxCountErrorIfRoom() {
+            if (
+              attachmentError &&
+              selectedFiles.length < maxAttachmentCount &&
+              attachmentError.textContent.includes("최대 4장까지만 선택할 수 있습니다.")
+            ) {
+              attachmentError.textContent = "";
+            }
           }
 
           function addFiles(fileList) {
@@ -1110,25 +1326,72 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             renderAttachmentPreview();
           }
 
+          function findPhonePrefix(digits) {
+            if (digits.startsWith("010")) {
+              return { value: "010", type: "mobile" };
+            }
+
+            const landlinePrefix = landlinePrefixes.find((prefix) => digits.startsWith(prefix));
+            if (landlinePrefix) {
+              return { value: landlinePrefix, type: "landline" };
+            }
+
+            return null;
+          }
+
+          function hasValidPhoneLength(digits, prefix) {
+            if (!prefix) {
+              return false;
+            }
+
+            if (prefix.value === "010") {
+              return digits.length === 11;
+            }
+
+            return digits.length === prefix.value.length + 7 || digits.length === prefix.value.length + 8;
+          }
+
+          function getPhoneValidationMessage(value) {
+            const digits = normalizePhoneInputValue(value);
+            if (!digits) {
+              return "연락처를 입력해 주세요.";
+            }
+
+            const prefix = findPhonePrefix(digits);
+            if (!prefix) {
+              return "010 또는 지역번호로 시작하는 전화번호를 입력해 주세요.";
+            }
+
+            if (!hasValidPhoneLength(digits, prefix)) {
+              return "연락처 자리수를 확인해 주세요.";
+            }
+
+            return phonePattern.test(formatPhoneDigits(digits)) ? "" : "연락처 형식을 확인해 주세요.";
+          }
+
           function validatePhone() {
             const normalized = phoneInput ? phoneInput.value.trim() : "";
-            const valid = phonePattern.test(normalized);
-            setFieldError(
-              phoneInput,
-              phoneError,
-              valid ? "" : "연락처를 확인해 주세요."
-            );
+            const message = getPhoneValidationMessage(normalized);
+            const valid = message === "";
+            setFieldError(phoneInput, phoneError, message);
+            if (phoneInput) {
+              phoneInput.setCustomValidity(message);
+            }
             return valid;
           }
 
           function validateEmail() {
             const normalized = emailInput ? emailInput.value.trim() : "";
-            const valid = emailPattern.test(normalized);
-            setFieldError(
-              emailInput,
-              emailError,
-              valid ? "" : "이메일 형식을 확인해 주세요."
-            );
+            const valid = emailPattern.test(normalized) && !normalized.includes("..");
+            const message = !normalized
+              ? "이메일 주소를 입력해 주세요."
+              : valid
+                ? ""
+                : "올바른 이메일 형식으로 입력해 주세요.";
+            setFieldError(emailInput, emailError, message);
+            if (emailInput) {
+              emailInput.setCustomValidity(message);
+            }
             return valid;
           }
 
@@ -1189,9 +1452,18 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           }
 
           function validateSawSerialNumber() {
-            const normalized = sawSerialNumberInput ? sawSerialNumberInput.value.trim() : "";
+            const rawValue = sawSerialNumberInput ? sawSerialNumberInput.value.trim() : "";
+            const normalized = rawValue
+              ? rawValue.charAt(0).toUpperCase() + rawValue.slice(1)
+              : "";
+            if (sawSerialNumberInput && sawSerialNumberInput.value !== normalized) {
+              sawSerialNumberInput.value = normalized;
+              commitSawSerialStableValue(normalized);
+            }
             const valid = sawSerialPattern.test(normalized);
-            const message = valid ? "" : "기계 시리얼 번호 형식을 확인해 주세요.";
+            const message = valid
+              ? ""
+              : "시리얼 번호는 C, P, I 중 하나와 숫자 9자리로 입력해 주세요.";
 
             setFieldError(sawSerialNumberInput, sawSerialNumberError, message);
             if (sawSerialNumberInput) {
@@ -1200,66 +1472,157 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             return valid;
           }
 
-          function validateRequiredFormFields() {
-            const requiredFieldChecks = [
+          function validateOtherDevicesUsed() {
+            const noneInput = otherDeviceInputs.find((input) => input.value === noOtherDeviceValue);
+            const nonNoneInputs = otherDeviceInputs.filter((input) => input.value !== noOtherDeviceValue);
+            const hasConflict = Boolean(noneInput?.checked && nonNoneInputs.some((input) => input.checked));
+            const message = hasConflict ? "사용하지 않음을 선택한 경우 다른 보조장치를 함께 선택할 수 없습니다." : "";
+
+            if (otherDevicesUsedError) {
+              otherDevicesUsedError.textContent = message;
+            }
+            otherDeviceInputs.forEach((input) => {
+              input.setAttribute("aria-invalid", message ? "true" : "false");
+            });
+            return !hasConflict;
+          }
+
+          function syncOtherDeviceAvailability() {
+            const noneInput = otherDeviceInputs.find((input) => input.value === noOtherDeviceValue);
+            const nonNoneInputs = otherDeviceInputs.filter((input) => input.value !== noOtherDeviceValue);
+            const hasNone = Boolean(noneInput?.checked);
+            let hasAnyDevice = nonNoneInputs.some((input) => input.checked);
+
+            if (hasNone && hasAnyDevice) {
+              nonNoneInputs.forEach((input) => {
+                input.checked = false;
+              });
+              hasAnyDevice = false;
+            }
+
+            nonNoneInputs.forEach((input) => {
+              input.disabled = hasNone;
+            });
+            if (noneInput) {
+              noneInput.disabled = hasAnyDevice;
+            }
+
+            validateOtherDevicesUsed();
+          }
+
+          function enforceOtherDeviceExclusivity(changedInput) {
+            if (!changedInput?.checked) {
+              syncOtherDeviceAvailability();
+              return;
+            }
+
+            const isNone = changedInput.value === noOtherDeviceValue;
+            otherDeviceInputs.forEach((input) => {
+              if (input === changedInput) {
+                return;
+              }
+              if (isNone || input.value === noOtherDeviceValue) {
+                input.checked = false;
+              }
+            });
+            syncOtherDeviceAvailability();
+          }
+
+          function validateCustomerSubmitFields() {
+            const submitFieldChecks = [
               {
-                selector: "#occurred-date",
-                focusSelector: "#occurred-date-display",
+                validate: validatePhone,
+                focusElement: phoneInput,
+                message: "연락처를 입력해 주세요."
+              },
+              {
+                validate: validateEmail,
+                focusElement: emailInput,
+                message: "이메일 주소를 입력해 주세요."
+              },
+              {
+                validate: () => validateRequiredField(
+                  occurredDateInput,
+                  occurredDateError,
+                  "사고 발생일을 선택해 주세요."
+                ),
+                focusElement: occurredDateInput,
                 message: "사고 발생일을 선택해 주세요."
               },
               {
                 validate: validateOccurredTime,
                 focusElement: occurredTimeMeridiem,
-                message: "사고 발생 시간을 입력하거나 시간 미상을 선택해 주세요."
+                message: "발생 시간을 입력해 주세요."
               },
               {
-                selector: "#body-part-contacted",
+                validate: validateSawSerialNumber,
+                focusElement: sawSerialNumberInput,
+                message: "시리얼 번호는 C, P, I 중 하나와 숫자 9자리로 입력해 주세요."
+              },
+              {
+                validate: () => validateRequiredField(
+                  bodyPartContactedInput,
+                  bodyPartContactedError,
+                  "톱날에 닿은 부위를 입력해 주세요."
+                ),
+                focusElement: bodyPartContactedInput,
                 message: "톱날에 닿은 부위를 입력해 주세요."
               },
               {
-                selector: "input[name=\"visibleInjuryMark\"]:checked",
-                focusSelector: "input[name=\"visibleInjuryMark\"]",
+                validate: () => validateRequiredChoiceGroup(
+                  visibleInjuryMarkInputs,
+                  visibleInjuryMarkError,
+                  "상처가 보였는지 선택해 주세요."
+                ),
+                focusElement: visibleInjuryMarkInputs[0],
                 message: "상처가 보였는지 선택해 주세요."
               },
               {
-                selector: "#material-type",
+                validate: () => validateRequiredField(
+                  materialTypeInput,
+                  materialTypeError,
+                  "절단한 재료를 입력해 주세요."
+                ),
+                focusElement: materialTypeInput,
                 message: "절단한 재료를 입력해 주세요."
               },
               {
-                selector: "#incident-description",
+                validate: validateOtherDevicesUsed,
+                focusElement: otherDeviceInputs[0],
+                message: "사용하지 않음을 선택한 경우 다른 보조장치를 함께 선택할 수 없습니다."
+              },
+              {
+                validate: () => validateRequiredField(
+                  incidentDescriptionInput,
+                  incidentDescriptionError,
+                  "사고 설명을 입력해 주세요."
+                ),
+                focusElement: incidentDescriptionInput,
                 message: "사고 설명을 입력해 주세요."
               },
               {
-                selector: "input[name=\"promotionalConsent\"]:checked",
-                focusSelector: "input[name=\"promotionalConsent\"]",
+                validate: () => validateRequiredChoiceGroup(
+                  promotionalConsentInputs,
+                  promotionalConsentError,
+                  "홍보 활용 동의 여부를 선택해 주세요."
+                ),
+                focusElement: promotionalConsentInputs[0],
                 message: "홍보 활용 동의 여부를 선택해 주세요."
               }
             ];
 
-            for (const check of requiredFieldChecks) {
-              if (check.validate) {
-                if (check.validate()) {
-                  continue;
-                }
-                setSubmitError(check.message);
-                if (check.focusElement instanceof HTMLElement) {
-                  check.focusElement.focus();
-                }
-                return false;
+            const invalidResults = [];
+            submitFieldChecks.forEach((check) => {
+              if (!check.validate()) {
+                invalidResults.push(check);
               }
+            });
 
-              const matched = document.querySelector(check.selector);
-              const isTextControl = matched instanceof HTMLInputElement || matched instanceof HTMLTextAreaElement;
-              const valid = Boolean(matched) && (!isTextControl || matched.value.trim().length > 0);
-
-              if (valid) {
-                continue;
-              }
-
-              setSubmitError(check.message);
-              const firstInvalid = document.querySelector(check.focusSelector ?? check.selector);
-              if (firstInvalid instanceof HTMLElement) {
-                firstInvalid.focus();
+            const firstInvalidResult = invalidResults[0];
+            if (firstInvalidResult) {
+              setSubmitError(firstInvalidResult.message);
+              if (firstInvalidResult.focusElement instanceof HTMLElement) {
+                focusInvalidField(firstInvalidResult.focusElement);
               }
               return false;
             }
@@ -1271,62 +1634,91 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             setSubmitError("");
             setFieldError(phoneInput, phoneError, "");
             setFieldError(emailInput, emailError, "");
+            phoneInput?.setCustomValidity("");
+            emailInput?.setCustomValidity("");
             setFieldError(sawSerialNumberInput, sawSerialNumberError, "");
+            sawSerialNumberInput?.setCustomValidity("");
+            setRequiredFieldError(occurredDateInput, occurredDateError, "");
+            setRequiredFieldError(bodyPartContactedInput, bodyPartContactedError, "");
+            setChoiceGroupError(visibleInjuryMarkInputs, visibleInjuryMarkError, "");
+            setRequiredFieldError(materialTypeInput, materialTypeError, "");
+            setRequiredFieldError(incidentDescriptionInput, incidentDescriptionError, "");
+            setChoiceGroupError(promotionalConsentInputs, promotionalConsentError, "");
             setOccurredTimeError("");
+            if (otherDevicesUsedError) {
+              otherDevicesUsedError.textContent = "";
+            }
+            otherDeviceInputs.forEach((input) => {
+              input.setAttribute("aria-invalid", "false");
+            });
+          }
+
+          function normalizePhoneInputValue(rawValue) {
+            return rawValue.replace(/\\D/g, "");
           }
 
           function formatPhoneDigits(rawDigits) {
-            const digits = rawDigits.replace(/\\D/g, "");
+            const digits = normalizePhoneInputValue(rawDigits);
             if (!digits) {
               return "";
             }
 
-            if (digits.startsWith("02")) {
-              const rest = digits.slice(2, 10);
-              if (rest.length === 0) {
-                return "02";
-              }
-              if (rest.length <= 4) {
-                return "02-" + rest;
-              }
-              return "02-" + rest.slice(0, rest.length - 4) + "-" + rest.slice(-4);
-            }
-
-            if (/^01(?:0|1|6|7|8|9)/.test(digits)) {
-              const area = digits.slice(0, 3);
-              const rest = digits.slice(3, 11);
+            const prefix = findPhonePrefix(digits);
+            if (prefix) {
+              const rest = digits.slice(prefix.value.length);
 
               if (rest.length === 0) {
-                return area;
+                return prefix.value;
               }
+
               if (rest.length <= 4) {
-                return area + "-" + rest;
+                return prefix.value + "-" + rest;
               }
-              return area + "-" + rest.slice(0, 4) + "-" + rest.slice(4, 8);
+
+              return prefix.value + "-" + rest.slice(0, rest.length - 4) + "-" + rest.slice(-4);
             }
 
-            const area = digits.slice(0, 3);
-            const rest = digits.slice(3, 10);
+            if (digits.length <= 3) {
+              return digits;
+            }
 
-            if (rest.length === 0) {
-              return area;
+            const fallbackPrefix = digits.slice(0, 3);
+            const rest = digits.slice(3);
+            if (rest.length <= 4) {
+              return fallbackPrefix + "-" + rest;
             }
-            if (rest.length <= 3) {
-              return area + "-" + rest;
+
+            return fallbackPrefix + "-" + rest.slice(0, rest.length - 4) + "-" + rest.slice(-4);
+          }
+
+          function openOccurredDateInputPicker() {
+            if (!occurredDateInput) {
+              return;
             }
-            return area + "-" + rest.slice(0, 3) + "-" + rest.slice(3, 7);
+
+            occurredDateInput.focus();
+            if (typeof occurredDateInput.showPicker !== "function") {
+              return;
+            }
+
+            try {
+              occurredDateInput.showPicker();
+            } catch {
+              // Some browsers only allow showPicker() during specific user gestures.
+            }
           }
 
           function syncOccurredDateDisplay() {
-            if (!occurredDateDisplayValue || !occurredDateInput) {
+            if (!occurredDateInput) {
               return;
             }
 
             const hasValue = Boolean(occurredDateInput.value);
-            occurredDateDisplayValue.textContent = hasValue
-              ? occurredDateInput.value
-              : "YYYY-MM-DD";
-            occurredDateDisplayValue.classList.toggle("is-placeholder", !hasValue);
+            occurredDateInput.classList.toggle("has-value", hasValue);
+            occurredDateShell?.classList.toggle("has-value", hasValue);
+            if (occurredDateDisplay) {
+              occurredDateDisplay.textContent = occurredDateInput.value || occurredDateDisplayPlaceholder;
+            }
           }
 
           function formatOccurredDateParts(year, month, day) {
@@ -1461,6 +1853,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               sawSerialNumberInput.value = "";
               sawSerialNumberInput.setCustomValidity("");
             }
+            syncOtherDeviceAvailability();
             syncOccurredDateDisplay();
             updateOccurredTimeState();
           }
@@ -1479,19 +1872,78 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           }
 
           if (phoneInput) {
+            phoneInput.addEventListener("beforeinput", (event) => {
+              if (
+                !(event instanceof InputEvent) ||
+                event.inputType.startsWith("delete") ||
+                event.inputType === "historyUndo" ||
+                event.inputType === "historyRedo"
+              ) {
+                return;
+              }
+
+              if (event.inputType === "insertText" || event.inputType === "insertCompositionText") {
+                if (!/^\\d+$/.test(event.data ?? "")) {
+                  event.preventDefault();
+                }
+                return;
+              }
+
+              if (event.inputType === "insertFromPaste") {
+                return;
+              }
+
+              event.preventDefault();
+            });
             phoneInput.addEventListener("input", () => {
-              const digits = phoneInput.value
-                .replace(/\\D/g, "")
-                .replace(/^[1-9]+/, "")
-                .slice(0, 11);
+              const digits = normalizePhoneInputValue(phoneInput.value);
 
               phoneInput.value = formatPhoneDigits(digits);
+              validatePhone();
             });
             phoneInput.addEventListener("blur", validatePhone);
           }
 
           if (emailInput) {
+            emailInput.addEventListener("input", () => {
+              if (emailError?.textContent) {
+                validateEmail();
+              }
+            });
             emailInput.addEventListener("blur", validateEmail);
+          }
+
+          if (bodyPartContactedInput) {
+            bodyPartContactedInput.addEventListener("input", () => {
+              clearRequiredFieldErrorWhenFilled(
+                bodyPartContactedInput,
+                bodyPartContactedError
+              );
+            });
+          }
+
+          visibleInjuryMarkInputs.forEach((input) => {
+            input.addEventListener("change", () => {
+              clearChoiceGroupErrorWhenSelected(
+                visibleInjuryMarkInputs,
+                visibleInjuryMarkError
+              );
+            });
+          });
+
+          if (materialTypeInput) {
+            materialTypeInput.addEventListener("input", () => {
+              clearRequiredFieldErrorWhenFilled(materialTypeInput, materialTypeError);
+            });
+          }
+
+          if (incidentDescriptionInput) {
+            incidentDescriptionInput.addEventListener("input", () => {
+              clearRequiredFieldErrorWhenFilled(
+                incidentDescriptionInput,
+                incidentDescriptionError
+              );
+            });
           }
 
           if (sawSerialNumberInput) {
@@ -1659,6 +2111,24 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             sawSerialNumberInput.addEventListener("blur", validateSawSerialNumber);
           }
 
+          if (occurredDateInput) {
+            occurredDateInput.addEventListener("click", () => openOccurredDateInputPicker());
+            occurredDateInput.addEventListener("input", () => {
+              syncOccurredDateDisplay();
+              clearRequiredFieldErrorWhenFilled(occurredDateInput, occurredDateError);
+            });
+            occurredDateInput.addEventListener("change", () => {
+              syncOccurredDateDisplay();
+              clearRequiredFieldErrorWhenFilled(occurredDateInput, occurredDateError);
+            });
+            occurredDateInput.addEventListener("keydown", (event) => {
+              if (event.key === "Enter") {
+                openOccurredDateInputPicker();
+              }
+            });
+            syncOccurredDateDisplay();
+          }
+
           if (occurredDateInput && occurredDateDisplayButton && occurredDatePicker) {
             occurredDateDisplayButton.addEventListener("click", () => {
               if (occurredDatePickerOpen) {
@@ -1718,8 +2188,27 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
 
           updateOccurredTimeState();
 
+          otherDeviceInputs.forEach((input) => {
+            input.addEventListener("change", () => enforceOtherDeviceExclusivity(input));
+          });
+          syncOtherDeviceAvailability();
+
+          promotionalConsentInputs.forEach((input) => {
+            input.addEventListener("change", () => {
+              clearChoiceGroupErrorWhenSelected(
+                promotionalConsentInputs,
+                promotionalConsentError
+              );
+            });
+          });
+
           if (attachmentZone && attachmentInput) {
-            attachmentZone.addEventListener("click", () => attachmentInput.click());
+            attachmentZone.addEventListener("click", (event) => {
+              if (event.target === attachmentInput) {
+                return;
+              }
+              attachmentInput.click();
+            });
             attachmentZone.addEventListener("keydown", (event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
@@ -1744,63 +2233,37 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
 
             attachmentInput.addEventListener("change", () => {
               addFiles(attachmentInput.files);
+              attachmentInput.value = "";
             });
           }
 
           if (form) {
             form.addEventListener("submit", async (event) => {
               event.preventDefault();
-              setSubmitError("");
+              clearFormErrors();
 
-              const phoneValid = validatePhone();
-              const emailValid = validateEmail();
-              const requiredFieldsValid = validateRequiredFormFields();
-              const occurredTimeValid = validateOccurredTime();
-              const sawSerialValid = validateSawSerialNumber();
+              const submitFieldsValid = validateCustomerSubmitFields();
+              if (!submitFieldsValid) {
+                return;
+              }
 
-              if (phoneValid && emailValid && requiredFieldsValid && occurredTimeValid && sawSerialValid) {
-                try {
-                  syncAttachmentInputFiles();
-                  const response = await fetch(form.action, {
-                    method: "POST",
-                    body: new FormData(form)
-                  });
-                  const result = await response.json().catch(() => null);
+              try {
+                syncAttachmentInputFiles();
+                const response = await fetch(form.action, {
+                  method: "POST",
+                  body: buildCustomerSubmitFormData()
+                });
+                const result = await response.json().catch(() => null);
 
-                  if (response.ok && result?.ok && typeof result.receiptNumber === "string") {
-                    resetCustomerFormState();
-                    showSuccessView(result.receiptNumber);
-                    return;
-                  }
-
-                  setSubmitError(result?.message || "접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-                } catch {
-                  setSubmitError("접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+                if (response.ok && result?.ok && typeof result.receiptNumber === "string") {
+                  resetCustomerFormState();
+                  showSuccessView(result.receiptNumber);
+                  return;
                 }
-                return;
-              }
 
-              if (!phoneValid && phoneInput) {
-                phoneInput.focus();
-                return;
-              }
-
-              if (!emailValid && emailInput) {
-                emailInput.focus();
-                return;
-              }
-
-              if (!requiredFieldsValid) {
-                return;
-              }
-
-              if (!occurredTimeValid && occurredTimeMeridiem) {
-                occurredTimeMeridiem.focus();
-                return;
-              }
-
-              if (!sawSerialValid && sawSerialNumberInput) {
-                sawSerialNumberInput.focus();
+                setSubmitError(result?.message || "접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+              } catch {
+                setSubmitError("접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
               }
             });
           }

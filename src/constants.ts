@@ -161,3 +161,5 @@ export const ATTACHMENT_PROCESSING_QUEUE_NAME = "sawstop-attachment-processing";
 export const CUSTOMER_SUCCESS_MESSAGE = "접수가 완료되었습니다.";
 export const CUSTOMER_FAILURE_MESSAGE =
   "접수가 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.";
+export const CUSTOMER_TURNSTILE_UNAVAILABLE_MESSAGE =
+  "현재 제출 확인을 준비 중입니다. 잠시 후 다시 시도해 주세요.";
