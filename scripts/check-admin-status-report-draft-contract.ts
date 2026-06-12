@@ -450,6 +450,7 @@ await assertLegacyEmptyTemplateAppendsPopulatedRepairDraftAndResetsReviewFlags()
 await assertPopulatedDraftSkipsDuplicateAppendButStillResetsReviewFlags();
 await assertManualEditedDraftSkipsDuplicateAppendButStillResetsReviewFlags();
 await assertMeaninglessShortKoreanStillNeedsClarification();
+await assertVagueBodyPartUsesReviewMarkerOnlyForAffectedField();
 await assertInProgressToCompleteReadsBodyAndCompletesWhenNoReviewMarkerRemains();
 await assertInProgressToCompleteBlocksWhenReviewMarkerRemains();
 
