@@ -50,20 +50,20 @@ docs/runbooks/SAWSTOP_REPORT_DRAFT_RESULT_PACKAGE_2026-06-13.md
 docs/working/CONTEXT_HANDOFF_sawstop_report_draft.md
 package.json
 scripts/check-admin-status-report-draft-contract.ts
+scripts/smoke-admin-update-accident-status.ts
 src/admin/update-accident-status.ts
 src/constants.ts
 src/notion.ts
 src/types.ts
 ```
 
-The result package and handoff refresh were added so the branch is reviewable as a user-facing result, not merely a code/PR artifact.
+The result package and handoff refresh were added so the branch is reviewable as a user-facing result, not merely a code/PR artifact. The mock smoke script is also updated so existing CI/parity expectations match the new report-draft side effects without running live smoke.
 
 ## Excluded HOLD scope
 
 These are intentionally not included in the reviewable PR result unless separately approved:
 
 ```text
-scripts/smoke-admin-update-accident-status.ts live/smoke changes
 workers/report-writer/** operating worker ownership lane
 docs/working/live-notion-*.json raw live evidence JSON
 docs/working/SAWSTOP_REPORT_WRITER_SELECTION_2026-06-12.md worker-selection note candidate
@@ -215,12 +215,13 @@ Safe checks for this completion pass are mock/local/static only:
 ```text
 git diff --check
 npm run check:admin-status-report-draft-contract
+npm run smoke:admin-update-accident-status
 node --experimental-strip-types --check src/notion.ts
 node --experimental-strip-types --check src/admin/update-accident-status.ts
 node --experimental-strip-types --check scripts/check-admin-status-report-draft-contract.ts
 ```
 
-Full `npm test`, smoke, live Notion, deploy, wrangler, R2, Queue, admin upload, customer submit, and email remain NOT_RUN/HOLD by instruction.
+Full live smoke, live Notion, deploy, wrangler, R2, Queue, admin upload, customer submit, and email remain NOT_RUN/HOLD by instruction. The existing `npm run smoke:admin-update-accident-status` script is mock/local and was run only to repair CI/parity compatibility.
 
 ## Revision path
 

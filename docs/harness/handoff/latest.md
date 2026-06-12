@@ -35,6 +35,7 @@ Completed/expected safe checks for this lane are local/mock/static only:
 ```text
 git diff --check
 npm run check:admin-status-report-draft-contract
+npm run smoke:admin-update-accident-status
 node --experimental-strip-types --check src/notion.ts
 node --experimental-strip-types --check src/admin/update-accident-status.ts
 node --experimental-strip-types --check scripts/check-admin-status-report-draft-contract.ts
@@ -54,14 +55,13 @@ data deletion / cleanup / archive
 secret / env / provider / auth change
 raw live evidence JSON output
 workers/report-writer/** operating worker inclusion
-scripts/smoke-admin-update-accident-status.ts smoke/live execution
+scripts/smoke-admin-update-accident-status.ts live smoke execution; the tracked mock/local compatibility fix is included
 branch cleanup
 ```
 
 ## Dirty/HOLD lanes currently excluded from the PR result
 
 ```text
-scripts/smoke-admin-update-accident-status.ts
 docs/working/SAWSTOP_REPORT_WRITER_SELECTION_2026-06-12.md
 docs/working/live-notion-*.json
 workers/report-writer/**
