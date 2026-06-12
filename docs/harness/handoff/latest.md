@@ -1,9 +1,10 @@
 # Handoff
 
 Status: SawStop English report draft flow PR candidate / local mock-only verified / no deploy / no live write
-Updated: 2026-06-13T02:27:18+09:00
+Updated: 2026-06-13T07:29:30+09:00
 Repo: `/srv/harness-lab/repos/sawstop-finger-save`
 Branch: `feature/sawstop-report-draft-contract-flow`
+PR: https://github.com/JandY95/sawstop-finger-save/pull/138
 Base: `origin/main` `d34841346caa542a1d6f8a691051dc9256f2eb15`
 
 ## Read first
@@ -18,6 +19,17 @@ A reviewable local/PR-candidate result is prepared for the SawStop English repor
 
 The feature makes `접수 → 진행중` prepare/repair the English report draft in the same Notion accident page body, while preserving existing populated/manual drafts and preventing `진행중 → 완료` when `[검수]` markers remain.
 
+After Byungjun review, the sample/output contract is now conservative about missing source values:
+
+```text
+Phone / Email missing -> [Needs follow-up]
+Wearing Gloves missing -> [Needs follow-up], not guessed YES/NO
+Type of blade being used missing -> [Needs follow-up], not guessed 10" Standard
+Saw Blade Details present -> translate only the provided details
+Attachment Upload Status: 완료 -> Completed metadata only
+Finger/brake cartridge photo evidence -> separate [Needs follow-up] lines before final report
+```
+
 ## Confirmation artifact
 
 Byungjun should inspect:
@@ -26,7 +38,7 @@ Byungjun should inspect:
 docs/runbooks/SAWSTOP_REPORT_DRAFT_RESULT_PACKAGE_2026-06-13.md
 ```
 
-It contains the human explanation, sample input/output, duplicate-append behavior, review-marker behavior, before/after comparison, HOLD exclusions, and revision path.
+It contains the human explanation, conservative sample input/output, before/after correction, duplicate-append behavior, review-marker behavior, HOLD exclusions, and revision path.
 
 ## Safe verification scope
 
@@ -36,6 +48,8 @@ Completed/expected safe checks for this lane are local/mock/static only:
 git diff --check
 npm run check:admin-status-report-draft-contract
 npm run smoke:admin-update-accident-status
+npm run parity
+npm test
 node --experimental-strip-types --check src/notion.ts
 node --experimental-strip-types --check src/admin/update-accident-status.ts
 node --experimental-strip-types --check scripts/check-admin-status-report-draft-contract.ts
@@ -69,10 +83,10 @@ workers/report-writer/**
 
 ## Next safe action
 
-If Byungjun says the result direction is good, the next gate is still result-level:
+If Byungjun says the corrected result direction is good, the next gate is still result-level:
 
 ```text
 A. keep as PR candidate / review only
-B. prepare actual deploy/live-write plan as a separate approval packet
-C. revise sample output / marker policy / duplicate behavior and rerun local checks
+B. revise wording / marker choice / omitted-value handling and rerun local checks
+C. prepare actual deploy/live-write plan as a separate approval packet
 ```

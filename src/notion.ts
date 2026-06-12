@@ -619,6 +619,10 @@ function normalizeReportValueForEnglish(propertyName: string, rawValue: string) 
     return value;
   }
 
+  if (propertyName === ACCIDENT_DB_PROPERTY_NAMES.attachmentUploadStatus && value === "완료") {
+    return "Completed";
+  }
+
   const englishOptionValue = extractEnglishOptionLabel(value);
   if (englishOptionValue !== value) {
     return englishOptionValue;
@@ -662,16 +666,16 @@ function buildSawStopReportWriterSourcePacket(properties: Record<string, NotionP
       "Date of Occurence": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.occurredAt),
       "Consent for Promotional Use": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.promotionalConsent),
       "Was There A Visible Injury Mark?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.visibleInjuryMark),
-      "Type of blade being used": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.bladeType),
+      "Type of blade being used": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.bladeType, "[Needs follow-up]"),
       "Were There Other Devices Being Used When the Cut was Made?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.otherDevicesUsed, "[Not provided]"),
-      "Was the saw operator wearing gloves at the time?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.wearingGloves, "[Not provided]"),
+      "Was the saw operator wearing gloves at the time?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.wearingGloves, "[Needs follow-up]"),
       "What was the approximate feed rate of the material when the accident occured (inches per second)?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.approximateFeedRate, "[Not provided]")
     },
     freeTextFields,
     attachmentStatus: {
-      fingerPhoto: "[Required before final report]",
-      brakeCartridgePhoto: "[Required before final report]",
-      attachmentPhotos: "No attachment photos are currently attached."
+      fingerPhoto: "[Needs follow-up - confirm the required finger photo is attached before final report]",
+      brakeCartridgePhoto: "[Needs follow-up - confirm the required brake cartridge photo is attached before final report]",
+      attachmentPhotos: "[Needs follow-up - upload status does not confirm report-ready evidence photos]"
     }
   };
 }
@@ -753,8 +757,8 @@ function buildPopulatedReportDraftBodyChildren(
           "Name of Person Who Touched the Blade",
           ACCIDENT_DB_PROPERTY_NAMES.touchedPersonName
         ),
-        reportLine("Phone", ACCIDENT_DB_PROPERTY_NAMES.phone),
-        reportLine("Email", ACCIDENT_DB_PROPERTY_NAMES.email),
+        reportLine("Phone", ACCIDENT_DB_PROPERTY_NAMES.phone, "[Needs follow-up]"),
+        reportLine("Email", ACCIDENT_DB_PROPERTY_NAMES.email, "[Needs follow-up]"),
         reportLine(
           "Consent for Promotional Use",
           ACCIDENT_DB_PROPERTY_NAMES.promotionalConsent
@@ -793,7 +797,7 @@ function buildPopulatedReportDraftBodyChildren(
           ACCIDENT_DB_PROPERTY_NAMES.brakeCartridgeSerialNumber,
           "[Needs follow-up]"
         ),
-        reportLine("Type of blade being used", ACCIDENT_DB_PROPERTY_NAMES.bladeType),
+        reportLine("Type of blade being used", ACCIDENT_DB_PROPERTY_NAMES.bladeType, "[Needs follow-up]"),
         reportLine(
           "Saw Blade Details",
           ACCIDENT_DB_PROPERTY_NAMES.bladeDetails,
@@ -823,7 +827,7 @@ function buildPopulatedReportDraftBodyChildren(
         reportLine(
           "Was the saw operator wearing gloves at the time?",
           ACCIDENT_DB_PROPERTY_NAMES.wearingGloves,
-          "[Not provided]"
+          "[Needs follow-up]"
         ),
         reportLine(
           "What was the approximate feed rate of the material when the accident occured (inches per second)?",
@@ -849,10 +853,10 @@ function buildPopulatedReportDraftBodyChildren(
     buildHeading2Block("Attachments"),
     buildParagraphBlock(
       [
-        "Finger photo: [Required before final report]",
-        "Brake cartridge photo: [Required before final report]",
-        "Other attachments: No other attachment photos are currently attached.",
-        "Attachment Photos: No attachment photos are currently attached."
+        `Attachment Upload Status: ${reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.attachmentUploadStatus, "[Needs follow-up]")}`,
+        "Finger photo evidence: [Needs follow-up - confirm the required finger photo is attached before final report]",
+        "Brake cartridge photo evidence: [Needs follow-up - confirm the required brake cartridge photo is attached before final report]",
+        "Other attachments: [Needs follow-up - upload status does not confirm report-ready evidence photos]"
       ].join("\n")
     ),
     buildEmptyParagraphBlock()

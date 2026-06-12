@@ -1,10 +1,36 @@
 # CONTEXT HANDOFF — SawStop Report Draft Flow
 
-Updated: 2026-06-12
+Updated: 2026-06-13T07:29:30+09:00
 Repo: `/srv/harness-lab/repos/sawstop-finger-save`
-Branch at handoff: `main`
+Branch at handoff: `feature/sawstop-report-draft-contract-flow`
 Original handoff base: `d34841346caa542a1d6f8a691051dc9256f2eb15`.
 Current state after local commit separation: `main` is ahead of `origin/main` by 2 commits and the working tree still has unresolved dirty/HOLD lanes.
+
+
+## 2026-06-13 review correction override
+
+PR #138 now exists for this flow. The branch/result package was updated after Byungjun reviewed the first sample and requested conservative handling for missing values. This override supersedes older examples in this file that mention guessed values or `Attachment Photos: No attachment photos are currently attached.` as the final sample wording.
+
+Current review artifact:
+
+```text
+docs/runbooks/SAWSTOP_REPORT_DRAFT_RESULT_PACKAGE_2026-06-13.md
+```
+
+Current conservative output rules:
+
+```text
+Phone missing -> Phone: [Needs follow-up]
+Email missing -> Email: [Needs follow-up]
+Wearing Gloves missing -> Was the saw operator wearing gloves at the time?: [Needs follow-up]
+Type of blade being used missing -> Type of blade being used: [Needs follow-up]
+Saw Blade Details present -> translate the provided blade-details text only
+Attachment Upload Status: 완료 -> Attachment Upload Status: Completed
+Required finger/brake cartridge evidence -> separate [Needs follow-up] lines before final report
+Do not infer YES/NO, phone/email, 10" Standard, or photo evidence readiness from absent input.
+```
+
+Still HOLD without explicit result-level approval: merge, deploy, live Notion write, customer/admin/R2/Queue/email writes, cleanup, secret/env/auth changes, `workers/report-writer/**`, and raw live evidence JSON publication.
 
 ## Current state refresh — 8.12 docs-only update
 
@@ -89,7 +115,7 @@ Implemented UX:
 3. Operator clicks existing `접수→진행중` button.
 4. The system appends a SawStop English report draft to the same Notion accident page body if marker is missing or if the existing marker body is a label-only legacy empty template.
 5. If a populated draft or manual edited report already exists, the system skips duplicate append and preserves existing body blocks.
-6. Draft output is normalized for English submission: select/multi-select `한글 (English)` values emit only English, field-aware Korean free text is converted where safe (names/business/woodworking terms/known incident phrases), meaningless or unsafe input still uses a specific placeholder such as `[Needs clarification]` or `[Needs English review: Korean incident description was provided but could not be safely translated by rules]`, occurrence date renders as human-readable KST text, and missing attachment photos are stated explicitly.
+6. Draft output is normalized for English submission while preserving uncertainty: select/multi-select `한글 (English)` values emit only English, field-aware Korean free text is converted where safe, unclear/unsafe input uses `[검수]`, missing phone/email/glove/blade type values use `[Needs follow-up]`, occurrence date renders as human-readable KST text, and attachment upload status is separated from required report evidence readiness.
 7. Operator edits/reviews that body manually while status remains `진행중`.
 8. Operator checks:
    - 영문 검수 완료

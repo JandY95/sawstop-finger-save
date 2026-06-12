@@ -55,8 +55,8 @@ function dateProperty(start: string) {
   return { type: "date", date: { start } };
 }
 
-function baseAccidentProperties(status: string, variant: "normal" | "meaningless-short" | "vague-body-part" = "normal") {
-  return {
+function baseAccidentProperties(status: string, variant: "normal" | "meaningless-short" | "vague-body-part" | "missing-conservative" = "normal") {
+  const properties: Record<string, any> = {
     [ACCIDENT_DB_PROPERTY_NAMES.receiptNumber]: titleProperty("202606120139-5678"),
     [ACCIDENT_DB_PROPERTY_NAMES.status]: statusProperty(status),
     [ACCIDENT_DB_PROPERTY_NAMES.occurredAt]: dateProperty("2026-06-12T12:00:00.000+09:00"),
@@ -89,6 +89,15 @@ function baseAccidentProperties(status: string, variant: "normal" | "meaningless
     "영문 초안 생성 요청": checkboxProperty(true),
     "발송 준비 완료(자동)": { type: "formula", formula: { boolean: true } }
   };
+
+  if (variant === "missing-conservative") {
+    delete properties[ACCIDENT_DB_PROPERTY_NAMES.phone];
+    delete properties[ACCIDENT_DB_PROPERTY_NAMES.email];
+    delete properties[ACCIDENT_DB_PROPERTY_NAMES.bladeType];
+    delete properties[ACCIDENT_DB_PROPERTY_NAMES.wearingGloves];
+  }
+
+  return properties;
 }
 
 function makeJsonResponse(body: any, status = 200) {
@@ -131,7 +140,7 @@ function reviewMarkerDraftBlocks() {
   ];
 }
 
-function installMockFetch({ existingBody = "none", currentStatus = ACCIDENT_STATUS.received, propertyVariant = "normal" }: { existingBody?: "none" | "legacy-empty" | "populated" | "manual" | "review-marker"; currentStatus?: string; propertyVariant?: "normal" | "meaningless-short" | "vague-body-part" } = {}) {
+function installMockFetch({ existingBody = "none", currentStatus = ACCIDENT_STATUS.received, propertyVariant = "normal" }: { existingBody?: "none" | "legacy-empty" | "populated" | "manual" | "review-marker"; currentStatus?: string; propertyVariant?: "normal" | "meaningless-short" | "vague-body-part" | "missing-conservative" } = {}) {
   const captured: CapturedRequest[] = [];
   const originalFetch = globalThis.fetch;
 
@@ -284,8 +293,10 @@ async function assertReceivedToInProgressAppendsDraftAndResetsReviewFlags() {
     assert.match(draftText, /To the best of your ability, please describe the circumstances of how the accident happened: While cutting plywood lengthwise, the workpiece became unstable and shifted\. The operator's right index finger moved near the saw blade, triggering the SawStop safety system\./);
     assert.match(draftText, /Brake Cartridge Serial Number: \[Needs follow-up\]/);
     assert.doesNotMatch(draftText, /\[Needs clarification\]/);
-    assert.match(draftText, /Finger photo: \[Required before final report\]/);
-    assert.match(draftText, /Attachment Photos: No attachment photos are currently attached\./);
+    assert.match(draftText, /Attachment Upload Status: Completed/);
+    assert.match(draftText, /Finger photo evidence: \[Needs follow-up - confirm the required finger photo is attached before final report\]/);
+    assert.match(draftText, /Brake cartridge photo evidence: \[Needs follow-up - confirm the required brake cartridge photo is attached before final report\]/);
+    assert.doesNotMatch(draftText, /No attachment photos are currently attached\./);
     assert.doesNotMatch(draftText, /첨부\(선택\):/);
     assert.doesNotMatch(draftText, /[가-힣ㄱ-ㅎㅏ-ㅣ]/);
 
@@ -319,7 +330,8 @@ async function assertLegacyEmptyTemplateAppendsPopulatedRepairDraftAndResetsRevi
     assert.doesNotMatch(draftText, /Date of Occurence: 2026-06-12T/);
     assert.match(draftText, /Operator Name: Hong Gil-dong/);
     assert.match(draftText, /Brake Cartridge Serial Number: \[Needs follow-up\]/);
-    assert.match(draftText, /Attachment Photos: No attachment photos are currently attached\./);
+    assert.match(draftText, /Attachment Upload Status: Completed/);
+    assert.match(draftText, /Finger photo evidence: \[Needs follow-up - confirm the required finger photo is attached before final report\]/);
     assert.doesNotMatch(draftText, /첨부\(선택\):/);
   } finally {
     mock.restore();
@@ -401,6 +413,36 @@ async function assertVagueBodyPartUsesReviewMarkerOnlyForAffectedField() {
   }
 }
 
+async function assertMissingOptionalInputsStayConservativeAndVisible() {
+  const mock = installMockFetch({ propertyVariant: "missing-conservative" });
+  try {
+    const response = await postStatusUpdate(ACCIDENT_STATUS.received, ACCIDENT_STATUS.inProgress);
+    assert.equal(response.status, 200);
+    const appendCalls = mock.captured.filter(
+      (request) => request.url === `${NOTION_API_BASE_URL}/blocks/${pageId}/children` && request.method === "PATCH"
+    );
+    assert.equal(appendCalls.length, 1);
+    const draftText = flattenChildrenText(appendCalls[0].body.children);
+
+    assert.match(draftText, /Phone: \[Needs follow-up\]/);
+    assert.match(draftText, /Email: \[Needs follow-up\]/);
+    assert.match(draftText, /Was the saw operator wearing gloves at the time\?: \[Needs follow-up\]/);
+    assert.match(draftText, /Type of blade being used: \[Needs follow-up\]/);
+    assert.match(draftText, /Saw Blade Details: 40-tooth general-purpose wood blade/);
+    assert.doesNotMatch(draftText, /Was the saw operator wearing gloves at the time\?: YES/);
+    assert.doesNotMatch(draftText, /Type of blade being used: 10" Standard/);
+    assert.doesNotMatch(draftText, /Phone: 010-1234-5678/);
+    assert.doesNotMatch(draftText, /Email: operator@example\.test/);
+
+    assert.match(draftText, /Attachment Upload Status: Completed/);
+    assert.match(draftText, /Finger photo evidence: \[Needs follow-up - confirm the required finger photo is attached before final report\]/);
+    assert.match(draftText, /Brake cartridge photo evidence: \[Needs follow-up - confirm the required brake cartridge photo is attached before final report\]/);
+    assert.doesNotMatch(draftText, /No attachment photos are currently attached\./);
+  } finally {
+    mock.restore();
+  }
+}
+
 async function assertInProgressToCompleteReadsBodyAndCompletesWhenNoReviewMarkerRemains() {
   const mock = installMockFetch({ currentStatus: ACCIDENT_STATUS.inProgress, existingBody: "manual" });
   try {
@@ -451,6 +493,7 @@ await assertPopulatedDraftSkipsDuplicateAppendButStillResetsReviewFlags();
 await assertManualEditedDraftSkipsDuplicateAppendButStillResetsReviewFlags();
 await assertMeaninglessShortKoreanStillNeedsClarification();
 await assertVagueBodyPartUsesReviewMarkerOnlyForAffectedField();
+await assertMissingOptionalInputsStayConservativeAndVisible();
 await assertInProgressToCompleteReadsBodyAndCompletesWhenNoReviewMarkerRemains();
 await assertInProgressToCompleteBlocksWhenReviewMarkerRemains();
 
