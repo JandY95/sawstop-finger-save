@@ -1,5 +1,6 @@
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
+  ACCIDENT_REPORT_DRAFT_MARKER,
   ASIA_SEOUL_TIMEZONE,
   ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
@@ -348,7 +349,7 @@ function buildHeading2Block(content: string) {
 
 export function buildDefaultAccidentPageBodyChildren() {
   const children: NotionDefaultBodyBlock[] = [
-    buildParagraphBlock("Report a Save (Known or Suspected Finger Contact)")
+    buildParagraphBlock(ACCIDENT_REPORT_DRAFT_MARKER)
   ];
 
   for (const section of DEFAULT_ACCIDENT_PAGE_BODY_TEMPLATE) {
@@ -548,6 +549,478 @@ export async function getAccidentPageReportData(env: WorkerEnv, pageId: string) 
   };
 }
 
+function containsKorean(value: string) {
+  return /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(value);
+}
+
+function extractEnglishOptionLabel(rawValue: string) {
+  return rawValue
+    .split(",")
+    .map((part) => {
+      const trimmed = part.trim();
+      const optionMatch = trimmed.match(/^.+\(([^()]+)\)$/);
+      if (optionMatch && containsKorean(trimmed)) {
+        return optionMatch[1].trim();
+      }
+      return trimmed;
+    })
+    .join(", ");
+}
+
+const SAWSTOP_REPORT_WRITER_NAME = "Prompted SawStop Report Writer Agent";
+const SAWSTOP_REVIEW_MARKER = "[검수]";
+
+const REPORT_WRITER_FREE_TEXT_FIELDS: Array<{ label: string; propertyName: string }> = [
+  { label: "Business or School Name (NA if Not Applicable)", propertyName: ACCIDENT_DB_PROPERTY_NAMES.businessOrSchoolName },
+  { label: "Operator Name", propertyName: ACCIDENT_DB_PROPERTY_NAMES.operatorName },
+  { label: "Name of Person Who Touched the Blade", propertyName: ACCIDENT_DB_PROPERTY_NAMES.touchedPersonName },
+  { label: "Body Part Contacted (right or left hand, finger, thumb, etc.)", propertyName: ACCIDENT_DB_PROPERTY_NAMES.bodyPartContacted },
+  { label: "Wound treatment methods", propertyName: ACCIDENT_DB_PROPERTY_NAMES.woundTreatmentMethods },
+  { label: "Estimate of the injury if it were to have occured while using a non-SawStop saw", propertyName: ACCIDENT_DB_PROPERTY_NAMES.estimatedInjuryWithoutSawStop },
+  { label: "Saw Blade Details", propertyName: ACCIDENT_DB_PROPERTY_NAMES.bladeDetails },
+  { label: "Type of Material Being Cut?", propertyName: ACCIDENT_DB_PROPERTY_NAMES.materialType },
+  { label: "Workpiece Size & Cut Type", propertyName: ACCIDENT_DB_PROPERTY_NAMES.workpieceSizeAndCutType },
+  { label: "Was a Blade Guard, Riving Knife or Splitter in Place? (please specify which, if any)", propertyName: ACCIDENT_DB_PROPERTY_NAMES.safetyDeviceStatus },
+  { label: "Cause of the Incident (Customer Feedback)", propertyName: ACCIDENT_DB_PROPERTY_NAMES.incidentCause },
+  { label: "To the best of your ability, please describe the circumstances of how the accident happened", propertyName: ACCIDENT_DB_PROPERTY_NAMES.incidentDescription }
+];
+
+function reviewNeededPlaceholder() {
+  return `${SAWSTOP_REVIEW_MARKER} SawStop Report Writer output is needed for this source field.`;
+}
+
+function isReportWriterFreeTextField(propertyName: string) {
+  return REPORT_WRITER_FREE_TEXT_FIELDS.some((field) => field.propertyName === propertyName);
+}
+
+function formatOccurrenceDateForReport(rawValue: string) {
+  const parsed = new Date(rawValue);
+  if (Number.isNaN(parsed.getTime())) {
+    return normalizeReportValueForEnglish(ACCIDENT_DB_PROPERTY_NAMES.occurredAt, rawValue);
+  }
+
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: ASIA_SEOUL_TIMEZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  }).formatToParts(parsed);
+  const getPart = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+
+  return `${getPart("month")} ${getPart("day")}, ${getPart("year")} at ${getPart("hour")}:${getPart("minute")} ${getPart("dayPeriod")} Korea Standard Time (KST, UTC+9)`;
+}
+
+function normalizeReportValueForEnglish(propertyName: string, rawValue: string) {
+  const value = rawValue.trim();
+  if (value.length === 0) {
+    return value;
+  }
+
+  const englishOptionValue = extractEnglishOptionLabel(value);
+  if (englishOptionValue !== value) {
+    return englishOptionValue;
+  }
+
+  if (containsKorean(value)) {
+    return isReportWriterFreeTextField(propertyName) ? reviewNeededPlaceholder() : value;
+  }
+
+  return value;
+}
+
+function reportValue(
+  properties: Record<string, NotionPagePropertyValue>,
+  propertyName: string,
+  placeholder = "[Not provided]"
+) {
+  const value = propertyToPlainText(properties[propertyName]).trim();
+  if (value.length === 0) {
+    return placeholder;
+  }
+  if (propertyName === ACCIDENT_DB_PROPERTY_NAMES.occurredAt) {
+    return formatOccurrenceDateForReport(value);
+  }
+  return normalizeReportValueForEnglish(propertyName, value);
+}
+
+type SawStopReportWriterFields = Record<string, string>;
+
+function buildSawStopReportWriterSourcePacket(properties: Record<string, NotionPagePropertyValue>) {
+  const freeTextFields: Record<string, string> = {};
+  for (const field of REPORT_WRITER_FREE_TEXT_FIELDS) {
+    const value = propertyToPlainText(properties[field.propertyName]).trim();
+    if (value.length > 0) {
+      freeTextFields[field.label] = value;
+    }
+  }
+
+  return {
+    deterministicFields: {
+      "Date of Occurence": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.occurredAt),
+      "Consent for Promotional Use": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.promotionalConsent),
+      "Was There A Visible Injury Mark?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.visibleInjuryMark),
+      "Type of blade being used": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.bladeType),
+      "Were There Other Devices Being Used When the Cut was Made?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.otherDevicesUsed, "[Not provided]"),
+      "Was the saw operator wearing gloves at the time?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.wearingGloves, "[Not provided]"),
+      "What was the approximate feed rate of the material when the accident occured (inches per second)?": reportValue(properties, ACCIDENT_DB_PROPERTY_NAMES.approximateFeedRate, "[Not provided]")
+    },
+    freeTextFields,
+    attachmentStatus: {
+      fingerPhoto: "[Required before final report]",
+      brakeCartridgePhoto: "[Required before final report]",
+      attachmentPhotos: "No attachment photos are currently attached."
+    }
+  };
+}
+
+async function requestSawStopReportWriterDraft(
+  env: WorkerEnv,
+  properties: Record<string, NotionPagePropertyValue>
+): Promise<SawStopReportWriterFields> {
+  if (!env.SAWSTOP_REPORT_WRITER_ENDPOINT) {
+    return {};
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json"
+  };
+  if (env.SAWSTOP_REPORT_WRITER_TOKEN) {
+    headers.Authorization = `Bearer ${env.SAWSTOP_REPORT_WRITER_TOKEN}`;
+  }
+
+  const response = await fetch(env.SAWSTOP_REPORT_WRITER_ENDPOINT, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      writer: SAWSTOP_REPORT_WRITER_NAME,
+      policy: {
+        reviewMarker: SAWSTOP_REVIEW_MARKER,
+        forbidNeedsClarification: true,
+        reviewMarkerMeaning: "Use [검수] only when the source meaning is unclear, too vague, or unsafe to determine. Do not mark clear AI-translated text only because AI translated it."
+      },
+      sourcePacket: buildSawStopReportWriterSourcePacket(properties)
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`SawStop Report Writer request failed: ${response.status}`);
+  }
+  const payload = await response.json() as { fields?: SawStopReportWriterFields };
+  return payload.fields ?? {};
+}
+
+function buildReportLine(
+  properties: Record<string, NotionPagePropertyValue>,
+  label: string,
+  propertyName: string,
+  placeholder?: string,
+  writerFields: SawStopReportWriterFields = {}
+) {
+  const writerValue = writerFields[label]?.trim();
+  if (writerValue) {
+    return `${label}: ${writerValue}`;
+  }
+  return `${label}: ${reportValue(properties, propertyName, placeholder)}`;
+}
+
+function buildPopulatedReportDraftBodyChildren(
+  properties: Record<string, NotionPagePropertyValue>,
+  writerFields: SawStopReportWriterFields = {}
+) {
+  const reportLine = (label: string, propertyName: string, placeholder?: string) =>
+    buildReportLine(properties, label, propertyName, placeholder, writerFields);
+
+  return [
+    buildParagraphBlock(ACCIDENT_REPORT_DRAFT_MARKER),
+    buildHeading2Block("Incident Information"),
+    buildParagraphBlock(
+      [
+        reportLine("Date of Occurence", ACCIDENT_DB_PROPERTY_NAMES.occurredAt),
+        reportLine(
+          "Business or School Name (NA if Not Applicable)",
+          ACCIDENT_DB_PROPERTY_NAMES.businessOrSchoolName
+        )
+      ].join("\n")
+    ),
+    buildHeading2Block("People / Contact Information"),
+    buildParagraphBlock(
+      [
+        reportLine("Operator Name", ACCIDENT_DB_PROPERTY_NAMES.operatorName),
+        reportLine(
+          "Name of Person Who Touched the Blade",
+          ACCIDENT_DB_PROPERTY_NAMES.touchedPersonName
+        ),
+        reportLine("Phone", ACCIDENT_DB_PROPERTY_NAMES.phone),
+        reportLine("Email", ACCIDENT_DB_PROPERTY_NAMES.email),
+        reportLine(
+          "Consent for Promotional Use",
+          ACCIDENT_DB_PROPERTY_NAMES.promotionalConsent
+        )
+      ].join("\n")
+    ),
+    buildHeading2Block("Injury Information"),
+    buildParagraphBlock(
+      [
+        reportLine(
+          "Body Part Contacted (right or left hand, finger, thumb, etc.)",
+          ACCIDENT_DB_PROPERTY_NAMES.bodyPartContacted
+        ),
+        reportLine(
+          "Was There A Visible Injury Mark?",
+          ACCIDENT_DB_PROPERTY_NAMES.visibleInjuryMark
+        ),
+        reportLine(
+          "Wound treatment methods",
+          ACCIDENT_DB_PROPERTY_NAMES.woundTreatmentMethods,
+          "[Needs follow-up]"
+        ),
+        reportLine(
+          "Estimate of the injury if it were to have occured while using a non-SawStop saw",
+          ACCIDENT_DB_PROPERTY_NAMES.estimatedInjuryWithoutSawStop,
+          "[Needs follow-up]"
+        )
+      ].join("\n")
+    ),
+    buildHeading2Block("Saw / Cartridge Information"),
+    buildParagraphBlock(
+      [
+        reportLine("Saw Serial Number", ACCIDENT_DB_PROPERTY_NAMES.sawSerialNumber),
+        reportLine(
+          "Brake Cartridge Serial Number",
+          ACCIDENT_DB_PROPERTY_NAMES.brakeCartridgeSerialNumber,
+          "[Needs follow-up]"
+        ),
+        reportLine("Type of blade being used", ACCIDENT_DB_PROPERTY_NAMES.bladeType),
+        reportLine(
+          "Saw Blade Details",
+          ACCIDENT_DB_PROPERTY_NAMES.bladeDetails,
+          "[Needs follow-up]"
+        )
+      ].join("\n")
+    ),
+    buildHeading2Block("Material / Setup / Conditions"),
+    buildParagraphBlock(
+      [
+        reportLine("Type of Material Being Cut?", ACCIDENT_DB_PROPERTY_NAMES.materialType),
+        reportLine(
+          "Workpiece Size & Cut Type",
+          ACCIDENT_DB_PROPERTY_NAMES.workpieceSizeAndCutType,
+          "[Needs follow-up]"
+        ),
+        reportLine(
+          "Was a Blade Guard, Riving Knife or Splitter in Place? (please specify which, if any)",
+          ACCIDENT_DB_PROPERTY_NAMES.safetyDeviceStatus,
+          "[Needs follow-up]"
+        ),
+        reportLine(
+          "Were There Other Devices Being Used When the Cut was Made?",
+          ACCIDENT_DB_PROPERTY_NAMES.otherDevicesUsed,
+          "[Not provided]"
+        ),
+        reportLine(
+          "Was the saw operator wearing gloves at the time?",
+          ACCIDENT_DB_PROPERTY_NAMES.wearingGloves,
+          "[Not provided]"
+        ),
+        reportLine(
+          "What was the approximate feed rate of the material when the accident occured (inches per second)?",
+          ACCIDENT_DB_PROPERTY_NAMES.approximateFeedRate,
+          "[Not provided]"
+        )
+      ].join("\n")
+    ),
+    buildHeading2Block("Incident Description"),
+    buildParagraphBlock(
+      [
+        reportLine(
+          "Cause of the Incident (Customer Feedback)",
+          ACCIDENT_DB_PROPERTY_NAMES.incidentCause,
+          "[Needs follow-up]"
+        ),
+        reportLine(
+          "To the best of your ability, please describe the circumstances of how the accident happened",
+          ACCIDENT_DB_PROPERTY_NAMES.incidentDescription
+        )
+      ].join("\n")
+    ),
+    buildHeading2Block("Attachments"),
+    buildParagraphBlock(
+      [
+        "Finger photo: [Required before final report]",
+        "Brake cartridge photo: [Required before final report]",
+        "Other attachments: No other attachment photos are currently attached.",
+        "Attachment Photos: No attachment photos are currently attached."
+      ].join("\n")
+    ),
+    buildEmptyParagraphBlock()
+  ] satisfies NotionDefaultBodyBlock[];
+}
+
+async function appendAccidentPageChildren(
+  env: WorkerEnv,
+  pageId: string,
+  children: NotionDefaultBodyBlock[]
+) {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const response = await fetch(`${NOTION_API_BASE_URL}/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: getNotionHeaders(token),
+    body: JSON.stringify({ children })
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Notion append accident page children failed: ${await readNotionError(response)}`
+    );
+  }
+}
+
+type AccidentReportDraftBodyClassification =
+  | "no_marker"
+  | "legacy_empty_report_template"
+  | "populated_draft"
+  | "manual_edited_report";
+
+const REPORT_DRAFT_SECTION_HEADINGS = new Set([
+  "Incident Information",
+  "People / Contact Information",
+  "Injury Information",
+  "Saw / Cartridge Information",
+  "Material / Setup / Conditions",
+  "Incident Description",
+  "Attachments"
+]);
+
+const REPORT_DRAFT_KNOWN_LABEL_PREFIXES = [
+  "Date of Occurence:",
+  "Business or School Name (NA if Not Applicable):",
+  "Operator Name:",
+  "Name of Person Who Touched the Blade:",
+  "Phone:",
+  "Email:",
+  "Consent for Promotional Use:",
+  "Body Part Contacted (right or left hand, finger, thumb, etc.):",
+  "Was There A Visible Injury Mark?:",
+  "Wound treatment methods:",
+  "Estimate of the injury if it were to have occured while using a non-SawStop saw:",
+  "Saw Serial Number:",
+  "Brake Cartridge Serial Number:",
+  "Type of blade being used:",
+  "Saw Blade Details:",
+  "Type of Material Being Cut?:",
+  "Workpiece Size & Cut Type:",
+  "Was a Blade Guard, Riving Knife or Splitter in Place? (please specify which, if any):",
+  "Were There Other Devices Being Used When the Cut was Made?:",
+  "Was the saw operator wearing gloves at the time?:",
+  "What was the approximate feed rate of the material when the accident occured (inches per second)?:",
+  "Cause of the Incident (Customer Feedback):",
+  "To the best of your ability, please describe the circumstances of how the accident happened:",
+  "Finger photo:",
+  "Brake cartridge photo:",
+  "Other attachments:",
+  "Attachment Photos:",
+  "첨부(선택):"
+];
+
+function isKnownReportDraftLabelOnlyLine(line: string) {
+  return REPORT_DRAFT_KNOWN_LABEL_PREFIXES.some((prefix) => line === prefix);
+}
+
+function isKnownReportDraftLineWithValue(line: string) {
+  return REPORT_DRAFT_KNOWN_LABEL_PREFIXES.some((prefix) => {
+    if (!line.startsWith(prefix)) {
+      return false;
+    }
+    return line.slice(prefix.length).trim().length > 0;
+  });
+}
+
+function classifyAccidentReportDraftBody(
+  blocks: AccidentPageBodyBlockSummary[]
+): AccidentReportDraftBodyClassification {
+  const markerIndex = blocks.findIndex((block) => block.text.includes(ACCIDENT_REPORT_DRAFT_MARKER));
+  if (markerIndex < 0) {
+    return "no_marker";
+  }
+
+  const reportLines = blocks
+    .slice(markerIndex + 1)
+    .flatMap((block) => block.text.split("\n"))
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  if (
+    reportLines.some((line) =>
+      line.includes("[Not provided]") ||
+      line.includes("[Needs follow-up]") ||
+      line.includes("[Required before final report]") ||
+      line.includes("[Review linked attachment DB rows before final report]") ||
+      isKnownReportDraftLineWithValue(line)
+    )
+  ) {
+    return "populated_draft";
+  }
+
+  const onlyLegacyTemplateLines = reportLines.every(
+    (line) => REPORT_DRAFT_SECTION_HEADINGS.has(line) || isKnownReportDraftLabelOnlyLine(line)
+  );
+  if (onlyLegacyTemplateLines) {
+    return "legacy_empty_report_template";
+  }
+
+  return "manual_edited_report";
+}
+
+export async function appendAccidentReportDraftIfMissing(env: WorkerEnv, pageId: string) {
+  const [properties, blocks] = await Promise.all([
+    getAccidentPageProperties(env, pageId),
+    getAccidentPageBodyBlocks(env, pageId)
+  ]);
+
+  const bodyClassification = classifyAccidentReportDraftBody(blocks);
+  if (
+    bodyClassification === "populated_draft" ||
+    bodyClassification === "manual_edited_report"
+  ) {
+    return false;
+  }
+
+  const writerFields = await requestSawStopReportWriterDraft(env, properties);
+  await appendAccidentPageChildren(
+    env,
+    pageId,
+    buildPopulatedReportDraftBodyChildren(properties, writerFields)
+  );
+  return true;
+}
+
+export function resetAccidentReportReviewProperties() {
+  return {
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.englishReviewComplete]: {
+      checkbox: false
+    },
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.outputCheckComplete]: {
+      checkbox: false
+    },
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.attachmentFinalCheck]: {
+      checkbox: false
+    },
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.englishDraftRequest]: {
+      checkbox: false
+    }
+  } satisfies NotionPagePropertiesPayload;
+}
+
+export async function resetAccidentReportReviewFlags(env: WorkerEnv, pageId: string) {
+  await updatePageProperties(env, {
+    pageId,
+    properties: resetAccidentReportReviewProperties()
+  });
+}
+
 export function getAccidentDatabaseParent(env: WorkerEnv): NotionAccidentDbParent {
   return {
     database_id: getRequiredEnv(env, "NOTION_ACCIDENT_DB_ID")
@@ -600,6 +1073,11 @@ export async function updatePageProperties(
   if (!response.ok) {
     throw new Error(`Notion update page failed: ${await readNotionError(response)}`);
   }
+}
+
+export async function accidentPageHasReviewMarker(env: WorkerEnv, pageId: string) {
+  const blocks = await getAccidentPageBodyBlocks(env, pageId);
+  return blocks.some((block) => block.text.includes(SAWSTOP_REVIEW_MARKER));
 }
 
 export async function getAccidentPageStatus(env: WorkerEnv, pageId: string) {

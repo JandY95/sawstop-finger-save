@@ -46,8 +46,15 @@ export const ATTACHMENT_DB_PROPERTY_NAMES = {
 } as const;
 
 export const ACCIDENT_DB_PREPARED_PROPERTY_NAMES = {
-  attachmentFinalCheck: "첨부 최종 확인 완료"
+  englishReviewComplete: "영문 검수 완료",
+  outputCheckComplete: "출력 확인 완료",
+  attachmentFinalCheck: "첨부 최종 확인 완료",
+  englishDraftRequest: "영문 초안 생성 요청",
+  autoSendReady: "발송 준비 완료(자동)"
 } as const;
+
+export const ACCIDENT_REPORT_DRAFT_MARKER =
+  "Report a Save (Known or Suspected Finger Contact)";
 
 export const ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES = {
   trashMovedAt: "휴지통 이동 시각",
