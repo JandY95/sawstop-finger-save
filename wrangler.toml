@@ -2,6 +2,10 @@ name = "sawstop-finger-save"
 main = "src/index.ts"
 compatibility_date = "2026-04-10"
 
+
+[vars]
+TURNSTILE_SITE_KEY = "0x4AAAAAADVwGf_ZW6nQsPwy"
+
 [[r2_buckets]]
 binding = "ATTACHMENT_BUCKET"
 bucket_name = "sawstop-attachments"

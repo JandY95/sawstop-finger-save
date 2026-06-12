@@ -13,8 +13,9 @@ function toLowercaseEmail(value: FormDataEntryValue | null) {
   return toTrimmedString(value).toLowerCase();
 }
 
-function toFormattedPhone(value: FormDataEntryValue | null) {
-  const digits = toTrimmedString(value).replace(/\D/g, "");
+function toFormattedKoreanPhone(value: FormDataEntryValue | null) {
+  const rawValue = toTrimmedString(value);
+  const digits = rawValue.replace(/\D/g, "");
 
   if (digits.startsWith("02")) {
     if (digits.length === 9) {
@@ -26,12 +27,20 @@ function toFormattedPhone(value: FormDataEntryValue | null) {
     }
   }
 
-  if (digits.length === 10) {
-    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  if (digits.startsWith("010")) {
+    if (digits.length === 11) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+    }
   }
 
-  if (digits.length === 11) {
-    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  if (/^(?:03[1-3]|04[1-4]|05[1-5]|06[1-4])/.test(digits)) {
+    if (digits.length === 10) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+
+    if (digits.length === 11) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+    }
   }
 
   return digits;
@@ -60,7 +69,7 @@ function countImageAttachments(formData: FormData) {
 export function normalizeSubmitFormData(formData: FormData): NormalizedSubmitInput {
   return {
     businessOrSchoolName: toOptionalString(formData.get("businessOrSchoolName")),
-    phone: toFormattedPhone(formData.get("phone")),
+    phone: toFormattedKoreanPhone(formData.get("phone")),
     email: toLowercaseEmail(formData.get("email")),
     occurredDate: toTrimmedString(formData.get("occurredDate")),
     occurredTime: toOptionalString(formData.get("occurredTime")),

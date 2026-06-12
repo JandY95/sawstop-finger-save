@@ -15,6 +15,11 @@
     "check:submit-validation-contract": "node scripts/check-submit-validation-contract.js",
     "check:submit-attachment-contract": "node scripts/check-submit-attachment-contract.js",
     "check:customer-form-required-contract": "node scripts/check-customer-form-required-contract.js",
+    "check:customer-input-validation-contract": "node --experimental-strip-types scripts/check-customer-input-validation-contract.ts",
+    "check:customer-attachment-ux-contract": "node scripts/check-customer-attachment-ux-contract.js",
+    "check:customer-form-review-contract": "node --experimental-strip-types scripts/check-customer-form-review-contract.ts",
+    "check:customer-layout-stability-contract": "node scripts/check-customer-layout-stability-contract.js",
+    "check:customer-click-layout-stability": "node scripts/check-customer-click-layout-stability.mjs",
     "check:customer-turnstile-contract": "node scripts/check-customer-turnstile-contract.js",
     "check:default-accident-page-body-fixture": "node --experimental-strip-types scripts/check-default-accident-page-body-fixture.ts",
     "check:output-route-contract": "node scripts/check-output-route-contract.js",
@@ -45,6 +50,7 @@
     "cleanup:fifo-trash:dry-run": "node --experimental-strip-types scripts/fifo-cleanup-dry-run.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^25.6.0",
     "wrangler": "^4.81.1"
   }
