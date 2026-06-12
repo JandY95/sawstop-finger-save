@@ -29,6 +29,55 @@ function renderBlock(block: AccidentPageBodyBlockSummary) {
   return `<p>${text}</p>`;
 }
 
+function getReportPropertyValue(properties: AccidentReportPropertySummary[], label: string) {
+  return properties.find((property) => property.label === label)?.value.trim() || "Not provided";
+}
+
+function renderManualEmailDraft(properties: AccidentReportPropertySummary[]) {
+  const receiptNumber = getReportPropertyValue(properties, "Receipt Number");
+  const sawSerialNumber = getReportPropertyValue(properties, "Saw Serial Number");
+  const customerEmail = getReportPropertyValue(properties, "Email");
+  const subject = `Subject: SawStop Save Report - ${receiptNumber}`;
+  const bodyLines = [
+    "Hello SawStop Team,",
+    "",
+    "Please find below the English report for a known or suspected finger-contact SawStop save case.",
+    "",
+    `Receipt Number: ${receiptNumber}`,
+    `Saw Serial Number: ${sawSerialNumber}`,
+    `Customer Email: ${customerEmail}`,
+    "",
+    "The report body below is prepared from the customer's original Korean submission and operator review notes on the same Notion accident page.",
+    "Please review the report content and the confirmed attachments before sending.",
+    "",
+    "Best regards,"
+  ];
+
+  return `<section class="manual-email-draft" aria-label="Manual SawStop email draft">
+      <h2>Manual SawStop Email Draft</h2>
+      <p class="manual-email-boundary">This page is a copy-and-paste aid for manual sending only. It does not send email, update Notion, write to R2, or send queue messages.</p>
+      <pre>${escapeHtml([subject, "", ...bodyLines].join("\n"))}</pre>
+    </section>`;
+}
+
+function renderBeforeSendingChecklist() {
+  const checklistItems = [
+    "English report reviewed against the customer's original Korean submission",
+    "Operator review notes reflected in the English report body",
+    "Confirmed attachments reviewed before manual sending",
+    "Finger-contact / injury photo availability checked",
+    "Saw serial number and receipt number checked",
+    "No email is sent by this page; send manually only after review"
+  ];
+
+  return `<section class="before-sending-checklist" aria-label="Before sending checklist">
+      <h2>Before Sending Checklist</h2>
+      <ul>
+        ${checklistItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("\n")}
+      </ul>
+    </section>`;
+}
+
 function renderReportProperties(properties: AccidentReportPropertySummary[]) {
   if (properties.length === 0) {
     return "";
@@ -68,6 +117,8 @@ export async function renderAdminReportPage(request: Request, env: WorkerEnv) {
 
   try {
     const { blocks, properties } = await getAccidentPageReportData(env, pageId);
+    const renderedManualEmailDraft = renderManualEmailDraft(properties);
+    const renderedBeforeSendingChecklist = renderBeforeSendingChecklist();
     const renderedProperties = renderReportProperties(properties);
     const renderedBlocks = blocks.map(renderBlock).join("\n");
 
@@ -85,6 +136,14 @@ export async function renderAdminReportPage(request: Request, env: WorkerEnv) {
       p { white-space: normal; margin: 0.35rem 0 0.9rem; }
       .report-properties { border: 1px solid #d1d5db; border-radius: 0.75rem; margin: 0 0 1.5rem; padding: 1rem; }
       .report-properties h2 { border-top: 0; margin-top: 0; padding-top: 0; }
+      .manual-email-draft { border: 1px solid #bfdbfe; border-radius: 0.75rem; background: #eff6ff; margin: 0 0 1.5rem; padding: 1rem; }
+      .manual-email-draft h2 { border-top: 0; margin-top: 0; padding-top: 0; }
+      .manual-email-boundary { color: #1e3a8a; font-weight: 600; }
+      .before-sending-checklist { border: 1px solid #fde68a; border-radius: 0.75rem; background: #fffbeb; margin: 0 0 1.5rem; padding: 1rem; }
+      .before-sending-checklist h2 { border-top: 0; margin-top: 0; padding-top: 0; }
+      ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+      li { margin: 0.25rem 0; }
+      pre { background: #ffffff; border: 1px solid #d1d5db; border-radius: 0.5rem; overflow-x: auto; padding: 0.85rem; white-space: pre-wrap; }
       dl { display: grid; grid-template-columns: minmax(180px, 0.42fr) 1fr; gap: 0.35rem 1rem; margin: 0; }
       dt { color: #374151; font-weight: 700; }
       dd { margin: 0; }
@@ -92,6 +151,8 @@ export async function renderAdminReportPage(request: Request, env: WorkerEnv) {
     </style>
   </head>
   <body>
+    ${renderedManualEmailDraft}
+    ${renderedBeforeSendingChecklist}
     ${renderedProperties}
     ${renderedBlocks}
   </body>
