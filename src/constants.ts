@@ -17,6 +17,8 @@ export const ACCIDENT_DB_PROPERTY_NAMES = {
   incidentDescription:
     "To the best of your ability, please describe the circumstances of how the accident happened",
   sawSerialNumber: "Saw Serial Number",
+  sawImportClassification: "수입 구분",
+  sawSerialDisplay: "시리얼 표시",
   brakeCartridgeSerialNumber: "Brake Cartridge Serial Number",
   bladeType: "Type of blade being used",
   bladeDetails: "Saw Blade Details",
@@ -117,6 +119,12 @@ export const OTHER_DEVICE_OPTIONS = [
 
 export const NOTION_API_BASE_URL = "https://api.notion.com/v1";
 export const NOTION_API_VERSION = "2022-06-28";
+export const STAGING_SAW_SERIAL_MASTER_DB_ID = "2c9b5320549e4ab59f0552169a09b3d2";
+export const SAW_IMPORT_CLASSIFICATION = {
+  company: "에스오엔지산업",
+  other: "타사",
+  unknown: "확인 필요"
+} as const;
 export const SUBMIT_ROUTE = "/submit";
 export const ADMIN_ACCIDENT_SEARCH_ROUTE = "/admin/accidents/search";
 export const ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE = "/admin/accidents/status";
