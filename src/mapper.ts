@@ -107,15 +107,12 @@ export function buildAccidentDbProperties({
     [ACCIDENT_DB_PROPERTY_NAMES.visibleInjuryMark]: toSelect(
       normalized.visibleInjuryMark
     ),
-    [ACCIDENT_DB_PROPERTY_NAMES.sawSerialNumber]: toRichText(
-      normalized.sawSerialNumber
+    [ACCIDENT_DB_PROPERTY_NAMES.sawSerialNumber]: toStyledSerialRichText(
+      normalized.sawSerialNumber,
+      sawImportClassification === "타사"
     ),
     [ACCIDENT_DB_PROPERTY_NAMES.sawImportClassification]: toSelect(
       sawImportClassification
-    ),
-    [ACCIDENT_DB_PROPERTY_NAMES.sawSerialDisplay]: toStyledSerialRichText(
-      normalized.sawSerialNumber,
-      sawImportClassification === "타사"
     ),
     [ACCIDENT_DB_PROPERTY_NAMES.materialType]: toRichText(
       normalized.materialType
