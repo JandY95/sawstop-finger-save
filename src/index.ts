@@ -42,7 +42,7 @@ import { handleAdminUpload } from "./admin/upload";
 import { consumeAttachmentBatch } from "./consumer";
 import { buildAccidentDbProperties } from "./mapper";
 import { normalizeSubmitFormData } from "./normalize";
-import { createAccidentPage } from "./notion";
+import { classifySawSerialImport, createAccidentPage } from "./notion";
 import {
   buildSubmitAttachmentPayload,
   enqueueSubmitAttachmentPayload,
@@ -270,9 +270,14 @@ async function handleSubmit(
     }
 
     const receiptNumber = buildReceiptNumber(normalized.phone);
+    const sawImportClassification = await classifySawSerialImport(
+      env,
+      normalized.sawSerialNumber
+    );
     const properties = buildAccidentDbProperties({
       receiptNumber,
-      normalized
+      normalized,
+      sawImportClassification
     });
 
     const page = await createAccidentPage(env, { properties });
