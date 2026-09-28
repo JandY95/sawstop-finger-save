@@ -856,8 +856,8 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               <div class="field-grid">
                 <div class="field">
                   <label for="saw-serial-number">기계 시리얼 번호 *</label>
-                  <input id="saw-serial-number" name="sawSerialNumber" type="text" placeholder="예: C123456789" pattern="^[CPI]\\d{9}$" required aria-describedby="saw-serial-number-error" />
-                  <div class="hint">영문 C, P, I 중 하나로 시작하는 시리얼 번호를 입력해 주세요. 예: C123456789 / P123456789 / I123456789</div>
+                  <input id="saw-serial-number" name="sawSerialNumber" type="text" placeholder="예: C123456789 / P1234567890 / P2528BB303404" pattern="^(?:[CI]\\d{9}|P(?:\\d{9,10}|\\d{4}BB\\d{6}))$" required aria-describedby="saw-serial-number-error" />
+                  <div class="hint">C/I는 영문 1자 + 숫자 9자리, P는 숫자 9~10자리 또는 P + 숫자 4자리 + BB + 숫자 6자리 형식입니다. 영문은 소문자로 입력해도 자동으로 대문자로 바뀝니다.</div>
                   <div id="saw-serial-number-error" class="field-error" role="alert"></div>
                 </div>
                 <div class="field">
@@ -1033,7 +1033,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           const selectedFiles = [];
           const phonePattern = /^(?:010-\\d{4}-\\d{4}|02-\\d{3,4}-\\d{4}|(?:03[1-3]|04[1-4]|05[1-5]|06[1-4])-\\d{3,4}-\\d{4})$/;
           const emailPattern = /^[A-Za-z0-9](?:[A-Za-z0-9._%+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}$/;
-          const sawSerialPattern = /^[CPI]\\d{9}$/;
+          const sawSerialPattern = /^(?:[CI]\\d{9}|P(?:\\d{9,10}|\\d{4}BB\\d{6}))$/;
           const landlinePrefixes = ["02", "031", "032", "033", "041", "042", "043", "044", "051", "052", "053", "054", "055", "061", "062", "063", "064"];
           const noOtherDeviceValue = "사용하지 않음 (None)";
           const maxAttachmentCount = 4;
@@ -1182,6 +1182,13 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             );
           }
 
+          function isSawSerialAllowedPrefix(value) {
+            return (
+              value === "" ||
+              /^(?:[CI]\\d{0,9}|P(?:\\d{0,10}|\\d{4}B(?:B\\d{0,6})?))$/.test(value)
+            );
+          }
+
           function normalizeSawSerialNumberValue(rawValue) {
             if (!rawValue) {
               return "";
@@ -1190,16 +1197,14 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             let normalized = "";
 
             Array.from(rawValue).forEach((character) => {
-              if (normalized.length === 0) {
-                const normalizedCharacter = normalizeSawSerialFirstCharacter(character);
-                if (/[CPI]/.test(normalizedCharacter)) {
-                  normalized = normalizedCharacter;
-                }
-                return;
-              }
+              const normalizedCharacter =
+                normalized.length === 0
+                  ? normalizeSawSerialFirstCharacter(character)
+                  : character.toUpperCase();
+              const candidate = normalized + normalizedCharacter;
 
-              if (/\\d/.test(character) && normalized.length < 10) {
-                normalized += character;
+              if (isSawSerialAllowedPrefix(candidate)) {
+                normalized = candidate;
               }
             });
 
@@ -1453,9 +1458,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
 
           function validateSawSerialNumber() {
             const rawValue = sawSerialNumberInput ? sawSerialNumberInput.value.trim() : "";
-            const normalized = rawValue
-              ? rawValue.charAt(0).toUpperCase() + rawValue.slice(1)
-              : "";
+            const normalized = normalizeSawSerialNumberValue(rawValue);
             if (sawSerialNumberInput && sawSerialNumberInput.value !== normalized) {
               sawSerialNumberInput.value = normalized;
               commitSawSerialStableValue(normalized);
@@ -1463,7 +1466,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             const valid = sawSerialPattern.test(normalized);
             const message = valid
               ? ""
-              : "시리얼 번호는 C, P, I 중 하나와 숫자 9자리로 입력해 주세요.";
+              : "시리얼 번호 형식을 확인해 주세요. C/I는 숫자 9자리, P는 숫자 9~10자리 또는 P+숫자 4자리+BB+숫자 6자리입니다.";
 
             setFieldError(sawSerialNumberInput, sawSerialNumberError, message);
             if (sawSerialNumberInput) {
@@ -1557,7 +1560,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               {
                 validate: validateSawSerialNumber,
                 focusElement: sawSerialNumberInput,
-                message: "시리얼 번호는 C, P, I 중 하나와 숫자 9자리로 입력해 주세요."
+                message: "시리얼 번호 형식을 확인해 주세요. C/I는 숫자 9자리, P는 숫자 9~10자리 또는 P+숫자 4자리+BB+숫자 6자리입니다."
               },
               {
                 validate: () => validateRequiredField(
@@ -1952,19 +1955,14 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                 return;
               }
 
+              event.preventDefault();
               const selectionStart =
                 sawSerialNumberInput.selectionStart ?? sawSerialNumberInput.value.length;
-              const isEditingFirstCharacter = selectionStart === 0;
-              const normalizedKey = isEditingFirstCharacter
-                ? normalizeSawSerialFirstCharacter(event.key)
-                : event.key;
-              const isValidKey = isEditingFirstCharacter
-                ? /[CPI]/.test(normalizedKey)
-                : /^\\d$/.test(event.key);
-
-              if (!isValidKey) {
-                event.preventDefault();
-              }
+              const normalizedKey =
+                selectionStart === 0
+                  ? normalizeSawSerialFirstCharacter(event.key)
+                  : event.key.toUpperCase();
+              replaceSawSerialSelection(sawSerialNumberInput, normalizedKey);
             });
             sawSerialNumberInput.addEventListener("compositionstart", () => {
               sawSerialImeActive = true;
@@ -2043,15 +2041,20 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
 
                 const selectionStart =
                   sawSerialNumberInput.selectionStart ?? sawSerialNumberInput.value.length;
-                const isEditingFirstCharacter = selectionStart === 0;
-                const normalizedInsertedText = isEditingFirstCharacter
-                  ? normalizeSawSerialFirstCharacter(insertedText)
-                  : insertedText;
+                const normalizedInsertedText =
+                  selectionStart === 0
+                    ? normalizeSawSerialFirstCharacter(insertedText)
+                    : insertedText.toUpperCase();
+                const selectionEnd =
+                  sawSerialNumberInput.selectionEnd ?? selectionStart;
+                const candidateRaw =
+                  sawSerialNumberInput.value.slice(0, selectionStart) +
+                  normalizedInsertedText +
+                  sawSerialNumberInput.value.slice(selectionEnd);
+                const normalizedCandidate =
+                  normalizeSawSerialNumberValue(candidateRaw);
 
-                if (
-                  (isEditingFirstCharacter && !/[CPI]/.test(normalizedInsertedText)) ||
-                  (!isEditingFirstCharacter && !/^\\d+$/.test(insertedText))
-                ) {
+                if (normalizedCandidate !== candidateRaw.toUpperCase()) {
                   event.preventDefault();
                   return;
                 }
