@@ -18,7 +18,6 @@ export const ACCIDENT_DB_PROPERTY_NAMES = {
     "To the best of your ability, please describe the circumstances of how the accident happened",
   sawSerialNumber: "Saw Serial Number",
   sawImportClassification: "수입 구분",
-  sawSerialDisplay: "시리얼 표시",
   brakeCartridgeSerialNumber: "Brake Cartridge Serial Number",
   bladeType: "Type of blade being used",
   bladeDetails: "Saw Blade Details",
