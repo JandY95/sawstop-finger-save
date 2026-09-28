@@ -100,9 +100,12 @@ export interface NormalizedSubmitInput {
   attachmentCount?: number;
 }
 
+export type SawImportClassification = "에스오엔지산업" | "타사" | "확인 필요";
+
 export interface BuildAccidentDbPropertiesInput {
   receiptNumber: string;
   normalized: NormalizedSubmitInput;
+  sawImportClassification?: SawImportClassification;
 }
 
 export interface SubmitValidationResult {
@@ -131,7 +134,13 @@ export type NotionTitleProperty = {
 };
 
 export type NotionRichTextProperty = {
-  rich_text: Array<{ text: { content: string } }>;
+  rich_text: Array<{
+    text: { content: string };
+    annotations?: {
+      bold?: boolean;
+      color?: string;
+    };
+  }>;
 };
 
 export type NotionPhoneNumberProperty = {
