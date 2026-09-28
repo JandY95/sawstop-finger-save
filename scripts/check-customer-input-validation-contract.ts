@@ -416,8 +416,8 @@ expectSource(
 expectSource(
   "saw-serial-server-pattern",
   validateSource,
-  "const SAW_SERIAL_NUMBER_PATTERN = /^[CPI]\\d{9}$/;",
-  "server serial validation must require C/P/I followed by exactly 9 digits"
+  "const SAW_SERIAL_NUMBER_PATTERN = /^(?:[CI]\\d{9}|P(?:\\d{9,10}|\\d{4}BB\\d{6}))$/;",
+  "server serial validation must accept the three serial structures confirmed by the SawStop master list"
 );
 expectSource(
   "saw-serial-client-custom-validity",
@@ -428,8 +428,14 @@ expectSource(
 expectSource(
   "saw-serial-client-specific-message",
   renderSource,
-  "시리얼 번호는 C, P, I 중 하나와 숫자 9자리로 입력해 주세요.",
-  "client serial validation must show the requested C/P/I plus 9 digits message"
+  "C/I는 숫자 9자리, P는 숫자 9~10자리 또는 P+숫자 4자리+BB+숫자 6자리입니다.",
+  "client serial validation must explain all confirmed SawStop serial structures"
+);
+expectSource(
+  "saw-serial-client-uppercase-normalizer",
+  renderSource,
+  "character.toUpperCase()",
+  "client serial input must uppercase letters including the middle BB segment"
 );
 
 expectSource(
@@ -517,7 +523,15 @@ if (submitValidationModules) {
     );
   }
 
-  for (const sawSerialNumber of ["C123456789", "P123456789", "I123456789", "i123456789"]) {
+  for (const sawSerialNumber of [
+    "C123456789",
+    "P123456789",
+    "I123456789",
+    "i123456789",
+    "P1234567890",
+    "P2528BB303404",
+    "p2528bb303404"
+  ]) {
     expectSubmitValidity(
       `serial-valid-${sawSerialNumber}`,
       submitValidationModules,
@@ -527,7 +541,20 @@ if (submitValidationModules) {
     );
   }
 
-  for (const sawSerialNumber of ["I767", "1767", "A123456789", "C123"]) {
+  for (const sawSerialNumber of [
+    "I767",
+    "1767",
+    "A123456789",
+    "C123",
+    "C1234567890",
+    "I1234567890",
+    "C2528BB303404",
+    "P2528AB303404",
+    "P2528B303404",
+    "P2528BB30340A",
+    "P12345678",
+    "P12345678901"
+  ]) {
     expectSubmitValidity(
       `serial-invalid-${sawSerialNumber}`,
       submitValidationModules,
