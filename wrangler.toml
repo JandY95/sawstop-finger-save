@@ -3,6 +3,20 @@ main = "src/index.ts"
 compatibility_date = "2026-04-10"
 
 
+[durable_objects]
+bindings = [
+  { name = "ADMIN_AUTH_LOCK", class_name = "AdminAuthLock" },
+  { name = "ADMIN_UPLOAD_COORDINATOR", class_name = "AdminUploadCoordinator" }
+]
+
+[[migrations]]
+tag = "v1-admin-auth-lock"
+new_sqlite_classes = ["AdminAuthLock"]
+
+[[migrations]]
+tag = "v2-admin-upload-coordinator"
+new_sqlite_classes = ["AdminUploadCoordinator"]
+
 [vars]
 TURNSTILE_SITE_KEY = "0x4AAAAAADVwGf_ZW6nQsPwy"
 
