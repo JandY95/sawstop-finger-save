@@ -23,6 +23,7 @@
     "check:customer-turnstile-contract": "node scripts/check-customer-turnstile-contract.js",
     "check:default-accident-page-body-fixture": "node --experimental-strip-types scripts/check-default-accident-page-body-fixture.ts",
     "check:output-route-contract": "node scripts/check-output-route-contract.js",
+    "check:admin-status-report-draft-contract": "node --experimental-strip-types scripts/check-admin-status-report-draft-contract.ts",
     "check:admin-upload-ux-contract": "node scripts/check-admin-upload-ux-contract.js",
     "check:admin-upload-auth-contract": "node scripts/check-admin-upload-auth-contract.js",
     "check:live-verification-packet-contract": "node scripts/check-live-verification-packet-contract.js",

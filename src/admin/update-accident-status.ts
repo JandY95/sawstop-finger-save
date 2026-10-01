@@ -3,7 +3,10 @@ import {
   CUSTOMER_FAILURE_MESSAGE
 } from "../constants.ts";
 import {
+  accidentPageHasReviewMarker,
+  appendAccidentReportDraftIfMissing,
   getAccidentPageStatus,
+  resetAccidentReportReviewFlags,
   updateAccidentPageStatus
 } from "../notion.ts";
 import type {
@@ -68,6 +71,28 @@ export async function handleAdminUpdateAccidentStatus(
         {
           ok: false,
           message: CUSTOMER_FAILURE_MESSAGE
+        },
+        409
+      );
+    }
+
+    if (
+      fromStatus === ACCIDENT_STATUS.received &&
+      toStatus === ACCIDENT_STATUS.inProgress
+    ) {
+      await appendAccidentReportDraftIfMissing(env, pageId);
+      await resetAccidentReportReviewFlags(env, pageId);
+    }
+
+    if (
+      fromStatus === ACCIDENT_STATUS.inProgress &&
+      toStatus === ACCIDENT_STATUS.complete &&
+      await accidentPageHasReviewMarker(env, pageId)
+    ) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: "영문 초안에 [검수] 표시가 남아 있어 완료 처리할 수 없습니다. [검수] 항목을 확인하고 제거한 뒤 다시 시도해 주세요."
         },
         409
       );
