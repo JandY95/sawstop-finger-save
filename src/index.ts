@@ -52,6 +52,8 @@ import { buildReceiptNumber } from "./receipt";
 import { uploadAttachmentToTmpR2 } from "./r2";
 import { verifyTurnstileSubmit, TURNSTILE_RESPONSE_FIELD_NAME } from "./turnstile";
 import { validateSubmitInput } from "./validate";
+export { AdminAuthLock, AdminUploadCoordinator } from "./t63-migration-bridge-do";
+
 import type {
   CustomerSubmitFailureResponse,
   CustomerSubmitSuccessResponse,
