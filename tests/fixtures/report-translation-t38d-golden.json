@@ -1,0 +1,308 @@
+{
+  "basePairs": [
+    {
+      "key": "occurredAt",
+      "sourceValue": "2026-08-02T09:15:00.000+09:00",
+      "candidateValue": "August 2, 2026 at 9:15 AM Korea Standard Time (KST, UTC+9)"
+    },
+    {
+      "key": "businessOrSchoolName",
+      "sourceValue": "새봄 목공소",
+      "candidateValue": "새봄 목공소 [검수]"
+    },
+    {
+      "key": "operatorName",
+      "sourceValue": "박민수",
+      "candidateValue": "박민수 [검수]"
+    },
+    {
+      "key": "touchedPersonName",
+      "sourceValue": "김서준",
+      "candidateValue": "김서준 [검수]"
+    },
+    {
+      "key": "phone",
+      "sourceValue": "010-2468-1357",
+      "candidateValue": "010-2468-1357"
+    },
+    {
+      "key": "email",
+      "sourceValue": "operator@example.test",
+      "candidateValue": "operator@example.test"
+    },
+    {
+      "key": "promotionalConsent",
+      "sourceValue": "동의 (YES)",
+      "candidateValue": "YES"
+    },
+    {
+      "key": "bodyPartContacted",
+      "sourceValue": "오른손 검지",
+      "candidateValue": "Right index finger"
+    },
+    {
+      "key": "visibleInjuryMark",
+      "sourceValue": "아니요 (NO)",
+      "candidateValue": "NO"
+    },
+    {
+      "key": "woundTreatmentMethods",
+      "sourceValue": "상처를 물로 씻었습니다.",
+      "candidateValue": "The wound was rinsed with water."
+    },
+    {
+      "key": "estimatedInjuryWithoutSawStop",
+      "sourceValue": "",
+      "candidateValue": "[Needs follow-up]"
+    },
+    {
+      "key": "sawSerialNumber",
+      "sourceValue": "C123456789",
+      "candidateValue": "C123456789"
+    },
+    {
+      "key": "brakeCartridgeSerialNumber",
+      "sourceValue": "BC-7788",
+      "candidateValue": "BC-7788"
+    },
+    {
+      "key": "bladeType",
+      "sourceValue": "10\" Standard",
+      "candidateValue": "10\" Standard"
+    },
+    {
+      "key": "bladeDetails",
+      "sourceValue": "40T, 3.2 mm kerf",
+      "candidateValue": "40T, 3.2 mm kerf"
+    },
+    {
+      "key": "materialType",
+      "sourceValue": "자작합판",
+      "candidateValue": "Birch plywood"
+    },
+    {
+      "key": "workpieceSizeAndCutType",
+      "sourceValue": "600 mm x 300 mm",
+      "candidateValue": "600 mm x 300 mm"
+    },
+    {
+      "key": "safetyDeviceStatus",
+      "sourceValue": "라이빙 나이프 장착",
+      "candidateValue": "Riving knife in place"
+    },
+    {
+      "key": "otherDevicesUsed",
+      "sourceValue": "푸시스틱 (Push Stick)",
+      "candidateValue": "Push Stick"
+    },
+    {
+      "key": "wearingGloves",
+      "sourceValue": "아니요 (NO)",
+      "candidateValue": "NO"
+    },
+    {
+      "key": "approximateFeedRate",
+      "sourceValue": "보통 (Normal)",
+      "candidateValue": "Normal"
+    },
+    {
+      "key": "incidentCause",
+      "sourceValue": "재료가 절단 중 흔들렸습니다.",
+      "candidateValue": "The workpiece moved during the cut."
+    },
+    {
+      "key": "incidentDescription",
+      "sourceValue": "재료가 흔들리면서 작업자의 오른손 검지가 톱날에 가까워졌습니다.",
+      "candidateValue": "As the workpiece moved, the operator's right index finger came close to the saw blade."
+    }
+  ],
+  "acceptedCases": [
+    {
+      "id": "general_accident_codex_candidate",
+      "translationMethod": "codex_cli",
+      "assertAllPairs": true,
+      "pairs": []
+    },
+    {
+      "id": "canonical_woodworking_and_sawstop_terms_local_candidate",
+      "translationMethod": "local_conservative",
+      "approvedTerms": {
+        "자작합판": "Birch plywood",
+        "라이빙 나이프 장착": "Riving knife in place"
+      },
+      "pairs": [
+        {
+          "key": "bladeType",
+          "sourceValue": "10\" Standard",
+          "candidateValue": "10\" Standard"
+        },
+        {
+          "key": "bladeDetails",
+          "sourceValue": "40T, 3.2 mm kerf",
+          "candidateValue": "40T, 3.2 mm kerf"
+        },
+        {
+          "key": "materialType",
+          "sourceValue": "자작합판",
+          "candidateValue": "Birch plywood"
+        },
+        {
+          "key": "safetyDeviceStatus",
+          "sourceValue": "라이빙 나이프 장착",
+          "candidateValue": "Riving knife in place"
+        },
+        {
+          "key": "otherDevicesUsed",
+          "sourceValue": "푸시스틱 (Push Stick), 페더보드 (Feather Board)",
+          "candidateValue": "Push Stick, Feather Board"
+        },
+        {
+          "key": "brakeCartridgeSerialNumber",
+          "sourceValue": "BC-7788",
+          "candidateValue": "BC-7788"
+        }
+      ]
+    },
+    {
+      "id": "ambiguous_sentences_remain_source_visible_for_review",
+      "translationMethod": "local_conservative",
+      "pairs": [
+        {
+          "key": "incidentCause",
+          "sourceValue": "재료가 뭔가에 걸린 것 같았습니다.",
+          "candidateValue": "재료가 뭔가에 걸린 것 같았습니다. [검수]"
+        },
+        {
+          "key": "incidentDescription",
+          "sourceValue": "정확히 기억나지 않지만 손이 날 쪽으로 간 것 같습니다.",
+          "candidateValue": "정확히 기억나지 않지만 손이 날 쪽으로 간 것 같습니다. [검수]"
+        }
+      ]
+    },
+    {
+      "id": "empty_and_whitespace_only_values_need_follow_up",
+      "translationMethod": "local_conservative",
+      "pairs": [
+        {
+          "key": "email",
+          "sourceValue": "",
+          "candidateValue": "[Needs follow-up]"
+        },
+        {
+          "key": "estimatedInjuryWithoutSawStop",
+          "sourceValue": "   ",
+          "candidateValue": "[Needs follow-up]"
+        }
+      ]
+    },
+    {
+      "id": "injury_and_treatment_facts_translate_without_expansion",
+      "translationMethod": "codex_cli",
+      "pairs": [
+        {
+          "key": "bodyPartContacted",
+          "sourceValue": "오른손 검지 끝부분",
+          "candidateValue": "Tip of the right index finger"
+        },
+        {
+          "key": "visibleInjuryMark",
+          "sourceValue": "예 (YES)",
+          "candidateValue": "YES"
+        },
+        {
+          "key": "woundTreatmentMethods",
+          "sourceValue": "병원에서 상처를 소독하고 밴드를 붙였습니다.",
+          "candidateValue": "The hospital cleaned the wound and applied a bandage."
+        },
+        {
+          "key": "estimatedInjuryWithoutSawStop",
+          "sourceValue": "SawStop이 작동하지 않았다면 더 깊게 베였을 수 있습니다.",
+          "candidateValue": "If SawStop had not operated, a deeper cut may have occurred."
+        }
+      ]
+    }
+  ],
+  "discardedCases": [
+    {
+      "id": "ambiguous_sentence_guessed_as_kickback",
+      "pairs": [
+        {
+          "key": "incidentCause",
+          "sourceValue": "재료가 뭔가에 걸린 것 같았습니다.",
+          "candidateValue": "The workpiece kicked back."
+        }
+      ],
+      "ungroundedFactFieldKeys": ["incidentCause"],
+      "expectedErrorCodes": ["ungrounded_fact_detected"]
+    },
+    {
+      "id": "missing_injury_value_invented_as_amputation",
+      "pairs": [
+        {
+          "key": "estimatedInjuryWithoutSawStop",
+          "sourceValue": "   ",
+          "candidateValue": "A finger would have been amputated."
+        }
+      ],
+      "expectedErrorCodes": ["fact_added_without_source"]
+    },
+    {
+      "id": "treatment_expanded_with_stitches",
+      "pairs": [
+        {
+          "key": "woundTreatmentMethods",
+          "sourceValue": "병원에서 상처를 소독하고 밴드를 붙였습니다.",
+          "candidateValue": "The hospital cleaned the wound, applied a bandage, and the wound required stitches."
+        }
+      ],
+      "ungroundedFactFieldKeys": ["woundTreatmentMethods"],
+      "expectedErrorCodes": ["ungrounded_fact_detected"]
+    },
+    {
+      "id": "incident_expanded_with_coworker_distraction",
+      "pairs": [
+        {
+          "key": "incidentDescription",
+          "sourceValue": "재료가 흔들리면서 작업자의 오른손 검지가 톱날에 가까워졌습니다.",
+          "candidateValue": "A coworker distracted the operator, so the workpiece moved and the right index finger came close to the saw blade."
+        }
+      ],
+      "ungroundedFactFieldKeys": ["incidentDescription"],
+      "expectedErrorCodes": ["ungrounded_fact_detected"]
+    },
+    {
+      "id": "riving_knife_changed_to_blade_guard",
+      "pairs": [
+        {
+          "key": "safetyDeviceStatus",
+          "sourceValue": "라이빙 나이프 장착",
+          "candidateValue": "A blade guard was in place."
+        }
+      ],
+      "ungroundedFactFieldKeys": ["safetyDeviceStatus"],
+      "expectedErrorCodes": ["ungrounded_fact_detected"]
+    },
+    {
+      "id": "verified_yes_no_selection_reversed",
+      "pairs": [
+        {
+          "key": "visibleInjuryMark",
+          "sourceValue": "아니요 (NO)",
+          "candidateValue": "YES"
+        }
+      ],
+      "expectedErrorCodes": ["deterministic_value_mismatch"]
+    },
+    {
+      "id": "occurrence_date_changed",
+      "pairs": [
+        {
+          "key": "occurredAt",
+          "sourceValue": "2026-08-02T09:15:00.000+09:00",
+          "candidateValue": "August 3, 2026 at 9:15 AM Korea Standard Time (KST, UTC+9)"
+        }
+      ],
+      "expectedErrorCodes": ["deterministic_value_mismatch"]
+    }
+  ]
+}

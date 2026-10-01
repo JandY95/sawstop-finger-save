@@ -3,6 +3,7 @@ import type {
   ATTACHMENT_DB_STATUS,
   ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_SOURCE_OPTIONS,
+  ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES,
   ACCIDENT_STATUS,
   BLADE_TYPE_OPTIONS,
   FEED_RATE_OPTIONS,
@@ -25,6 +26,10 @@ export type AttachmentDbStatus =
 export type AttachmentDeleteReason = (typeof ATTACHMENT_DELETE_REASON_OPTIONS)[number];
 export type AttachmentSource = (typeof ATTACHMENT_SOURCE_OPTIONS)[number];
 export type AccidentStatus = (typeof ACCIDENT_STATUS)[keyof typeof ACCIDENT_STATUS];
+export type AdminReviewCheckboxKey =
+  keyof typeof ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES;
+export type AdminReviewCheckboxValues = Record<AdminReviewCheckboxKey, boolean>;
+export type AdminManualSendOutcome = "success" | "failure";
 
 interface R2PutOptions {
   httpMetadata?: {
@@ -55,6 +60,66 @@ interface QueueSendOptions {
 
 interface QueueBinding<T> {
   send(body: T, options?: QueueSendOptions): Promise<void>;
+}
+
+export interface BrowserRunCookie {
+  name: string;
+  value: string;
+  url: string;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: "Strict" | "Lax" | "None";
+}
+
+export interface BrowserRunPdfOptions {
+  actionTimeout?: number;
+  cookies?: BrowserRunCookie[];
+  emulateMediaType?: "print" | "screen";
+  html: string;
+  pdfOptions: {
+    displayHeaderFooter: boolean;
+    format: "a4";
+    landscape: boolean;
+    preferCSSPageSize: boolean;
+    printBackground: boolean;
+    scale: number;
+    tagged: boolean;
+  };
+  setJavaScriptEnabled?: boolean;
+  waitForSelector?: {
+    selector: string;
+    timeout?: number;
+  };
+}
+
+interface BrowserRunBinding {
+  quickAction(action: "pdf", options: BrowserRunPdfOptions): Promise<Response>;
+}
+
+export interface DurableObjectIdLike {
+  toString(): string;
+}
+
+export interface DurableObjectStubLike {
+  fetch(
+    input: Request | string | URL,
+    init?: RequestInit
+  ): Promise<Response>;
+}
+
+export interface DurableObjectNamespaceLike {
+  idFromName(name: string): DurableObjectIdLike;
+  get(id: DurableObjectIdLike): DurableObjectStubLike;
+}
+
+export interface DurableObjectStorageLike {
+  get<T>(key: string): Promise<T | undefined>;
+  put(key: string, value: unknown): Promise<void>;
+  put(entries: Record<string, unknown>): Promise<void>;
+}
+
+export interface DurableObjectStateLike {
+  storage: DurableObjectStorageLike;
 }
 
 export interface QueueRetryOptions {
@@ -166,7 +231,7 @@ export type NotionDateProperty = {
   date:
     | {
         start: string;
-        time_zone: string;
+        time_zone?: string;
       }
     | null;
 };
@@ -207,10 +272,15 @@ export interface WorkerEnv {
   NOTION_ATTACHMENT_DB_ID: string;
   ADMIN_PASSWORD: string;
   ADMIN_SESSION_SECRET: string;
+  ADMIN_AUTH_LOCK: DurableObjectNamespaceLike;
+  ADMIN_UPLOAD_COORDINATOR: DurableObjectNamespaceLike;
+  BROWSER: BrowserRunBinding;
   ATTACHMENT_BUCKET: R2Bucket;
   ATTACHMENT_PROCESSING_QUEUE: QueueBinding<SubmitAttachmentPayload>;
   TURNSTILE_SITE_KEY?: string;
   TURNSTILE_SECRET_KEY?: string;
+  SAWSTOP_REPORT_WRITER_ENDPOINT?: string;
+  SAWSTOP_REPORT_WRITER_TOKEN?: string;
 }
 
 export interface WorkerExecutionContext {
@@ -265,14 +335,39 @@ export interface AccidentReportPropertySummary {
   value: string;
 }
 
+export interface AccidentReportAttachmentSummary {
+  attachmentPageId: string;
+  attachmentType: string;
+  displayOrder: number;
+}
+
 export interface AccidentPageReportData {
   blocks: AccidentPageBodyBlockSummary[];
-  properties: AccidentReportPropertySummary[];
+  attachments: AccidentReportAttachmentSummary[];
+}
+
+export interface AccidentManualSendResultValues {
+  completedAt: string | null;
+  failureMemo: string;
+}
+
+export interface AccidentManualSendPackageData extends AccidentPageReportData {
+  receiptNumber: string | null;
+  ready: boolean;
+  reviewValues: AdminReviewCheckboxValues;
+  autoSendReady: boolean;
+  blockingMarkers: string[];
+  resultValues: AccidentManualSendResultValues;
 }
 
 export interface NotionPageSummary {
   id: string;
   url: string;
+}
+
+export interface NotionAttachmentPageRecord extends NotionPageSummary {
+  accidentPageIds: string[];
+  r2Key: string | null;
 }
 
 export interface CustomerSubmitSuccessResponse {
@@ -325,6 +420,53 @@ export interface AdminUpdateAccidentStatusFailureResponse {
   message: string;
 }
 
+export interface AdminReviewCheckboxReadRequest {
+  pageId: string;
+}
+
+export interface AdminReviewCheckboxUpdateRequest {
+  pageId: string;
+  reviewKey: AdminReviewCheckboxKey;
+  checked: boolean;
+}
+
+export interface AdminReviewCheckboxReadSuccessResponse {
+  ok: true;
+  values: AdminReviewCheckboxValues;
+}
+
+export interface AdminReviewCheckboxUpdateSuccessResponse
+  extends AdminReviewCheckboxReadSuccessResponse {
+  updatedReviewKey: AdminReviewCheckboxKey;
+}
+
+export interface AdminReviewCheckboxFailureResponse {
+  ok: false;
+  message: string;
+}
+
+export interface AdminManualSendResultRequest {
+  pageId: string;
+  outcome: AdminManualSendOutcome;
+  failureMemo?: string;
+}
+
+export interface AdminManualSendSuccessResultResponse {
+  ok: true;
+  outcome: "success";
+  sentAt: string;
+}
+
+export interface AdminManualSendFailureResultResponse {
+  ok: true;
+  outcome: "failure";
+}
+
+export interface AdminManualSendResultFailureResponse {
+  ok: false;
+  message: string;
+}
+
 export interface AdminAttachmentListRequest {
   pageId: string;
 }
@@ -363,7 +505,6 @@ export interface AdminUploadStoredFile {
 
 export interface CreateAttachmentPageRecordInput {
   pageId: string;
-  receiptNumber: string;
   attachmentType: string;
   fileName: string;
   r2Key: string;
@@ -466,9 +607,4 @@ export interface AdminProcessFifoTrashFailureResponse {
 
 export interface AdminSessionPayload {
   exp: number;
-}
-
-export interface AdminLoginStatePayload {
-  failedCount: number;
-  lockUntil: number | null;
 }

@@ -1,6 +1,7 @@
 import {
   ADMIN_ACCIDENT_SEARCH_ROUTE,
   ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE,
+  ADMIN_REVIEW_CHECKBOXES_ROUTE,
   ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE,
   ADMIN_ATTACHMENT_LIST_ROUTE,
   ADMIN_ATTACHMENT_RESTORE_ROUTE,
@@ -8,12 +9,27 @@ import {
   ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGOUT_ROUTE,
+  ADMIN_MANUAL_SEND_PACKAGE_ROUTE,
   ADMIN_UPLOAD_ROUTE,
   ACCIDENT_STATUS,
   ATTACHMENT_DELETE_REASON_OPTIONS,
   ATTACHMENT_DB_STATUS,
-  ATTACHMENT_TYPE_OPTIONS
+  ATTACHMENT_TYPE_OPTIONS,
+  CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS,
+  CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES,
+  CUSTOMER_ATTACHMENT_MAX_COUNT,
+  CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES
 } from "../constants";
+import { ADMIN_ATTACHMENT_READ_ROUTE } from "./read-attachment";
+
+const ADMIN_UPLOAD_MIME_TYPES_BY_EXTENSION = {
+  ".jpg": ["image/jpeg"],
+  ".jpeg": ["image/jpeg"],
+  ".png": ["image/png"],
+  ".webp": ["image/webp"],
+  ".heic": ["image/heic", "image/heif"],
+  ".heif": ["image/heic", "image/heif"]
+} as const;
 
 function escapeHtml(value: string) {
   return value
@@ -43,6 +59,7 @@ export function renderAdminPage(
   const url = new URL(request.url);
   const error = url.searchParams.get("error");
   const message = buildLoginMessage(error);
+  const receiptNumberPrefill = (url.searchParams.get("receiptNumber") ?? "").trim();
   const attachmentTypeOptions = ATTACHMENT_TYPE_OPTIONS.map(
     (option) =>
       `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`
@@ -51,6 +68,10 @@ export function renderAdminPage(
     (option) =>
       `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`
   ).join("");
+  const adminUploadAccept = [
+    ...CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS,
+    ...CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES
+  ].join(",");
 
   const body = authenticated
     ? `
@@ -69,7 +90,7 @@ export function renderAdminPage(
           <form id="search-form" class="card">
             <label for="query">사고건 검색</label>
             <div class="row">
-              <input id="query" name="query" type="text" placeholder="receiptNumber 또는 phone 입력" required />
+              <input id="query" name="query" type="text" value="${escapeHtml(receiptNumberPrefill)}" placeholder="receiptNumber 또는 phone 입력" required />
               <button type="submit">검색</button>
             </div>
             <p class="hint">완료 상태 사고건은 검색 결과에서 제외됩니다.</p>
@@ -91,9 +112,10 @@ export function renderAdminPage(
             <label for="files">파일</label>
             <div id="admin-upload-drop-zone" class="file-drop-zone" role="button" tabindex="0" aria-controls="files">
               <strong>파일을 드래그하거나 클릭해 선택하세요.</strong>
-              <span>이미지는 업로드 전 썸네일로 확인할 수 있습니다.</span>
+              <span>최대 4장, 파일당 10MB 이하의 이미지만 선택할 수 있습니다.</span>
+              <span>허용 형식: jpg, jpeg, png, webp, heic, heif</span>
             </div>
-            <input id="files" class="file-input" name="files" type="file" multiple required />
+            <input id="files" class="file-input" name="files" type="file" accept="${escapeHtml(adminUploadAccept)}" multiple required />
             <div id="file-summary" class="hint file-summary">선택된 파일 없음</div>
             <div id="file-preview-grid" class="file-preview-grid" aria-live="polite"></div>
 
@@ -104,10 +126,42 @@ export function renderAdminPage(
             <div id="upload-results" class="results"></div>
           </form>
 
+          <section id="review-checkbox-card" class="card review-checkbox-card">
+            <h2>발송 전 검수 상태</h2>
+            <p class="hint">사고건을 선택한 뒤 실제 검토를 마친 항목만 개별 확인하세요. 필요하면 언제든 확인을 해제할 수 있습니다.</p>
+            <div id="review-checkbox-message" class="message" role="status" aria-live="polite"></div>
+            <div id="review-checkbox-list" class="review-checkbox-list">
+              <label class="review-checkbox-row" for="review-english-complete">
+                <input id="review-english-complete" type="checkbox" data-review-key="englishReviewComplete" disabled />
+                <span class="review-checkbox-copy">
+                  <strong>영문 검수 완료</strong>
+                  <span>영문 본문의 번역과 수정을 모두 확인했습니다.</span>
+                </span>
+                <span id="review-english-complete-state" class="review-checkbox-state">현재: 사고건 선택 필요</span>
+              </label>
+              <label class="review-checkbox-row" for="review-attachment-final">
+                <input id="review-attachment-final" type="checkbox" data-review-key="attachmentFinalCheck" disabled />
+                <span class="review-checkbox-copy">
+                  <strong>첨부 최종 확인 완료</strong>
+                  <span>손가락 사진을 포함한 현재 첨부를 최종 확인했습니다.</span>
+                </span>
+                <span id="review-attachment-final-state" class="review-checkbox-state">현재: 사고건 선택 필요</span>
+              </label>
+              <label class="review-checkbox-row" for="review-output-complete">
+                <input id="review-output-complete" type="checkbox" data-review-key="outputCheckComplete" disabled />
+                <span class="review-checkbox-copy">
+                  <strong>출력 확인 완료</strong>
+                  <span>웹뷰와 PDF 출력 내용을 최종 확인했습니다.</span>
+                </span>
+                <span id="review-output-complete-state" class="review-checkbox-state">현재: 사고건 선택 필요</span>
+              </label>
+            </div>
+          </section>
+
           <section class="card attachment-card">
             <h2>현재 첨부 목록</h2>
             <p class="hint">사고건을 선택하면 첨부 목록을 불러옵니다.</p>
-            <div id="attachment-list-message" class="message"></div>
+            <div id="attachment-list-message" class="message" role="status" aria-live="polite"></div>
             <div id="attachment-context" class="context-line"></div>
             <div id="attachment-summary" class="attachment-summary"></div>
             <div id="attachment-list" class="results"></div>
@@ -127,6 +181,7 @@ export function renderAdminPage(
 
       <script>
         const searchForm = document.getElementById("search-form");
+        const searchQueryInput = document.getElementById("query");
         const searchMessage = document.getElementById("search-message");
         const searchResults = document.getElementById("search-results");
         const uploadForm = document.getElementById("upload-form");
@@ -148,12 +203,52 @@ export function renderAdminPage(
         const fifoProcessButton = document.getElementById("fifo-process-button");
         const selectedPageIdInput = document.getElementById("selected-page-id");
         const selectedSummary = document.getElementById("selected-summary");
+        const reviewCheckboxMessage = document.getElementById("review-checkbox-message");
+        const reviewCheckboxList = document.getElementById("review-checkbox-list");
+        const reviewCheckboxDefinitions = [
+          {
+            key: "englishReviewComplete",
+            label: "영문 검수 완료",
+            input: document.getElementById("review-english-complete"),
+            state: document.getElementById("review-english-complete-state")
+          },
+          {
+            key: "attachmentFinalCheck",
+            label: "첨부 최종 확인 완료",
+            input: document.getElementById("review-attachment-final"),
+            state: document.getElementById("review-attachment-final-state")
+          },
+          {
+            key: "outputCheckComplete",
+            label: "출력 확인 완료",
+            input: document.getElementById("review-output-complete"),
+            state: document.getElementById("review-output-complete-state")
+          }
+        ];
+        const adminUploadMaxFileCount = ${CUSTOMER_ATTACHMENT_MAX_COUNT};
+        const adminUploadMaxFileSizeBytes = ${CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES};
+        const adminUploadMimeTypesByExtension = ${JSON.stringify(
+          ADMIN_UPLOAD_MIME_TYPES_BY_EXTENSION
+        )};
         let selectedAccidentPageId = "";
         let selectedAccidentReceiptNumber = "";
         let selectedAccidentStatus = "";
         let selectedAccidentItem = null;
         let currentSearchQuery = "";
         let uploadInFlight = false;
+        let uploadIdempotencyKey = "";
+        let currentReviewCheckboxValues = null;
+
+        function resetUploadIdempotencyKey() {
+          uploadIdempotencyKey = "";
+        }
+
+        function getUploadIdempotencyKey() {
+          if (!uploadIdempotencyKey) {
+            uploadIdempotencyKey = crypto.randomUUID();
+          }
+          return uploadIdempotencyKey;
+        }
 
         function setMessage(target, text, tone) {
           target.textContent = text || "";
@@ -187,6 +282,40 @@ export function renderAdminPage(
           }
 
           return escapeText(value);
+        }
+
+        function buildAttachmentReadUrl(pageId, attachmentPageId) {
+          const params = new URLSearchParams();
+          params.set("pageId", pageId);
+          params.set("attachmentPageId", attachmentPageId);
+          return "${ADMIN_ATTACHMENT_READ_ROUTE}?" + params.toString();
+        }
+
+        function renderAttachmentPreview(item, pageId) {
+          if (item.status !== "${ATTACHMENT_DB_STATUS.current}") {
+            return [
+              '<div class="attachment-preview-unavailable">',
+              '<strong>미리보기 없음</strong>',
+              '<span>현재 상태 첨부만 이미지를 확인할 수 있습니다.</span>',
+              '</div>'
+            ].join("");
+          }
+
+          const fileName = item.fileName || "첨부 파일";
+          const readUrl = buildAttachmentReadUrl(pageId, item.attachmentPageId);
+          const orderLabel = renderDisplayOrder(item.displayOrder);
+
+          return [
+            '<div class="attachment-preview">',
+            '<a class="attachment-original-link" href="' + escapeText(readUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="' + renderValue(fileName + " 원본 보기") + '">',
+            '<span class="attachment-preview-frame">',
+            '<img class="attachment-thumbnail" src="' + escapeText(readUrl) + '" alt="' + renderValue("순서 " + orderLabel + " " + fileName + " 미리보기") + '" loading="lazy" decoding="async" />',
+            '<span class="attachment-preview-error" role="status" hidden>미리보기를 불러오지 못했습니다. 원본 보기를 시도해 주세요.</span>',
+            '</span>',
+            '<span class="attachment-original-label" aria-hidden="true">원본 보기</span>',
+            '</a>',
+            '</div>'
+          ].join("");
         }
 
         function isBlankAttachmentType(value) {
@@ -303,6 +432,126 @@ export function renderAdminPage(
           attachmentContext.textContent = text;
         }
 
+        function setReviewCheckboxesDisabled(disabled) {
+          reviewCheckboxDefinitions.forEach((definition) => {
+            definition.input.disabled = disabled;
+          });
+        }
+
+        function renderReviewCheckboxValues(values) {
+          currentReviewCheckboxValues = { ...values };
+          reviewCheckboxDefinitions.forEach((definition) => {
+            const checked = Boolean(values[definition.key]);
+            definition.input.checked = checked;
+            definition.state.textContent = checked
+              ? "현재: 확인 완료"
+              : "현재: 미완료";
+            definition.state.className =
+              "review-checkbox-state " + (checked ? "complete" : "incomplete");
+          });
+          setReviewCheckboxesDisabled(false);
+        }
+
+        function clearReviewCheckboxes() {
+          currentReviewCheckboxValues = null;
+          reviewCheckboxDefinitions.forEach((definition) => {
+            definition.input.checked = false;
+            definition.input.disabled = true;
+            definition.state.textContent = "현재: 사고건 선택 필요";
+            definition.state.className = "review-checkbox-state";
+          });
+          setMessage(reviewCheckboxMessage, "사고건을 선택하면 현재 검수값을 불러옵니다.", "");
+        }
+
+        async function loadReviewCheckboxes(pageId, loadedMessage) {
+          setReviewCheckboxesDisabled(true);
+          setMessage(reviewCheckboxMessage, "검수 상태 불러오는 중..", "");
+
+          try {
+            const response = await fetch(
+              "${ADMIN_REVIEW_CHECKBOXES_ROUTE}?pageId=" + encodeURIComponent(pageId)
+            );
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+              setMessage(
+                reviewCheckboxMessage,
+                data.message || "검수 상태를 불러오지 못했습니다.",
+                "error"
+              );
+              return;
+            }
+
+            renderReviewCheckboxValues(data.values || {});
+            setMessage(
+              reviewCheckboxMessage,
+              loadedMessage || "현재 검수 상태를 불러왔습니다.",
+              "success"
+            );
+          } catch {
+            setMessage(
+              reviewCheckboxMessage,
+              "검수 상태를 불러오지 못했습니다.",
+              "error"
+            );
+          }
+        }
+
+        async function updateReviewCheckbox(reviewKey, checked) {
+          const definition = reviewCheckboxDefinitions.find(
+            (item) => item.key === reviewKey
+          );
+          if (!definition || !selectedAccidentPageId) {
+            return;
+          }
+
+          setReviewCheckboxesDisabled(true);
+          setMessage(reviewCheckboxMessage, definition.label + " 변경 중..", "");
+
+          try {
+            const response = await fetch("${ADMIN_REVIEW_CHECKBOXES_ROUTE}", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                pageId: selectedAccidentPageId,
+                reviewKey,
+                checked
+              })
+            });
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+              if (currentReviewCheckboxValues) {
+                renderReviewCheckboxValues(currentReviewCheckboxValues);
+              }
+              setMessage(
+                reviewCheckboxMessage,
+                data.message || "검수 상태 변경에 실패했습니다.",
+                "error"
+              );
+              return;
+            }
+
+            renderReviewCheckboxValues(data.values || {});
+            setMessage(
+              reviewCheckboxMessage,
+              definition.label + (checked ? " 확인 완료 성공" : " 확인 해제 성공"),
+              "success"
+            );
+          } catch {
+            if (currentReviewCheckboxValues) {
+              renderReviewCheckboxValues(currentReviewCheckboxValues);
+            }
+            setMessage(
+              reviewCheckboxMessage,
+              "검수 상태 변경에 실패했습니다.",
+              "error"
+            );
+          }
+        }
+
         function getAllowedStatusTransitions(status) {
           if (status === "${ACCIDENT_STATUS.received}") {
             return [
@@ -358,7 +607,11 @@ export function renderAdminPage(
             '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
             '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
             '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
+            '<span><b>기계 시리얼</b>' + renderValue(item.sawSerialNumber) + '</span>',
             '</span>',
+            '<a class="manual-send-package-link" href="${ADMIN_MANUAL_SEND_PACKAGE_ROUTE}?pageId=' +
+              encodeURIComponent(item.pageId) +
+              '" target="_blank" rel="noopener noreferrer">수동 발송 package 열기</a>',
             renderStatusControls(item)
           ].join("");
           bindSelectedStatusControls();
@@ -375,9 +628,79 @@ export function renderAdminPage(
           updateSelectedSearchResult();
           updateSelectedContext();
           updateUploadSubmitState();
+          clearReviewCheckboxes();
           setMessage(attachmentListMessage, "", "");
           clearAttachmentSummary();
           attachmentList.innerHTML = "";
+        }
+
+        function getAdminUploadFileExtension(fileName) {
+          const normalizedName = String(fileName || "").trim().toLowerCase();
+          const dotIndex = normalizedName.lastIndexOf(".");
+          return dotIndex >= 0 ? normalizedName.slice(dotIndex) : "";
+        }
+
+        function validateAdminUploadFileMetadata(file, acceptedCount) {
+          const fileName = file.name || "이름 없는 파일";
+          if (acceptedCount >= adminUploadMaxFileCount) {
+            return fileName + ": 사진은 최대 4장까지 업로드할 수 있습니다.";
+          }
+
+          const extension = getAdminUploadFileExtension(fileName);
+          const allowedMimeTypes = adminUploadMimeTypesByExtension[extension];
+          if (!allowedMimeTypes) {
+            return fileName + ": 이미지 파일만 업로드할 수 있습니다.";
+          }
+          if (file.size <= 0) {
+            return fileName + ": 비어 있는 파일은 업로드할 수 없습니다.";
+          }
+          if (file.size > adminUploadMaxFileSizeBytes) {
+            return fileName + ": 각 파일은 10MB 이하만 업로드할 수 있습니다.";
+          }
+
+          const contentType = String(file.type || "").trim().toLowerCase();
+          if (
+            contentType &&
+            contentType !== "application/octet-stream" &&
+            !allowedMimeTypes.includes(contentType)
+          ) {
+            return fileName + ": 파일 이름과 형식이 일치하지 않습니다.";
+          }
+
+          return "";
+        }
+
+        function applyAdminUploadFiles(fileList) {
+          resetUploadIdempotencyKey();
+          const transfer = new DataTransfer();
+          const rejections = [];
+
+          Array.from(fileList || []).forEach((file) => {
+            const rejection = validateAdminUploadFileMetadata(
+              file,
+              transfer.files.length
+            );
+            if (rejection) {
+              rejections.push(rejection);
+              return;
+            }
+
+            transfer.items.add(file);
+          });
+
+          filesInput.files = transfer.files;
+          uploadResults.innerHTML = "";
+          if (rejections.length > 0) {
+            setMessage(
+              uploadMessage,
+              rejections.join(" ") + " 정상 파일은 그대로 유지했습니다.",
+              "error"
+            );
+          } else {
+            setMessage(uploadMessage, "", "");
+          }
+          updateFileSummary();
+          updateUploadSubmitState();
         }
 
         function updateFileSummary() {
@@ -474,6 +797,9 @@ export function renderAdminPage(
             const needsClassification = isBlankAttachmentType(item.attachmentType);
             row.className = "attachment-row" + (needsClassification ? " needs-classification" : "");
             row.innerHTML = [
+              '<div class="attachment-row-main">',
+              renderAttachmentPreview(item, pageId),
+              '<div class="attachment-details">',
               '<div class="attachment-meta">',
               '<div class="attachment-heading">',
               '<span class="attachment-order">#' + renderDisplayOrder(item.displayOrder) + '</span>',
@@ -491,11 +817,11 @@ export function renderAdminPage(
               (item.status === "영구삭제"
   ? ''
   : [
-      '<select name="attachmentType" required>',
+      '<select name="attachmentType" required aria-label="' + renderValue((item.fileName || "첨부 파일") + " 첨부 유형") + '">',
       '<option value="">선택</option>',
       '${attachmentTypeOptions}',
       '</select>',
-      '<button type="submit">변경</button>'
+      '<button type="submit">유형 변경</button>'
     ].join("")),
               (item.status === "휴지통"
   ? '<button type="button" class="secondary restore-button">복구</button>'
@@ -512,8 +838,24 @@ export function renderAdminPage(
         '<button type="button" class="secondary trash-button">휴지통 이동</button>'
       ].join("")),
               '</div>',
-              '<div class="message"></div>'
+              '</div>',
+              '</div>',
+              '<div class="message" role="status" aria-live="polite"></div>'
             ].join("");
+
+            const previewImage = row.querySelector(".attachment-thumbnail");
+            const previewError = row.querySelector(".attachment-preview-error");
+            if (previewImage && previewError) {
+              const showPreviewError = () => {
+                previewImage.hidden = true;
+                previewError.hidden = false;
+                row.classList.add("has-preview-error");
+              };
+              previewImage.addEventListener("error", showPreviewError, { once: true });
+              if (previewImage.complete && previewImage.naturalWidth === 0) {
+                showPreviewError();
+              }
+            }
 
             row.addEventListener("submit", async (event) => {
               event.preventDefault();
@@ -546,7 +888,10 @@ export function renderAdminPage(
                 }
 
                 setMessage(messageNode, "유형 변경 성공", "success");
-                await loadAttachments(pageId, "유형 변경 성공. 첨부 목록을 새로고침했습니다.");
+                await Promise.all([
+                  loadAttachments(pageId, "유형 변경 성공. 첨부 목록을 새로고침했습니다."),
+                  loadReviewCheckboxes(pageId, "첨부 변경 후 검수 상태를 새로고침했습니다.")
+                ]);
               } finally {
                 setControlsDisabled(row, false);
               }
@@ -594,7 +939,10 @@ export function renderAdminPage(
                   }
 
                   setMessage(messageNode, "휴지통 이동 성공", "success");
-                  await loadAttachments(pageId, "휴지통 이동 성공. 첨부 목록을 새로고침했습니다.");
+                  await Promise.all([
+                    loadAttachments(pageId, "휴지통 이동 성공. 첨부 목록을 새로고침했습니다."),
+                    loadReviewCheckboxes(pageId, "첨부 변경 후 검수 상태를 새로고침했습니다.")
+                  ]);
                 } finally {
                   setControlsDisabled(row, false);
                 }
@@ -631,7 +979,10 @@ export function renderAdminPage(
                   }
 
                   setMessage(messageNode, "복구 성공", "success");
-                  await loadAttachments(pageId, "복구 성공. 첨부 목록을 새로고침했습니다.");
+                  await Promise.all([
+                    loadAttachments(pageId, "복구 성공. 첨부 목록을 새로고침했습니다."),
+                    loadReviewCheckboxes(pageId, "첨부 변경 후 검수 상태를 새로고침했습니다.")
+                  ]);
                 } finally {
                   setControlsDisabled(row, false);
                 }
@@ -645,6 +996,7 @@ export function renderAdminPage(
         }
 
         async function selectAccident(item) {
+          resetUploadIdempotencyKey();
           selectedAccidentPageId = item.pageId;
           selectedAccidentReceiptNumber = item.receiptNumber || "";
           selectedAccidentStatus = item.status || "";
@@ -661,10 +1013,13 @@ export function renderAdminPage(
           renderSelectedSummary(selectedAccidentItem);
           updateSelectedContext();
           updateUploadSubmitState();
-          await loadAttachments(item.pageId);
+          await Promise.all([
+            loadAttachments(item.pageId),
+            loadReviewCheckboxes(item.pageId)
+          ]);
         }
 
-        function renderSearchResults(results) {
+        async function renderSearchResults(results) {
           if (!results || results.length === 0) {
             setMessage(searchMessage, "", "");
             searchResults.innerHTML = renderEmptyState("검색 결과가 없습니다.");
@@ -688,6 +1043,7 @@ export function renderAdminPage(
               '<span><b>Phone</b>' + renderValue(item.phone) + '</span>',
               '<span><b>Date</b>' + renderValue(item.occurredAt) + '</span>',
               '<span><b>Operator</b>' + renderValue(item.operatorName) + '</span>',
+              '<span><b>기계 시리얼</b>' + renderValue(item.sawSerialNumber) + '</span>',
               '</span>'
             ].join("");
             button.addEventListener("click", () => {
@@ -697,10 +1053,15 @@ export function renderAdminPage(
           });
           searchResults.innerHTML = "";
           searchResults.appendChild(fragment);
+
+          if (results.length === 1) {
+            await selectAccident(results[0]);
+            setMessage(searchMessage, "검색 결과 1건 · 자동 선택했습니다.", "success");
+          }
         }
 
         async function runSearch(query, message) {
-          currentSearchQuery = String(query || "");
+          currentSearchQuery = String(query || "").trim();
           setMessage(searchMessage, "검색 중..", "");
           searchResults.innerHTML = "";
           setControlsDisabled(searchForm, true);
@@ -716,7 +1077,7 @@ export function renderAdminPage(
               return;
             }
 
-            renderSearchResults(data.results || []);
+            await renderSearchResults(data.results || []);
             if (message && data.results && data.results.length > 0) {
               setMessage(searchMessage, message, "success");
             }
@@ -788,6 +1149,10 @@ export function renderAdminPage(
           try {
             const response = await fetch("${ADMIN_UPLOAD_ROUTE}", {
               method: "POST",
+              headers: {
+                "Idempotency-Key": getUploadIdempotencyKey(),
+                "X-SawStop-Accident-Page-Id": selectedPageIdInput.value
+              },
               body: formData
             });
             const data = await response.json();
@@ -808,10 +1173,17 @@ export function renderAdminPage(
             if (fileInput) {
               fileInput.value = "";
             }
+            resetUploadIdempotencyKey();
             updateFileSummary();
 
             if (selectedPageIdInput.value) {
-              await loadAttachments(selectedPageIdInput.value);
+              await Promise.all([
+                loadAttachments(selectedPageIdInput.value),
+                loadReviewCheckboxes(
+                  selectedPageIdInput.value,
+                  "첨부 업로드 후 검수 상태를 새로고침했습니다."
+                )
+              ]);
             }
           } finally {
             uploadInFlight = false;
@@ -857,7 +1229,13 @@ export function renderAdminPage(
             ].join("\\n");
 
             if (selectedPageIdInput.value) {
-              await loadAttachments(selectedPageIdInput.value);
+              await Promise.all([
+                loadAttachments(selectedPageIdInput.value),
+                loadReviewCheckboxes(
+                  selectedPageIdInput.value,
+                  "FIFO 처리 후 검수 상태를 새로고침했습니다."
+                )
+              ]);
             }
           } finally {
             fifoProcessButton.disabled = false;
@@ -869,11 +1247,7 @@ export function renderAdminPage(
             return;
           }
 
-          const transfer = new DataTransfer();
-          Array.from(fileList).forEach((file) => transfer.items.add(file));
-          filesInput.files = transfer.files;
-          updateFileSummary();
-          updateUploadSubmitState();
+          applyAdminUploadFiles(fileList);
         }
 
         adminUploadDropZone.addEventListener("click", () => filesInput.click());
@@ -896,14 +1270,49 @@ export function renderAdminPage(
           handleUploadDropFiles(event.dataTransfer && event.dataTransfer.files);
         });
 
-        attachmentTypeSelect.addEventListener("change", updateUploadSubmitState);
-        filesInput.addEventListener("change", () => {
-          updateFileSummary();
+        attachmentTypeSelect.addEventListener("change", () => {
+          resetUploadIdempotencyKey();
           updateUploadSubmitState();
+        });
+        filesInput.addEventListener("change", () => {
+          applyAdminUploadFiles(filesInput.files);
+        });
+        reviewCheckboxList.addEventListener("change", (event) => {
+          const checkbox = event.target.closest('input[type="checkbox"][data-review-key]');
+          if (!checkbox) {
+            return;
+          }
+
+          const definition = reviewCheckboxDefinitions.find(
+            (item) => item.key === checkbox.dataset.reviewKey
+          );
+          if (!definition) {
+            return;
+          }
+
+          const checked = checkbox.checked;
+          if (
+            checked &&
+            !window.confirm(
+              definition.label +
+                "를 확인 완료로 변경할까요? 실제 검토를 마친 경우에만 확인해 주세요."
+            )
+          ) {
+            checkbox.checked = false;
+            return;
+          }
+
+          void updateReviewCheckbox(definition.key, checked);
         });
         updateSelectedContext();
         updateFileSummary();
         updateUploadSubmitState();
+        clearReviewCheckboxes();
+
+        const initialReceiptQuery = searchQueryInput.value.trim();
+        if (initialReceiptQuery) {
+          void runSearch(initialReceiptQuery, "접수번호 링크를 자동 검색했습니다.");
+        }
 
       </script>
     `
@@ -979,6 +1388,69 @@ export function renderAdminPage(
           }
           .attachment-card {
             grid-column: 1 / -1;
+          }
+          .review-checkbox-card {
+            grid-column: 1 / -1;
+          }
+          .review-checkbox-list {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+          }
+          .review-checkbox-row {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 8px 10px;
+            align-items: start;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fbf8f1;
+            cursor: pointer;
+          }
+          .review-checkbox-row:has(input:checked) {
+            border-color: #5f8a3b;
+            background: #eef7e7;
+          }
+          .review-checkbox-row:has(input:disabled) {
+            cursor: not-allowed;
+            opacity: 0.72;
+          }
+          .review-checkbox-row input {
+            width: 20px;
+            height: 20px;
+            margin: 1px 0 0;
+            accent-color: var(--success);
+          }
+          .review-checkbox-copy {
+            display: grid;
+            gap: 4px;
+            min-width: 0;
+          }
+          .review-checkbox-copy span {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+          }
+          .review-checkbox-state {
+            grid-column: 2;
+            justify-self: start;
+            padding: 3px 8px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+          }
+          .review-checkbox-state.complete {
+            border-color: #5f8a3b;
+            color: #315b16;
+          }
+          .review-checkbox-state.incomplete {
+            border-color: #b3483f;
+            color: #7a2119;
           }
           .upload-target {
             display: grid;
@@ -1118,6 +1590,89 @@ export function renderAdminPage(
             border-color: #c47f00;
             background: #fff8e6;
           }
+          .attachment-row-main {
+            display: grid;
+            grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+            gap: 14px;
+            align-items: start;
+            min-width: 0;
+          }
+          .attachment-details {
+            display: grid;
+            gap: 10px;
+            min-width: 0;
+          }
+          .attachment-preview {
+            min-width: 0;
+          }
+          .attachment-original-link {
+            display: grid;
+            gap: 7px;
+            color: var(--accent);
+            text-decoration: none;
+          }
+          .attachment-original-link:focus-visible {
+            outline: 3px solid rgba(22, 99, 163, 0.28);
+            outline-offset: 3px;
+            border-radius: 12px;
+          }
+          .attachment-preview-frame {
+            display: grid;
+            place-items: center;
+            width: 100%;
+            min-height: 140px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #ece6d8;
+          }
+          .attachment-thumbnail {
+            display: block;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #ece6d8;
+            object-fit: contain;
+          }
+          .attachment-preview-error {
+            min-height: 140px;
+            padding: 16px;
+            place-items: center;
+            color: var(--accent-2);
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.45;
+            text-align: center;
+          }
+          .attachment-preview-error:not([hidden]) {
+            display: grid;
+          }
+          .attachment-original-label {
+            justify-self: start;
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+          .attachment-preview-unavailable {
+            display: grid;
+            place-items: center;
+            align-content: center;
+            gap: 5px;
+            min-height: 140px;
+            padding: 16px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #f3eee4;
+            color: var(--muted);
+            text-align: center;
+          }
+          .attachment-preview-unavailable strong {
+            color: var(--ink);
+          }
+          .attachment-preview-unavailable span {
+            font-size: 13px;
+            line-height: 1.45;
+          }
           .attachment-meta {
             display: grid;
             gap: 8px;
@@ -1209,7 +1764,10 @@ export function renderAdminPage(
           .file-input {
             position: absolute;
             width: 1px;
+            max-width: 1px;
             height: 1px;
+            padding: 0;
+            border: 0;
             opacity: 0;
             pointer-events: none;
           }
@@ -1299,6 +1857,17 @@ export function renderAdminPage(
             background: #ece6d8;
             color: var(--ink);
           }
+          .manual-send-package-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: #e0e7ff;
+            color: var(--accent);
+            font-weight: 700;
+            text-decoration: none;
+          }
           .result-item {
             width: 100%;
             text-align: left;
@@ -1364,8 +1933,12 @@ export function renderAdminPage(
             .grid { grid-template-columns: 1fr; }
             .panel-head { flex-direction: column; }
             .row { flex-direction: column; }
+            .review-checkbox-list { grid-template-columns: 1fr; }
             .attachment-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .attachment-row-main { grid-template-columns: minmax(0, 1fr); }
             .attachment-actions { flex-direction: column; align-items: stretch; }
+            .trash-reason-control { min-width: 0; }
+            .attachment-fields { grid-template-columns: minmax(0, 1fr); }
             .upload-target-fields { grid-template-columns: 1fr; }
             .upload-result-fields { grid-template-columns: 1fr; }
             .accident-result-fields { grid-template-columns: 1fr; }

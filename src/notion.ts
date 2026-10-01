@@ -1,22 +1,45 @@
 import {
+  ACCIDENT_MANUAL_SEND_PROPERTY_NAMES,
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
+  ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES,
+  ACCIDENT_REPORT_DRAFT_MARKER,
   ASIA_SEOUL_TIMEZONE,
   ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
   ATTACHMENT_DB_STATUS,
   ACCIDENT_DB_PROPERTY_NAMES,
-  ATTACHMENT_TRASH_RETENTION_DAYS,
   ATTACHMENT_TYPE_OPTIONS,
   NOTION_API_BASE_URL,
   NOTION_API_VERSION
 } from "./constants.ts";
+import { buildAttachmentTrashDates } from "./attachment-trash-date.ts";
+import {
+  fetchWithExternalTimeout,
+  fetchWithExternalRetry,
+  type ExternalRetryDependencies
+} from "./external-retry.ts";
+import {
+  buildCanonicalReportBlockPlan,
+  buildLocalConservativeReportDraft,
+  CANONICAL_REPORT_SECTIONS,
+  LOCAL_CONSERVATIVE_NEEDS_FOLLOW_UP_MARKER,
+  LOCAL_CONSERVATIVE_REVIEW_MARKER,
+  type LocalConservativeReportSource
+} from "./report-draft.ts";
 import type {
+  AccidentManualSendPackageData,
+  AccidentManualSendResultValues,
   AdminAttachmentListItem,
+  AdminManualSendOutcome,
+  AdminReviewCheckboxKey,
+  AdminReviewCheckboxValues,
   AccidentPageBodyBlockSummary,
+  AccidentReportAttachmentSummary,
   AccidentReportPropertySummary,
   CreateAttachmentPageRecordInput,
   CreateAccidentPageInput,
   NotionAttachmentDbPropertiesPayload,
+  NotionAttachmentPageRecord,
   NotionAccidentDbParent,
   NotionBlockChildrenListResponse,
   NotionPagePropertiesPayload,
@@ -25,65 +48,10 @@ import type {
   WorkerEnv
 } from "./types.ts";
 
-const DEFAULT_ACCIDENT_PAGE_BODY_TEMPLATE = [
-  {
-    heading: "Incident Information",
-    lines: [
-      "Date of Occurence:",
-      "Business or School Name (NA if Not Applicable):"
-    ]
-  },
-  {
-    heading: "People / Contact Information",
-    lines: [
-      "Operator Name:",
-      "Name of Person Who Touched the Blade:",
-      "Phone:",
-      "Email:",
-      "Consent for Promotional Use:"
-    ]
-  },
-  {
-    heading: "Injury Information",
-    lines: [
-      "Body Part Contacted (right or left hand, finger, thumb, etc.):",
-      "Was There A Visible Injury Mark?:",
-      "Wound treatment methods:",
-      "Estimate of the injury if it were to have occured while using a non-SawStop saw:"
-    ]
-  },
-  {
-    heading: "Saw / Cartridge Information",
-    lines: [
-      "Saw Serial Number:",
-      "Brake Cartridge Serial Number:",
-      "Type of blade being used:",
-      "Saw Blade Details:"
-    ]
-  },
-  {
-    heading: "Material / Setup / Conditions",
-    lines: [
-      "Type of Material Being Cut?:",
-      "Workpiece Size & Cut Type:",
-      "Was a Blade Guard, Riving Knife or Splitter in Place? (please specify which, if any):",
-      "Were There Other Devices Being Used When the Cut was Made?:",
-      "Was the saw operator wearing gloves at the time?:",
-      "What was the approximate feed rate of the material when the accident occured (inches per second)?:"
-    ]
-  },
-  {
-    heading: "Incident Description",
-    lines: [
-      "Cause of the Incident (Customer Feedback):",
-      "To the best of your ability, please describe the circumstances of how the accident happened:"
-    ]
-  },
-  {
-    heading: "Attachments",
-    lines: ["첨부(선택):"]
-  }
-] as const;
+const DEFAULT_ACCIDENT_PAGE_BODY_TEMPLATE = CANONICAL_REPORT_SECTIONS.map((section) => ({
+  heading: section.heading,
+  lines: section.fields.map((field) => field.label)
+}));
 
 type NotionTextRichText = {
   type: "text";
@@ -115,14 +83,169 @@ type RequiredStringWorkerEnvKey =
   | "NOTION_ACCIDENT_DB_ID"
   | "NOTION_ATTACHMENT_DB_ID";
 
-type FifoTrashCandidate = {
-  attachmentPageId: string;
+export type FifoTrashCandidateInput = {
+  attachmentPageId: string | null;
   r2Key: string | null;
   accidentPageId: string | null;
   permanentDeleteAt: string | null;
   attachmentType: string | null;
   status: string | null;
 };
+
+export type FifoTrashCandidate = {
+  attachmentPageId: string;
+  r2Key: string;
+  accidentPageId: string;
+  permanentDeleteAt: string;
+  attachmentType: string | null;
+  status: typeof ATTACHMENT_DB_STATUS.trash;
+};
+
+export type FifoTrashCandidateExclusionReason =
+  | "missing_attachment_page_id"
+  | "status_not_trash"
+  | "missing_permanent_delete_at"
+  | "not_expired"
+  | "missing_r2_key"
+  | "missing_accident_page_id";
+
+export type FifoTrashCandidateExclusion = {
+  attachmentPageId: string | null;
+  permanentDeleteAt: string | null;
+  reason: FifoTrashCandidateExclusionReason;
+};
+
+export type FifoTrashCandidateSelection = {
+  candidates: FifoTrashCandidate[];
+  exclusions: FifoTrashCandidateExclusion[];
+  totalRows: number;
+  eligibleCandidateCount: number;
+  deferredCandidateCount: number;
+};
+
+export type NotionOwnershipErrorCode =
+  | "page_identity_mismatch"
+  | "accident_parent_mismatch"
+  | "attachment_parent_mismatch"
+  | "attachment_relation_mismatch";
+
+export type AttachmentLifecycleAction = "type" | "trash" | "restore";
+
+export type AttachmentLifecycleErrorCode =
+  | "invalid_state"
+  | "missing_r2_key"
+  | "missing_r2_object";
+
+export class NotionPageNotFoundError extends Error {
+  readonly pageId: string;
+
+  constructor(pageId: string) {
+    super("Notion page was not found");
+    this.name = "NotionPageNotFoundError";
+    this.pageId = pageId;
+  }
+}
+
+export class NotionOwnershipError extends Error {
+  readonly code: NotionOwnershipErrorCode;
+  readonly pageId: string;
+  readonly attachmentPageId?: string;
+
+  constructor(
+    code: NotionOwnershipErrorCode,
+    {
+      pageId,
+      attachmentPageId
+    }: {
+      pageId: string;
+      attachmentPageId?: string;
+    }
+  ) {
+    super(`Notion ownership check failed: ${code}`);
+    this.name = "NotionOwnershipError";
+    this.code = code;
+    this.pageId = pageId;
+    this.attachmentPageId = attachmentPageId;
+  }
+}
+
+export class AttachmentLifecycleError extends Error {
+  readonly code: AttachmentLifecycleErrorCode;
+  readonly action: AttachmentLifecycleAction;
+  readonly currentStatus: string | null;
+
+  constructor(
+    code: AttachmentLifecycleErrorCode,
+    {
+      action,
+      currentStatus
+    }: {
+      action: AttachmentLifecycleAction;
+      currentStatus: string | null;
+    }
+  ) {
+    super(`Attachment lifecycle check failed: ${code}`);
+    this.name = "AttachmentLifecycleError";
+    this.code = code;
+    this.action = action;
+    this.currentStatus = currentStatus;
+  }
+}
+
+export class AccidentManualSendNotReadyError extends Error {
+  constructor() {
+    super("Accident is not ready for a manual send result");
+    this.name = "AccidentManualSendNotReadyError";
+  }
+}
+
+export function reportNotionOwnershipError(route: string, error: unknown) {
+  if (!(error instanceof NotionOwnershipError)) {
+    return false;
+  }
+
+  console.error("Admin ownership guard rejected request", {
+    route,
+    code: error.code,
+    pageId: error.pageId,
+    attachmentPageId: error.attachmentPageId ?? null
+  });
+  return true;
+}
+
+export function reportAttachmentLifecycleError(route: string, error: unknown) {
+  if (!(error instanceof AttachmentLifecycleError)) {
+    return null;
+  }
+
+  console.error("Admin attachment lifecycle guard rejected request", {
+    route,
+    code: error.code,
+    action: error.action,
+    currentStatus: error.currentStatus
+  });
+
+  if (error.code === "missing_r2_key" || error.code === "missing_r2_object") {
+    return "저장된 원본 파일을 찾을 수 없어 이 첨부를 복구할 수 없습니다.";
+  }
+
+  if (
+    error.action === "restore" &&
+    error.currentStatus === ATTACHMENT_DB_STATUS.permanentlyDeleted
+  ) {
+    return "영구삭제된 첨부는 복구할 수 없습니다.";
+  }
+
+  if (error.action === "restore") {
+    return "휴지통에 있는 첨부만 복구할 수 있습니다.";
+  }
+
+  if (error.action === "trash") {
+    return "현재 상태인 첨부만 휴지통으로 이동할 수 있습니다.";
+  }
+
+  return "현재 상태인 첨부만 유형을 변경할 수 있습니다.";
+}
 
 
 function getRequiredEnv(env: WorkerEnv, name: RequiredStringWorkerEnvKey) {
@@ -151,17 +274,22 @@ async function readNotionError(response: Response) {
 async function createNotionPage(
   env: WorkerEnv,
   parent: NotionAccidentDbParent,
-  properties: NotionPagePropertiesPayload
+  properties: NotionPagePropertiesPayload,
+  retryDependencies?: ExternalRetryDependencies
 ): Promise<NotionPageSummary> {
   const token = getRequiredEnv(env, "NOTION_TOKEN");
-  const response = await fetch(`${NOTION_API_BASE_URL}/pages`, {
-    method: "POST",
-    headers: getNotionHeaders(token),
-    body: JSON.stringify({
-      parent,
-      properties
-    })
-  });
+  const response = await fetchWithExternalTimeout(
+    `${NOTION_API_BASE_URL}/pages`,
+    {
+      method: "POST",
+      headers: getNotionHeaders(token),
+      body: JSON.stringify({
+        parent,
+        properties
+      })
+    },
+    retryDependencies
+  );
 
   if (!response.ok) {
     throw new Error(`Notion create page failed: ${await readNotionError(response)}`);
@@ -260,39 +388,11 @@ function getCurrentSeoulIsoDateTime() {
   return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}`;
 }
 
-function addDaysToIsoDateTime(dateTime: string, days: number) {
-  const [datePart, timePart] = dateTime.split("T");
-  if (!datePart || !timePart) {
-    throw new Error(`Invalid ISO datetime: ${dateTime}`);
-  }
-
-  const [year, month, day] = datePart.split("-").map((value) => Number(value));
-  const [hour, minute, second] = timePart.split(":").map((value) => Number(value));
-  const utcDate = new Date(Date.UTC(year, month - 1, day, hour - 9, minute, second));
-  utcDate.setUTCDate(utcDate.getUTCDate() + days);
-
-  const formatter = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: ASIA_SEOUL_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-  });
-
-  const parts = formatter.formatToParts(utcDate);
-  const values = Object.fromEntries(
-    parts
-      .filter((part) => part.type !== "literal")
-      .map((part) => [part.type, part.value])
-  ) as Record<string, string>;
-
-  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}`;
+export function buildAttachmentId(pageId: string, displayOrder: number) {
+  return `ATT-${pageId}-${String(displayOrder).padStart(4, "0")}`;
 }
 
-export function buildAttachmentId(receiptNumber: string, displayOrder: number) {
+export function buildLegacyAttachmentId(receiptNumber: string, displayOrder: number) {
   return `ATT-${receiptNumber}-${String(displayOrder).padStart(4, "0")}`;
 }
 
@@ -301,7 +401,7 @@ function buildAttachmentPageProperties(
 ): NotionAttachmentDbPropertiesPayload {
   const properties: NotionAttachmentDbPropertiesPayload = {
     [ATTACHMENT_DB_PROPERTY_NAMES.attachmentId]: toTitle(
-      buildAttachmentId(input.receiptNumber, input.displayOrder)
+      buildAttachmentId(input.pageId, input.displayOrder)
     ),
     [ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]: toRelation(input.pageId),
     [ATTACHMENT_DB_PROPERTY_NAMES.fileName]: toRichText(input.fileName),
@@ -348,7 +448,7 @@ function buildHeading2Block(content: string) {
 
 export function buildDefaultAccidentPageBodyChildren() {
   const children: NotionDefaultBodyBlock[] = [
-    buildParagraphBlock("Report a Save (Known or Suspected Finger Contact)")
+    buildParagraphBlock(ACCIDENT_REPORT_DRAFT_MARKER)
   ];
 
   for (const section of DEFAULT_ACCIDENT_PAGE_BODY_TEMPLATE) {
@@ -363,17 +463,51 @@ export function buildDefaultAccidentPageBodyChildren() {
 
 async function listBlockChildren(env: WorkerEnv, blockId: string) {
   const token = getRequiredEnv(env, "NOTION_TOKEN");
-  const response = await fetch(`${NOTION_API_BASE_URL}/blocks/${blockId}/children?page_size=100`, {
-    method: "GET",
-    headers: getNotionHeaders(token)
-  });
+  const results: NonNullable<NotionBlockChildrenListResponse["results"]> = [];
+  const seenCursors = new Set<string>();
+  let startCursor: string | null = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Notion list block children failed: ${response.status} ${errorText}`);
-  }
+  do {
+    const url = new URL(`${NOTION_API_BASE_URL}/blocks/${blockId}/children`);
+    url.searchParams.set("page_size", "100");
+    if (startCursor) {
+      url.searchParams.set("start_cursor", startCursor);
+    }
 
-  return (await response.json()) as NotionBlockChildrenListResponse;
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: getNotionHeaders(token)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Notion list block children failed: ${response.status} ${errorText}`);
+    }
+
+    const page = (await response.json()) as NotionBlockChildrenListResponse & {
+      has_more?: boolean;
+      next_cursor?: string | null;
+    };
+    results.push(...(page.results ?? []));
+
+    if (!page.has_more) {
+      startCursor = null;
+      continue;
+    }
+
+    const nextCursor = page.next_cursor?.trim();
+    if (!nextCursor) {
+      throw new Error("Notion list block children returned no next cursor");
+    }
+    if (seenCursors.has(nextCursor)) {
+      throw new Error("Notion list block children repeated a cursor");
+    }
+
+    seenCursors.add(nextCursor);
+    startCursor = nextCursor;
+  } while (startCursor);
+
+  return { results } satisfies NotionBlockChildrenListResponse;
 }
 
 function richTextToPlainText(richText = [] as Array<{ plain_text?: string; text?: { content?: string } }>) {
@@ -413,6 +547,62 @@ export async function getAccidentPageBodyBlocks(env: WorkerEnv, pageId: string) 
     .filter((block): block is AccidentPageBodyBlockSummary => block !== null);
 }
 
+export function selectCanonicalAccidentReportBodyBlocks(
+  blocks: AccidentPageBodyBlockSummary[]
+) {
+  const markerIndexes = blocks
+    .map((block, index) =>
+      block.text.trim() === ACCIDENT_REPORT_DRAFT_MARKER ? index : -1
+    )
+    .filter((index) => index >= 0)
+    .reverse();
+
+  for (const markerIndex of markerIndexes) {
+    let cursor = markerIndex + 1;
+    let valid = true;
+
+    for (const section of CANONICAL_REPORT_SECTIONS) {
+      const headingBlock = blocks[cursor];
+      if (
+        headingBlock?.type !== "heading_2" ||
+        headingBlock.text.trim() !== section.heading
+      ) {
+        valid = false;
+        break;
+      }
+      cursor += 1;
+
+      for (const field of section.fields) {
+        const labelBlock = blocks[cursor];
+        const valueBlock = blocks[cursor + 1];
+        if (
+          labelBlock?.type !== "paragraph" ||
+          labelBlock.text.trim() !== field.label ||
+          valueBlock?.type !== "paragraph" ||
+          (field.rule === "attachment_placeholder" &&
+            valueBlock.text.trim() !== "")
+        ) {
+          valid = false;
+          break;
+        }
+        cursor += 2;
+      }
+
+      if (!valid) {
+        break;
+      }
+    }
+
+    if (!valid) {
+      continue;
+    }
+
+    return blocks.slice(markerIndex, cursor);
+  }
+
+  throw new Error("Canonical Notion accident report body was not found");
+}
+
 type NotionPagePropertyValue = {
   type?: string;
   title?: Array<{ plain_text?: string; text?: { content?: string } }>;
@@ -425,25 +615,433 @@ type NotionPagePropertyValue = {
   email?: string | null;
   number?: number | null;
   checkbox?: boolean | null;
+  formula?: { boolean?: boolean | null } | null;
   files?: Array<{ name?: string | null }>;
+  relation?: Array<{ id?: string }>;
 };
 
-async function getAccidentPageProperties(env: WorkerEnv, pageId: string) {
-  const token = getRequiredEnv(env, "NOTION_TOKEN");
-  const response = await fetch(`${NOTION_API_BASE_URL}/pages/${pageId}`, {
-    method: "GET",
-    headers: getNotionHeaders(token)
-  });
+type NotionPageOwnershipData = {
+  id?: string;
+  parent?: {
+    type?: string;
+    database_id?: string;
+  };
+  properties?: Record<string, NotionPagePropertyValue>;
+};
 
-  if (!response.ok) {
-    throw new Error(`Notion get accident page failed: ${await readNotionError(response)}`);
+function normalizeNotionId(value: string | undefined) {
+  return (value ?? "").replaceAll("-", "").trim().toLowerCase();
+}
+
+async function getNotionPageOwnershipData(
+  env: WorkerEnv,
+  pageId: string,
+  retryDependencies?: ExternalRetryDependencies
+) {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const response = await fetchWithExternalRetry(
+    `${NOTION_API_BASE_URL}/pages/${pageId}`,
+    {
+      method: "GET",
+      headers: getNotionHeaders(token)
+    },
+    retryDependencies
+  );
+
+  if (response.status === 400 || response.status === 404) {
+    throw new NotionPageNotFoundError(pageId);
   }
 
-  const data = (await response.json()) as {
-    properties?: Record<string, NotionPagePropertyValue>;
+  if (!response.ok) {
+    throw new Error(`Notion get page failed: ${await readNotionError(response)}`);
+  }
+
+  return (await response.json()) as NotionPageOwnershipData;
+}
+
+function assertPageIdentity(
+  data: NotionPageOwnershipData,
+  pageId: string,
+  attachmentPageId?: string
+) {
+  if (normalizeNotionId(data.id) !== normalizeNotionId(attachmentPageId ?? pageId)) {
+    throw new NotionOwnershipError("page_identity_mismatch", {
+      pageId,
+      attachmentPageId
+    });
+  }
+}
+
+function hasDatabaseParent(data: NotionPageOwnershipData, databaseId: string) {
+  return (
+    data.parent?.type === "database_id" &&
+    normalizeNotionId(data.parent.database_id) === normalizeNotionId(databaseId)
+  );
+}
+
+export async function assertAccidentPageOwnership(
+  env: WorkerEnv,
+  pageId: string,
+  retryDependencies?: ExternalRetryDependencies
+) {
+  const data = await getNotionPageOwnershipData(env, pageId, retryDependencies);
+  assertPageIdentity(data, pageId);
+
+  if (!hasDatabaseParent(data, getRequiredEnv(env, "NOTION_ACCIDENT_DB_ID"))) {
+    throw new NotionOwnershipError("accident_parent_mismatch", { pageId });
+  }
+
+  return data;
+}
+
+export async function assertAttachmentPageOwnership(
+  env: WorkerEnv,
+  {
+    pageId,
+    attachmentPageId
+  }: {
+    pageId: string;
+    attachmentPageId: string;
+  }
+) {
+  if (pageId.trim().length === 0) {
+    throw new NotionOwnershipError("attachment_relation_mismatch", {
+      pageId,
+      attachmentPageId
+    });
+  }
+
+  const [accidentPage, attachmentPage] = await Promise.all([
+    assertAccidentPageOwnership(env, pageId),
+    getNotionPageOwnershipData(env, attachmentPageId)
+  ]);
+  assertPageIdentity(attachmentPage, pageId, attachmentPageId);
+
+  if (!hasDatabaseParent(
+    attachmentPage,
+    getRequiredEnv(env, "NOTION_ATTACHMENT_DB_ID")
+  )) {
+    throw new NotionOwnershipError("attachment_parent_mismatch", {
+      pageId,
+      attachmentPageId
+    });
+  }
+
+  const relationIds = (
+    attachmentPage.properties?.[ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]
+      ?.relation ?? []
+  )
+    .map((relation) => normalizeNotionId(relation.id))
+    .filter((relationId) => relationId.length > 0);
+
+  if (
+    relationIds.length !== 1 ||
+    relationIds[0] !== normalizeNotionId(pageId)
+  ) {
+    throw new NotionOwnershipError("attachment_relation_mismatch", {
+      pageId,
+      attachmentPageId
+    });
+  }
+
+  return {
+    accidentPage,
+    attachmentPage
   };
+}
+
+export async function assertAttachmentLifecycleTransition(
+  env: WorkerEnv,
+  {
+    pageId,
+    attachmentPageId,
+    action
+  }: {
+    pageId: string;
+    attachmentPageId: string;
+    action: AttachmentLifecycleAction;
+  }
+) {
+  const ownership = await assertAttachmentPageOwnership(env, {
+    pageId,
+    attachmentPageId
+  });
+  const currentStatus =
+    ownership.attachmentPage.properties?.[ATTACHMENT_DB_PROPERTY_NAMES.status]
+      ?.status?.name ?? null;
+  const requiredStatus =
+    action === "restore"
+      ? ATTACHMENT_DB_STATUS.trash
+      : ATTACHMENT_DB_STATUS.current;
+
+  if (currentStatus !== requiredStatus) {
+    throw new AttachmentLifecycleError("invalid_state", {
+      action,
+      currentStatus
+    });
+  }
+
+  if (action !== "restore") {
+    return ownership;
+  }
+
+  const r2Key = propertyToPlainText(
+    ownership.attachmentPage.properties?.[ATTACHMENT_DB_PROPERTY_NAMES.r2Key]
+  ).trim();
+  if (r2Key.length === 0) {
+    throw new AttachmentLifecycleError("missing_r2_key", {
+      action,
+      currentStatus
+    });
+  }
+
+  const r2Object = await env.ATTACHMENT_BUCKET.get(r2Key);
+  if (!r2Object) {
+    throw new AttachmentLifecycleError("missing_r2_object", {
+      action,
+      currentStatus
+    });
+  }
+
+  return {
+    ...ownership,
+    r2Key
+  };
+}
+
+async function getAccidentPageProperties(env: WorkerEnv, pageId: string) {
+  const data = await assertAccidentPageOwnership(env, pageId);
 
   return data.properties ?? {};
+}
+
+function readAccidentReviewCheckboxValue(
+  properties: Record<string, NotionPagePropertyValue>,
+  propertyName: string
+) {
+  const property = properties[propertyName];
+
+  if (
+    property?.type !== "checkbox" ||
+    typeof property.checkbox !== "boolean"
+  ) {
+    throw new Error(
+      `Notion accident review checkbox schema mismatch: ${propertyName}`
+    );
+  }
+
+  return property.checkbox;
+}
+
+function readAccidentReviewCheckboxValues(
+  properties: Record<string, NotionPagePropertyValue>
+): AdminReviewCheckboxValues {
+  return {
+    englishReviewComplete: readAccidentReviewCheckboxValue(
+      properties,
+      ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES.englishReviewComplete
+    ),
+    attachmentFinalCheck: readAccidentReviewCheckboxValue(
+      properties,
+      ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES.attachmentFinalCheck
+    ),
+    outputCheckComplete: readAccidentReviewCheckboxValue(
+      properties,
+      ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES.outputCheckComplete
+    )
+  };
+}
+
+function readAccidentAutoSendReadyValue(
+  properties: Record<string, NotionPagePropertyValue>
+) {
+  const property =
+    properties[ACCIDENT_DB_PREPARED_PROPERTY_NAMES.autoSendReady];
+
+  if (
+    property?.type !== "formula" ||
+    typeof property.formula?.boolean !== "boolean"
+  ) {
+    throw new Error(
+      `Notion accident send-ready formula schema mismatch: ${ACCIDENT_DB_PREPARED_PROPERTY_NAMES.autoSendReady}`
+    );
+  }
+
+  return property.formula.boolean;
+}
+
+export async function getAccidentReviewCheckboxes(
+  env: WorkerEnv,
+  pageId: string
+) {
+  const properties = await getAccidentPageProperties(env, pageId);
+  return readAccidentReviewCheckboxValues(properties);
+}
+
+export async function getAccidentSendReadyGateState(
+  env: WorkerEnv,
+  pageId: string
+) {
+  const properties = await getAccidentPageProperties(env, pageId);
+  const reviewValues = readAccidentReviewCheckboxValues(properties);
+  const autoSendReady = readAccidentAutoSendReadyValue(properties);
+  const allReviewsComplete = Object.values(reviewValues).every(Boolean);
+
+  if (!allReviewsComplete || !autoSendReady) {
+    return {
+      reviewValues,
+      autoSendReady,
+      blockingMarkers: [] as string[],
+      ready: false
+    };
+  }
+
+  const blocks = await getAccidentPageBodyBlocks(env, pageId);
+  const blockingMarkers = [
+    LOCAL_CONSERVATIVE_REVIEW_MARKER,
+    LOCAL_CONSERVATIVE_NEEDS_FOLLOW_UP_MARKER
+  ].filter((marker) =>
+    blocks.some((block) => block.text.includes(marker))
+  );
+
+  return {
+    reviewValues,
+    autoSendReady,
+    blockingMarkers,
+    ready: blockingMarkers.length === 0
+  };
+}
+
+export async function updateAccidentReviewCheckbox(
+  env: WorkerEnv,
+  {
+    pageId,
+    reviewKey,
+    checked
+  }: {
+    pageId: string;
+    reviewKey: AdminReviewCheckboxKey;
+    checked: boolean;
+  }
+) {
+  await getAccidentReviewCheckboxes(env, pageId);
+
+  await updatePageProperties(env, {
+    pageId,
+    properties: {
+      [ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES[reviewKey]]: {
+        checkbox: checked
+      }
+    }
+  });
+
+  const values = await getAccidentReviewCheckboxes(env, pageId);
+  if (values[reviewKey] !== checked) {
+    throw new Error(
+      `Notion accident review checkbox readback mismatch: ${reviewKey}`
+    );
+  }
+
+  return values;
+}
+
+function readAccidentManualSendResultValues(
+  properties: Record<string, NotionPagePropertyValue>
+): AccidentManualSendResultValues {
+  const completedAtProperty =
+    properties[ACCIDENT_MANUAL_SEND_PROPERTY_NAMES.completedAt];
+  const failureMemoProperty =
+    properties[ACCIDENT_MANUAL_SEND_PROPERTY_NAMES.failureMemo];
+
+  if (
+    completedAtProperty?.type !== "date" ||
+    (completedAtProperty.date !== null &&
+      typeof completedAtProperty.date?.start !== "string")
+  ) {
+    throw new Error(
+      `Notion accident manual-send date schema mismatch: ${ACCIDENT_MANUAL_SEND_PROPERTY_NAMES.completedAt}`
+    );
+  }
+
+  if (
+    failureMemoProperty?.type !== "rich_text" ||
+    !Array.isArray(failureMemoProperty.rich_text)
+  ) {
+    throw new Error(
+      `Notion accident manual-send memo schema mismatch: ${ACCIDENT_MANUAL_SEND_PROPERTY_NAMES.failureMemo}`
+    );
+  }
+
+  return {
+    completedAt: completedAtProperty.date?.start ?? null,
+    failureMemo: propertyToPlainText(failureMemoProperty)
+  };
+}
+
+async function getAccidentManualSendResultValues(
+  env: WorkerEnv,
+  pageId: string
+) {
+  const properties = await getAccidentPageProperties(env, pageId);
+  return readAccidentManualSendResultValues(properties);
+}
+
+export async function updateAccidentManualSendResult(
+  env: WorkerEnv,
+  input:
+    | {
+        pageId: string;
+        outcome: Extract<AdminManualSendOutcome, "success">;
+        sentAt: string;
+      }
+    | {
+        pageId: string;
+        outcome: Extract<AdminManualSendOutcome, "failure">;
+        failureMemo: string;
+      }
+) {
+  const gate = await getAccidentSendReadyGateState(env, input.pageId);
+  if (!gate.ready) {
+    throw new AccidentManualSendNotReadyError();
+  }
+
+  await getAccidentManualSendResultValues(env, input.pageId);
+
+  const properties =
+    input.outcome === "success"
+      ? {
+          [ACCIDENT_MANUAL_SEND_PROPERTY_NAMES.completedAt]: {
+            date: { start: input.sentAt }
+          }
+        }
+      : {
+          [ACCIDENT_MANUAL_SEND_PROPERTY_NAMES.failureMemo]: toRichText(
+            input.failureMemo
+          )
+        };
+
+  await updatePageProperties(env, {
+    pageId: input.pageId,
+    properties
+  });
+
+  const resultValues = await getAccidentManualSendResultValues(
+    env,
+    input.pageId
+  );
+
+  if (
+    (input.outcome === "success" &&
+      resultValues.completedAt !== input.sentAt) ||
+    (input.outcome === "failure" &&
+      resultValues.failureMemo !== input.failureMemo)
+  ) {
+    throw new Error(
+      `Notion accident manual-send ${input.outcome} readback mismatch`
+    );
+  }
+
+  return resultValues;
 }
 
 function propertyToPlainText(property: NotionPagePropertyValue | undefined) {
@@ -537,15 +1135,278 @@ function extractAccidentReportProperties(
 }
 
 export async function getAccidentPageReportData(env: WorkerEnv, pageId: string) {
-  const [blocks, pageProperties] = await Promise.all([
+  await assertAccidentPageOwnership(env, pageId);
+  const [allBlocks, attachments] = await Promise.all([
     getAccidentPageBodyBlocks(env, pageId),
-    getAccidentPageProperties(env, pageId)
+    listCurrentReportAttachments(env, pageId)
   ]);
 
   return {
-    blocks,
-    properties: extractAccidentReportProperties(pageProperties)
+    blocks: selectCanonicalAccidentReportBodyBlocks(allBlocks),
+    attachments
   };
+}
+
+export async function getAccidentManualSendPackageData(
+  env: WorkerEnv,
+  pageId: string
+): Promise<AccidentManualSendPackageData> {
+  const [reportData, gate, resultValues, receiptNumber] = await Promise.all([
+    getAccidentPageReportData(env, pageId),
+    getAccidentSendReadyGateState(env, pageId),
+    getAccidentManualSendResultValues(env, pageId),
+    getAccidentPageReceiptNumber(env, pageId)
+  ]);
+
+  return {
+    ...reportData,
+    receiptNumber,
+    ready: gate.ready,
+    reviewValues: gate.reviewValues,
+    autoSendReady: gate.autoSendReady,
+    blockingMarkers: gate.blockingMarkers,
+    resultValues
+  };
+}
+
+function buildLocalConservativeReportSource(
+  properties: Record<string, NotionPagePropertyValue>
+): LocalConservativeReportSource {
+  const read = (propertyName: string) => propertyToPlainText(properties[propertyName]);
+
+  return {
+    occurredAt: read(ACCIDENT_DB_PROPERTY_NAMES.occurredAt),
+    businessOrSchoolName: read(ACCIDENT_DB_PROPERTY_NAMES.businessOrSchoolName),
+    operatorName: read(ACCIDENT_DB_PROPERTY_NAMES.operatorName),
+    touchedPersonName: read(ACCIDENT_DB_PROPERTY_NAMES.touchedPersonName),
+    phone: read(ACCIDENT_DB_PROPERTY_NAMES.phone),
+    email: read(ACCIDENT_DB_PROPERTY_NAMES.email),
+    promotionalConsent: read(ACCIDENT_DB_PROPERTY_NAMES.promotionalConsent),
+    bodyPartContacted: read(ACCIDENT_DB_PROPERTY_NAMES.bodyPartContacted),
+    visibleInjuryMark: read(ACCIDENT_DB_PROPERTY_NAMES.visibleInjuryMark),
+    woundTreatmentMethods: read(ACCIDENT_DB_PROPERTY_NAMES.woundTreatmentMethods),
+    estimatedInjuryWithoutSawStop: read(ACCIDENT_DB_PROPERTY_NAMES.estimatedInjuryWithoutSawStop),
+    sawSerialNumber: read(ACCIDENT_DB_PROPERTY_NAMES.sawSerialNumber),
+    brakeCartridgeSerialNumber: read(ACCIDENT_DB_PROPERTY_NAMES.brakeCartridgeSerialNumber),
+    bladeType: read(ACCIDENT_DB_PROPERTY_NAMES.bladeType),
+    bladeDetails: read(ACCIDENT_DB_PROPERTY_NAMES.bladeDetails),
+    materialType: read(ACCIDENT_DB_PROPERTY_NAMES.materialType),
+    workpieceSizeAndCutType: read(ACCIDENT_DB_PROPERTY_NAMES.workpieceSizeAndCutType),
+    safetyDeviceStatus: read(ACCIDENT_DB_PROPERTY_NAMES.safetyDeviceStatus),
+    otherDevicesUsed: read(ACCIDENT_DB_PROPERTY_NAMES.otherDevicesUsed),
+    wearingGloves: read(ACCIDENT_DB_PROPERTY_NAMES.wearingGloves),
+    approximateFeedRate: read(ACCIDENT_DB_PROPERTY_NAMES.approximateFeedRate),
+    incidentCause: read(ACCIDENT_DB_PROPERTY_NAMES.incidentCause),
+    incidentDescription: read(ACCIDENT_DB_PROPERTY_NAMES.incidentDescription)
+  };
+}
+
+function buildPopulatedReportDraftBodyChildren(
+  properties: Record<string, NotionPagePropertyValue>
+) {
+  const draft = buildLocalConservativeReportDraft(
+    buildLocalConservativeReportSource(properties)
+  );
+
+  return buildCanonicalReportBlockPlan(draft).map((block) => {
+    if (block.type === "section") {
+      return buildHeading2Block(block.text);
+    }
+    if (block.type === "empty") {
+      return buildEmptyParagraphBlock();
+    }
+    return buildParagraphBlock(block.text);
+  }) satisfies NotionDefaultBodyBlock[];
+}
+
+function hasExactCanonicalReportDraftAtEnd(
+  blocks: AccidentPageBodyBlockSummary[],
+  expectedChildren: NotionDefaultBodyBlock[]
+) {
+  if (blocks.length < expectedChildren.length) {
+    return false;
+  }
+
+  const startIndex = blocks.length - expectedChildren.length;
+  return expectedChildren.every((expectedChild, index) => {
+    const savedBlock = blocks[startIndex + index];
+    const expectedType = expectedChild.type;
+    const expectedRichText =
+      expectedType === "paragraph"
+        ? expectedChild.paragraph.rich_text
+        : expectedChild.heading_2.rich_text;
+
+    return (
+      savedBlock?.type === expectedType &&
+      savedBlock.text === richTextToPlainText(expectedRichText)
+    );
+  });
+}
+
+async function appendAccidentPageChildren(
+  env: WorkerEnv,
+  pageId: string,
+  children: NotionDefaultBodyBlock[]
+) {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const response = await fetch(`${NOTION_API_BASE_URL}/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: getNotionHeaders(token),
+    body: JSON.stringify({ children })
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Notion append accident page children failed: ${await readNotionError(response)}`
+    );
+  }
+}
+
+type AccidentReportDraftBodyClassification =
+  | "no_marker"
+  | "legacy_empty_report_template"
+  | "populated_draft"
+  | "manual_edited_report";
+
+const REPORT_DRAFT_SECTION_HEADINGS = new Set([
+  "Incident Information",
+  "People / Contact Information",
+  "Injury Information",
+  "Saw / Cartridge Information",
+  "Material / Setup / Conditions",
+  "Incident Description",
+  "Attachments"
+]);
+
+const REPORT_DRAFT_KNOWN_LABEL_PREFIXES = [
+  "Date of Occurence:",
+  "Business or School Name (NA if Not Applicable):",
+  "Operator Name:",
+  "Name of Person Who Touched the Blade:",
+  "Phone:",
+  "Email:",
+  "Consent for Promotional Use:",
+  "Body Part Contacted (right or left hand, finger, thumb, etc.):",
+  "Was There A Visible Injury Mark?:",
+  "Wound treatment methods:",
+  "Estimate of the injury if it were to have occured while using a non-SawStop saw:",
+  "Saw Serial Number:",
+  "Brake Cartridge Serial Number:",
+  "Type of blade being used:",
+  "Saw Blade Details:",
+  "Type of Material Being Cut?:",
+  "Workpiece Size & Cut Type:",
+  "Was a Blade Guard, Riving Knife or Splitter in Place? (please specify which, if any):",
+  "Were There Other Devices Being Used When the Cut was Made?:",
+  "Was the saw operator wearing gloves at the time?:",
+  "What was the approximate feed rate of the material when the accident occured (inches per second)?:",
+  "Cause of the Incident (Customer Feedback):",
+  "To the best of your ability, please describe the circumstances of how the accident happened:",
+  "Finger photo:",
+  "Brake cartridge photo:",
+  "Other attachments:",
+  "Attachment Photos:",
+  "첨부(선택):"
+];
+
+function isKnownReportDraftLabelOnlyLine(line: string) {
+  return REPORT_DRAFT_KNOWN_LABEL_PREFIXES.some((prefix) => line === prefix);
+}
+
+function isKnownReportDraftLineWithValue(line: string) {
+  return REPORT_DRAFT_KNOWN_LABEL_PREFIXES.some((prefix) => {
+    if (!line.startsWith(prefix)) {
+      return false;
+    }
+    return line.slice(prefix.length).trim().length > 0;
+  });
+}
+
+function classifyAccidentReportDraftBody(
+  blocks: AccidentPageBodyBlockSummary[]
+): AccidentReportDraftBodyClassification {
+  const markerIndex = blocks.findIndex((block) => block.text.includes(ACCIDENT_REPORT_DRAFT_MARKER));
+  if (markerIndex < 0) {
+    return "no_marker";
+  }
+
+  const reportLines = blocks
+    .slice(markerIndex + 1)
+    .flatMap((block) => block.text.split("\n"))
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  if (
+    reportLines.some((line) =>
+      line.includes("[Not provided]") ||
+      line.includes("[Needs follow-up]") ||
+      line.includes("[Required before final report]") ||
+      line.includes("[Review linked attachment DB rows before final report]") ||
+      isKnownReportDraftLineWithValue(line)
+    )
+  ) {
+    return "populated_draft";
+  }
+
+  const onlyLegacyTemplateLines = reportLines.every(
+    (line) => REPORT_DRAFT_SECTION_HEADINGS.has(line) || isKnownReportDraftLabelOnlyLine(line)
+  );
+  if (onlyLegacyTemplateLines) {
+    return "legacy_empty_report_template";
+  }
+
+  return "manual_edited_report";
+}
+
+export async function appendAccidentReportDraftIfMissing(env: WorkerEnv, pageId: string) {
+  const [properties, blocks] = await Promise.all([
+    getAccidentPageProperties(env, pageId),
+    getAccidentPageBodyBlocks(env, pageId)
+  ]);
+
+  const bodyClassification = classifyAccidentReportDraftBody(blocks);
+  if (
+    bodyClassification === "populated_draft" ||
+    bodyClassification === "manual_edited_report"
+  ) {
+    return false;
+  }
+
+  const children = buildPopulatedReportDraftBodyChildren(properties);
+  await appendAccidentPageChildren(env, pageId, children);
+
+  const savedBlocks = await getAccidentPageBodyBlocks(env, pageId);
+  if (!hasExactCanonicalReportDraftAtEnd(savedBlocks, children)) {
+    throw new Error(
+      "Notion accident report draft readback verification failed: canonical marker/body mismatch"
+    );
+  }
+
+  return true;
+}
+
+export function resetAccidentReportReviewProperties() {
+  return {
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.englishReviewComplete]: {
+      checkbox: false
+    },
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.outputCheckComplete]: {
+      checkbox: false
+    },
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.attachmentFinalCheck]: {
+      checkbox: false
+    },
+    [ACCIDENT_DB_PREPARED_PROPERTY_NAMES.englishDraftRequest]: {
+      checkbox: false
+    }
+  } satisfies NotionPagePropertiesPayload;
+}
+
+export async function resetAccidentReportReviewFlags(env: WorkerEnv, pageId: string) {
+  await updatePageProperties(env, {
+    pageId,
+    properties: resetAccidentReportReviewProperties()
+  });
 }
 
 export function getAccidentDatabaseParent(env: WorkerEnv): NotionAccidentDbParent {
@@ -564,18 +1425,20 @@ export async function createAccidentPage(
   env: WorkerEnv,
   {
     properties
-  }: CreateAccidentPageInput
+  }: CreateAccidentPageInput,
+  retryDependencies?: ExternalRetryDependencies
 ): Promise<NotionPageSummary> {
   const parent = getAccidentDatabaseParent(env);
-  return createNotionPage(env, parent, properties);
+  return createNotionPage(env, parent, properties, retryDependencies);
 }
 
 export async function createAttachmentPage(
   env: WorkerEnv,
-  { properties }: { properties: NotionAttachmentDbPropertiesPayload }
+  { properties }: { properties: NotionAttachmentDbPropertiesPayload },
+  retryDependencies?: ExternalRetryDependencies
 ): Promise<NotionPageSummary> {
   const parent = getAttachmentDatabaseParent(env);
-  return createNotionPage(env, parent, properties);
+  return createNotionPage(env, parent, properties, retryDependencies);
 }
 
 export async function updatePageProperties(
@@ -603,21 +1466,18 @@ export async function updatePageProperties(
 }
 
 export async function getAccidentPageStatus(env: WorkerEnv, pageId: string) {
-  const token = getRequiredEnv(env, "NOTION_TOKEN");
-  const response = await fetch(`${NOTION_API_BASE_URL}/pages/${pageId}`, {
-    method: "GET",
-    headers: getNotionHeaders(token)
-  });
-
-  if (!response.ok) {
-    throw new Error(`Notion get accident page failed: ${await readNotionError(response)}`);
-  }
-
-  const data = (await response.json()) as {
-    properties?: Record<string, { status?: { name?: string | null } | null }>;
-  };
+  const data = await assertAccidentPageOwnership(env, pageId);
 
   return data.properties?.[ACCIDENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null;
+}
+
+export async function getAccidentPageReceiptNumber(env: WorkerEnv, pageId: string) {
+  const data = await assertAccidentPageOwnership(env, pageId);
+  const receiptNumber = propertyToPlainText(
+    data.properties?.[ACCIDENT_DB_PROPERTY_NAMES.receiptNumber]
+  ).trim();
+
+  return receiptNumber.length > 0 ? receiptNumber : null;
 }
 
 export async function updateAccidentPageStatus(
@@ -666,11 +1526,7 @@ export async function moveAttachmentPageToTrashWithTimestamp(
     deletionReason: string;
   }
 ) {
-  const trashMovedAt = getCurrentSeoulIsoDateTime();
-  const permanentDeleteAt = addDaysToIsoDateTime(
-    trashMovedAt,
-    ATTACHMENT_TRASH_RETENTION_DAYS
-  );
+  const { trashMovedAt, permanentDeleteAt } = buildAttachmentTrashDates();
 
   await updatePageProperties(env, {
     pageId: attachmentPageId,
@@ -858,10 +1714,10 @@ export async function recalculateAccidentHasFingerPhoto(
   return hasFingerPhoto;
 }
 
-export async function findAttachmentPageByAttachmentId(
+export async function findAttachmentPagesByAttachmentId(
   env: WorkerEnv,
   attachmentId: string
-): Promise<NotionPageSummary | null> {
+): Promise<NotionAttachmentPageRecord[]> {
   const token = getRequiredEnv(env, "NOTION_TOKEN");
   const attachmentDbId = getRequiredEnv(env, "NOTION_ATTACHMENT_DB_ID");
   const response = await fetch(
@@ -870,9 +1726,9 @@ export async function findAttachmentPageByAttachmentId(
       method: "POST",
       headers: getNotionHeaders(token),
       body: JSON.stringify({
-        page_size: 1,
+        page_size: 100,
         filter: {
-          property: "첨부 ID",
+          property: ATTACHMENT_DB_PROPERTY_NAMES.attachmentId,
           title: {
             equals: attachmentId
           }
@@ -888,17 +1744,51 @@ export async function findAttachmentPageByAttachmentId(
   }
 
   const data = (await response.json()) as {
-    results?: Array<{ id?: string; url?: string }>;
+    has_more?: boolean;
+    results?: Array<{
+      id?: string;
+      url?: string;
+      properties?: Record<
+        string,
+        {
+          relation?: Array<{ id?: string }>;
+          rich_text?: Array<{ plain_text?: string }>;
+        }
+      >;
+    }>;
   };
-  const result = data.results?.[0];
-  if (!result?.id || !result?.url) {
-    return null;
+
+  if (data.has_more) {
+    throw new Error(`Attachment ownership query is incomplete for ${attachmentId}`);
   }
 
-  return {
-    id: result.id,
-    url: result.url
-  };
+  return (data.results ?? [])
+    .map((result) => {
+      if (!result.id || !result.url || !result.properties) {
+        return null;
+      }
+
+      const accidentPageIds = (
+        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]
+          ?.relation ?? []
+      )
+        .map((relation) => relation.id?.trim() ?? "")
+        .filter((pageId) => pageId.length > 0);
+      const r2Key = (
+        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.r2Key]?.rich_text ?? []
+      )
+        .map((item) => item.plain_text ?? "")
+        .join("")
+        .trim();
+
+      return {
+        id: result.id,
+        url: result.url,
+        accidentPageIds,
+        r2Key: r2Key.length > 0 ? r2Key : null
+      } satisfies NotionAttachmentPageRecord;
+    })
+    .filter((result): result is NotionAttachmentPageRecord => result !== null);
 }
 
 export async function listAttachmentPagesByAccidentPageId(
@@ -981,90 +1871,335 @@ export async function listAttachmentPagesByAccidentPageId(
     .filter((item): item is AdminAttachmentListItem => item !== null);
 }
 
+export async function listCurrentReportAttachments(
+  env: WorkerEnv,
+  pageId: string
+): Promise<AccidentReportAttachmentSummary[]> {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const attachmentDbId = getRequiredEnv(env, "NOTION_ATTACHMENT_DB_ID");
+  const rows: Array<{
+    id?: string;
+    properties?: Record<
+      string,
+      {
+        relation?: Array<{ id?: string }>;
+        select?: { name?: string | null } | null;
+        status?: { name?: string | null } | null;
+        number?: number | null;
+      }
+    >;
+  }> = [];
+  const seenCursors = new Set<string>();
+  let startCursor: string | null = null;
+
+  do {
+    const body: Record<string, unknown> = {
+      page_size: 100,
+      sorts: [
+        {
+          property: ATTACHMENT_DB_PROPERTY_NAMES.displayOrder,
+          direction: "ascending"
+        }
+      ],
+      filter: {
+        property: ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation,
+        relation: { contains: pageId }
+      }
+    };
+    if (startCursor) {
+      body.start_cursor = startCursor;
+    }
+
+    const response = await fetch(
+      `${NOTION_API_BASE_URL}/databases/${attachmentDbId}/query`,
+      {
+        method: "POST",
+        headers: getNotionHeaders(token),
+        body: JSON.stringify(body)
+      }
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Notion report attachment query failed: ${await readNotionError(response)}`
+      );
+    }
+
+    const page = (await response.json()) as {
+      results?: typeof rows;
+      has_more?: boolean;
+      next_cursor?: string | null;
+    };
+    rows.push(...(page.results ?? []));
+
+    if (!page.has_more) {
+      startCursor = null;
+      continue;
+    }
+
+    const nextCursor = page.next_cursor?.trim();
+    if (!nextCursor) {
+      throw new Error("Notion report attachment query returned no next cursor");
+    }
+    if (seenCursors.has(nextCursor)) {
+      throw new Error("Notion report attachment query repeated a cursor");
+    }
+    seenCursors.add(nextCursor);
+    startCursor = nextCursor;
+  } while (startCursor);
+
+  const allowedTypes = new Set<string>(ATTACHMENT_TYPE_OPTIONS);
+  const selected = rows
+    .map((row) => {
+      if (!row.id || !row.properties) {
+        return null;
+      }
+
+      const relationIds = (
+        row.properties[ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]?.relation ?? []
+      )
+        .map((relation) => normalizeNotionId(relation.id))
+        .filter((relationId) => relationId.length > 0);
+      const attachmentType =
+        row.properties[ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]?.select?.name ??
+        null;
+      const status =
+        row.properties[ATTACHMENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null;
+      const displayOrder =
+        row.properties[ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]?.number ?? null;
+
+      if (
+        relationIds.length !== 1 ||
+        relationIds[0] !== normalizeNotionId(pageId) ||
+        status !== ATTACHMENT_DB_STATUS.current ||
+        !attachmentType ||
+        !allowedTypes.has(attachmentType) ||
+        !Number.isInteger(displayOrder) ||
+        (displayOrder ?? 0) <= 0
+      ) {
+        return null;
+      }
+
+      return {
+        attachmentPageId: row.id,
+        attachmentType,
+        displayOrder
+      } satisfies AccidentReportAttachmentSummary;
+    })
+    .filter(
+      (attachment): attachment is AccidentReportAttachmentSummary =>
+        attachment !== null
+    )
+    .sort(
+      (left, right) =>
+        left.displayOrder - right.displayOrder ||
+        left.attachmentPageId.localeCompare(right.attachmentPageId)
+    );
+  const seenAttachmentIds = new Set<string>();
+
+  return selected
+    .filter((attachment) => {
+      if (seenAttachmentIds.has(attachment.attachmentPageId)) {
+        return false;
+      }
+      seenAttachmentIds.add(attachment.attachmentPageId);
+      return true;
+    })
+    .slice(0, 4);
+}
+
+function trimCandidateValue(value: string | null) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+export function selectFifoTrashCandidates(
+  inputCandidates: FifoTrashCandidateInput[],
+  now: string,
+  limit = 20
+): FifoTrashCandidateSelection {
+  const normalizedNow = now.trim();
+  if (!normalizedNow) {
+    throw new Error("FIFO trash candidate selection requires a current timestamp");
+  }
+  if (!Number.isInteger(limit) || limit < 0) {
+    throw new Error("FIFO trash candidate limit must be a non-negative integer");
+  }
+
+  const eligible: Array<{ candidate: FifoTrashCandidate; sourceIndex: number }> = [];
+  const exclusions: FifoTrashCandidateExclusion[] = [];
+
+  for (const [sourceIndex, input] of inputCandidates.entries()) {
+    const attachmentPageId = trimCandidateValue(input.attachmentPageId);
+    const r2Key = trimCandidateValue(input.r2Key);
+    const accidentPageId = trimCandidateValue(input.accidentPageId);
+    const permanentDeleteAt = trimCandidateValue(input.permanentDeleteAt);
+    let reason: FifoTrashCandidateExclusionReason | null = null;
+
+    if (!attachmentPageId) {
+      reason = "missing_attachment_page_id";
+    } else if (input.status !== ATTACHMENT_DB_STATUS.trash) {
+      reason = "status_not_trash";
+    } else if (!permanentDeleteAt) {
+      reason = "missing_permanent_delete_at";
+    } else if (permanentDeleteAt.localeCompare(normalizedNow) > 0) {
+      reason = "not_expired";
+    } else if (!r2Key) {
+      reason = "missing_r2_key";
+    } else if (!accidentPageId) {
+      reason = "missing_accident_page_id";
+    }
+
+    if (reason) {
+      exclusions.push({
+        attachmentPageId,
+        permanentDeleteAt,
+        reason
+      });
+      continue;
+    }
+
+    if (!attachmentPageId || !r2Key || !accidentPageId || !permanentDeleteAt) {
+      throw new Error("FIFO trash candidate selection invariant failed");
+    }
+
+    eligible.push({
+      candidate: {
+        attachmentPageId,
+        r2Key,
+        accidentPageId,
+        permanentDeleteAt,
+        attachmentType: trimCandidateValue(input.attachmentType),
+        status: ATTACHMENT_DB_STATUS.trash
+      },
+      sourceIndex
+    });
+  }
+
+  eligible.sort((left, right) => {
+    const scheduledOrder = left.candidate.permanentDeleteAt.localeCompare(
+      right.candidate.permanentDeleteAt
+    );
+    return scheduledOrder !== 0 ? scheduledOrder : left.sourceIndex - right.sourceIndex;
+  });
+
+  return {
+    candidates: eligible.slice(0, limit).map(({ candidate }) => candidate),
+    exclusions,
+    totalRows: inputCandidates.length,
+    eligibleCandidateCount: eligible.length,
+    deferredCandidateCount: Math.max(0, eligible.length - limit)
+  };
+}
+
+export async function listFifoTrashCandidateSelection(
+  env: WorkerEnv,
+  limit = 20,
+  now = getCurrentSeoulIsoDateTime()
+): Promise<FifoTrashCandidateSelection> {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+  const attachmentDbId = getRequiredEnv(env, "NOTION_ATTACHMENT_DB_ID");
+  const results: Array<{
+    id?: string;
+    properties?: Record<
+      string,
+      {
+        rich_text?: Array<{ plain_text?: string }>;
+        relation?: Array<{ id?: string }>;
+        date?: { start?: string | null } | null;
+        select?: { name?: string | null } | null;
+        status?: { name?: string | null } | null;
+      }
+    >;
+  }> = [];
+  const seenCursors = new Set<string>();
+  let nextCursor: string | null = null;
+
+  do {
+    const body: Record<string, unknown> = {
+      page_size: 100,
+      filter: {
+        property: ATTACHMENT_DB_PROPERTY_NAMES.status,
+        status: {
+          equals: ATTACHMENT_DB_STATUS.trash
+        }
+      }
+    };
+    if (nextCursor) {
+      body.start_cursor = nextCursor;
+    }
+
+    const response = await fetch(
+      `${NOTION_API_BASE_URL}/databases/${attachmentDbId}/query`,
+      {
+      method: "POST",
+      headers: getNotionHeaders(token),
+        body: JSON.stringify(body)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Notion FIFO trash candidate query failed: ${await readNotionError(response)}`
+      );
+    }
+
+    const data = (await response.json()) as {
+      results?: typeof results;
+      has_more?: boolean;
+      next_cursor?: string | null;
+    };
+    results.push(...(data.results ?? []));
+
+    if (!data.has_more) {
+      nextCursor = null;
+      continue;
+    }
+
+    const returnedCursor = data.next_cursor?.trim();
+    if (!returnedCursor) {
+      throw new Error("Notion FIFO trash candidate query returned no next cursor");
+    }
+    if (seenCursors.has(returnedCursor)) {
+      throw new Error("Notion FIFO trash candidate query repeated a cursor");
+    }
+
+    seenCursors.add(returnedCursor);
+    nextCursor = returnedCursor;
+  } while (nextCursor);
+
+  const inputs = results.map((result) => {
+    const properties = result.properties ?? {};
+    const r2Key =
+      properties[ATTACHMENT_DB_PROPERTY_NAMES.r2Key]?.rich_text
+        ?.map((item) => item.plain_text ?? "")
+        .join("")
+        .trim() ?? "";
+
+    return {
+      attachmentPageId: result.id ?? null,
+      r2Key: r2Key.length > 0 ? r2Key : null,
+      accidentPageId:
+        properties[ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]?.relation?.[0]?.id ??
+        null,
+      permanentDeleteAt:
+        properties[ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt]?.date
+          ?.start ?? null,
+      attachmentType:
+        properties[ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]?.select?.name ?? null,
+      status:
+        properties[ATTACHMENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null
+    } satisfies FifoTrashCandidateInput;
+  });
+
+  return selectFifoTrashCandidates(inputs, now, limit);
+}
+
 export async function listFifoTrashCandidates(
   env: WorkerEnv,
   limit = 20
 ): Promise<FifoTrashCandidate[]> {
-  const token = getRequiredEnv(env, "NOTION_TOKEN");
-  const attachmentDbId = getRequiredEnv(env, "NOTION_ATTACHMENT_DB_ID");
-  const response = await fetch(
-    `${NOTION_API_BASE_URL}/databases/${attachmentDbId}/query`,
-    {
-      method: "POST",
-      headers: getNotionHeaders(token),
-      body: JSON.stringify({
-        page_size: limit,
-        filter: {
-          property: ATTACHMENT_DB_PROPERTY_NAMES.status,
-          status: {
-            equals: ATTACHMENT_DB_STATUS.trash
-          }
-        }
-      })
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Notion FIFO trash candidate query failed: ${await readNotionError(response)}`
-    );
-  }
-
-  const data = (await response.json()) as {
-    results?: Array<{
-      id?: string;
-      properties?: Record<
-        string,
-        {
-          rich_text?: Array<{ plain_text?: string }>;
-          relation?: Array<{ id?: string }>;
-          date?: { start?: string | null } | null;
-          select?: { name?: string | null } | null;
-          status?: { name?: string | null } | null;
-        }
-      >;
-    }>;
-  };
-  const now = getCurrentSeoulIsoDateTime();
-
-  return (data.results ?? [])
-    .map((result) => {
-      if (!result.id || !result.properties) {
-        return null;
-      }
-
-      const r2Key =
-        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.r2Key]?.rich_text
-          ?.map((item) => item.plain_text ?? "")
-          .join("")
-          .trim() ?? "";
-      const accidentPageId =
-        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]?.relation?.[0]?.id ??
-        null;
-      const permanentDeleteAt =
-        result.properties[ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES.permanentDeleteAt]?.date
-          ?.start ?? null;
-      const attachmentType =
-        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.attachmentType]?.select?.name ?? null;
-      const status =
-        result.properties[ATTACHMENT_DB_PROPERTY_NAMES.status]?.status?.name ?? null;
-
-      return {
-        attachmentPageId: result.id,
-        r2Key: r2Key.length > 0 ? r2Key : null,
-        accidentPageId,
-        permanentDeleteAt,
-        attachmentType,
-        status
-      } satisfies FifoTrashCandidate;
-    })
-    .filter((candidate): candidate is FifoTrashCandidate => {
-      return (
-        candidate !== null &&
-        candidate.permanentDeleteAt !== null &&
-        candidate.permanentDeleteAt <= now
-      );
-    });
+  const selection = await listFifoTrashCandidateSelection(env, limit);
+  return selection.candidates;
 }
 
 export async function getNextAttachmentDisplayOrder(
@@ -1124,10 +2259,21 @@ export async function createAttachmentPageRecord(
   env: WorkerEnv,
   input: CreateAttachmentPageRecordInput
 ) {
-  const attachmentId = buildAttachmentId(input.receiptNumber, input.displayOrder);
-  const existingPage = await findAttachmentPageByAttachmentId(env, attachmentId);
-  if (existingPage) {
-    return existingPage;
+  const attachmentId = buildAttachmentId(input.pageId, input.displayOrder);
+  const existingPages = await findAttachmentPagesByAttachmentId(env, attachmentId);
+  const ownedPages = existingPages.filter(
+    (page) =>
+      page.accidentPageIds.length === 1 &&
+      page.accidentPageIds[0] === input.pageId &&
+      page.r2Key === input.r2Key
+  );
+
+  if (existingPages.length > 0) {
+    if (existingPages.length === 1 && ownedPages.length === 1) {
+      return ownedPages[0];
+    }
+
+    throw new Error(`Attachment ownership conflict for ${attachmentId}`);
   }
 
   return createAttachmentPage(env, {

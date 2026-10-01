@@ -1,22 +1,21 @@
 import {
-  ADMIN_LOGIN_FAILURE_LIMIT,
-  ADMIN_LOGIN_LOCK_SECONDS,
+  ADMIN_AUTH_LOCK_GLOBAL_NAME,
   ADMIN_LOGIN_ROUTE,
   ADMIN_LOGIN_STATE_COOKIE_NAME,
   ADMIN_LOGOUT_ROUTE,
   ADMIN_PAGE_ROUTE,
   ADMIN_SESSION_COOKIE_NAME,
   ADMIN_SESSION_TTL_SECONDS
-} from "../constants";
+} from "../constants.ts";
 import type {
-  AdminLoginStatePayload,
   AdminSessionPayload,
   WorkerEnv
-} from "../types";
+} from "../types.ts";
+import { buildAdminPrivateResponseHeaders } from "./response-privacy.ts";
 
 const textEncoder = new TextEncoder();
 
-type AdminAuthFailureReason = "invalid_password" | "locked";
+type AdminAuthLockStatus = "invalid" | "locked" | "success";
 
 function getRequiredEnv(
   env: WorkerEnv,
@@ -199,96 +198,71 @@ export async function requireAdminApiAuth(request: Request, env: WorkerEnv) {
     }),
     {
       status: 401,
-      headers: {
+      headers: buildAdminPrivateResponseHeaders({
         "Content-Type": "application/json; charset=utf-8"
-      }
+      })
     }
   );
 }
 
-export async function readAdminLoginFailureReason(
-  request: Request,
-  env: WorkerEnv
-): Promise<AdminAuthFailureReason | null> {
-  const secret = getRequiredEnv(env, "ADMIN_SESSION_SECRET");
-  const cookies = parseCookieHeader(request);
-  const { loginStateCookieName } = getAdminCookieNames(request);
-  const state = await decodeSignedPayload<AdminLoginStatePayload>(
-    secret,
-    cookies.get(loginStateCookieName) ?? null
+async function applyAdminLoginAttempt(
+  env: WorkerEnv,
+  passwordValid: boolean
+): Promise<AdminAuthLockStatus> {
+  const objectId = env.ADMIN_AUTH_LOCK.idFromName(ADMIN_AUTH_LOCK_GLOBAL_NAME);
+  const stub = env.ADMIN_AUTH_LOCK.get(objectId);
+  const response = await stub.fetch(
+    new Request("https://admin-auth-lock.internal/attempt", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ passwordValid })
+    })
   );
 
-  if (!state) {
-    return null;
+  if (!response.ok) {
+    throw new Error("Admin auth lock storage request failed");
   }
 
-  if (state.lockUntil && state.lockUntil > Date.now()) {
-    return "locked";
+  const result = (await response.json()) as {
+    ok?: unknown;
+    status?: unknown;
+  };
+  if (
+    result.ok !== true ||
+    !["invalid", "locked", "success"].includes(String(result.status))
+  ) {
+    throw new Error("Admin auth lock storage response was invalid");
   }
 
-  if (state.failedCount > 0) {
-    return "invalid_password";
-  }
-
-  return null;
+  return result.status as AdminAuthLockStatus;
 }
 
 export async function handleAdminLogin(request: Request, env: WorkerEnv) {
-  // TODO(open issue): Turnstile is not enforced yet on admin login.
   const adminPassword = getRequiredEnv(env, "ADMIN_PASSWORD");
   const secret = getRequiredEnv(env, "ADMIN_SESSION_SECRET");
-  const cookies = parseCookieHeader(request);
   const secure = isSecureCookieRequest(request);
   const { sessionCookieName, loginStateCookieName } = getAdminCookieNames(request);
-  const currentState =
-    (await decodeSignedPayload<AdminLoginStatePayload>(
-      secret,
-      cookies.get(loginStateCookieName) ?? null
-    )) ?? {
-      failedCount: 0,
-      lockUntil: null
-    };
+  const formData = await request.formData();
+  const submittedPassword = String(formData.get("password") ?? "");
+  const headers = new Headers();
+  headers.append("Set-Cookie", clearCookie(loginStateCookieName, secure));
+  let attemptStatus: AdminAuthLockStatus;
 
-  if (currentState.lockUntil && currentState.lockUntil > Date.now()) {
-    const headers = new Headers();
-    headers.append(
-      "Set-Cookie",
-      buildCookie(
-        loginStateCookieName,
-        await encodeSignedPayload(secret, currentState),
-        { maxAge: ADMIN_LOGIN_LOCK_SECONDS, secure }
-      )
+  try {
+    attemptStatus = await applyAdminLoginAttempt(
+      env,
+      submittedPassword === adminPassword
     );
+  } catch {
+    console.error("Admin auth lock storage unavailable; login blocked");
     return buildRedirectResponse(`${ADMIN_PAGE_ROUTE}?error=locked`, headers);
   }
 
-  const formData = await request.formData();
-  const submittedPassword = String(formData.get("password") ?? "");
-
-  if (submittedPassword !== adminPassword) {
-    const failedCount = currentState.failedCount + 1;
-    const lockUntil =
-      failedCount >= ADMIN_LOGIN_FAILURE_LIMIT
-        ? Date.now() + ADMIN_LOGIN_LOCK_SECONDS * 1000
-        : null;
-    const nextState: AdminLoginStatePayload = {
-      failedCount,
-      lockUntil
-    };
-    const headers = new Headers();
-    headers.append(
-      "Set-Cookie",
-      buildCookie(
-        loginStateCookieName,
-        await encodeSignedPayload(secret, nextState),
-        {
-          maxAge: lockUntil ? ADMIN_LOGIN_LOCK_SECONDS : ADMIN_SESSION_TTL_SECONDS,
-          secure
-        }
-      )
-    );
+  if (attemptStatus !== "success") {
     return buildRedirectResponse(
-      `${ADMIN_PAGE_ROUTE}?error=${lockUntil ? "locked" : "invalid"}`,
+      `${ADMIN_PAGE_ROUTE}?error=${attemptStatus}`,
       headers
     );
   }
@@ -296,16 +270,14 @@ export async function handleAdminLogin(request: Request, env: WorkerEnv) {
   const session: AdminSessionPayload = {
     exp: Date.now() + ADMIN_SESSION_TTL_SECONDS * 1000
   };
-  const headers = new Headers();
   headers.append(
     "Set-Cookie",
     buildCookie(
       sessionCookieName,
       await encodeSignedPayload(secret, session),
-      { maxAge: ADMIN_SESSION_TTL_SECONDS, secure }
+      { secure }
     )
   );
-  headers.append("Set-Cookie", clearCookie(loginStateCookieName, secure));
 
   return buildRedirectResponse(ADMIN_PAGE_ROUTE, headers);
 }

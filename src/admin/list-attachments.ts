@@ -1,5 +1,9 @@
 import { CUSTOMER_FAILURE_MESSAGE } from "../constants.ts";
-import { listAttachmentPagesByAccidentPageId } from "../notion.ts";
+import {
+  assertAccidentPageOwnership,
+  listAttachmentPagesByAccidentPageId,
+  reportNotionOwnershipError
+} from "../notion.ts";
 import type {
   AdminAttachmentListFailureResponse,
   AdminAttachmentListRequest,
@@ -40,6 +44,7 @@ export async function handleAdminAttachmentList(request: Request, env: WorkerEnv
   }
 
   try {
+    await assertAccidentPageOwnership(env, pageId);
     const attachments = await listAttachmentPagesByAccidentPageId(env, pageId);
     return jsonResponse(
       {
@@ -48,7 +53,17 @@ export async function handleAdminAttachmentList(request: Request, env: WorkerEnv
       },
       200
     );
-  } catch {
+  } catch (error) {
+    if (reportNotionOwnershipError("admin_attachment_list", error)) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: CUSTOMER_FAILURE_MESSAGE
+        },
+        409
+      );
+    }
+
     return jsonResponse(
       {
         ok: false,

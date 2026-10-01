@@ -2,6 +2,7 @@ import { registerHooks } from "node:module";
 import {
   ACCIDENT_DB_PREPARED_PROPERTY_NAMES,
   ATTACHMENT_DB_PROPERTY_NAMES,
+  ATTACHMENT_DB_STATUS,
   ATTACHMENT_TYPE_OPTIONS
 } from "../src/constants.ts";
 import type { WorkerEnv } from "../src/types.ts";
@@ -109,6 +110,37 @@ async function run() {
     console.log("PASS: admin_update_attachment_type_missing_field");
 
     const mockResponses: Response[] = [
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: {
+          id: "accident-page-1",
+          parent: {
+            type: "database_id",
+            database_id: "accident-db-id"
+          },
+          properties: {}
+        }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: {
+          id: "attachment-page-1",
+          parent: {
+            type: "database_id",
+            database_id: "attachment-db-id"
+          },
+          properties: {
+            [ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]: {
+              relation: [{ id: "accident-page-1" }]
+            },
+            [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
+              status: { name: ATTACHMENT_DB_STATUS.current }
+            }
+          }
+        }
+      }),
       createMockResponse({
         ok: true,
         status: 200,

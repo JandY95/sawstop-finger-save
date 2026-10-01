@@ -1,0 +1,94 @@
+{
+  "source": {
+    "occurredAt": "2026-08-02T09:15:00.000+09:00",
+    "businessOrSchoolName": "새봄 목공소",
+    "operatorName": "박민수",
+    "touchedPersonName": "",
+    "phone": "010-2468-1357",
+    "email": "",
+    "promotionalConsent": "동의 (YES)",
+    "bodyPartContacted": "오른손 검지",
+    "visibleInjuryMark": "아니요 (NO)",
+    "woundTreatmentMethods": "병원에서 상처를 소독함",
+    "estimatedInjuryWithoutSawStop": "",
+    "sawSerialNumber": "C123456789",
+    "brakeCartridgeSerialNumber": "BC-7788",
+    "bladeType": "10\" Standard",
+    "bladeDetails": "40T, 3.2 mm kerf",
+    "materialType": "자작합판",
+    "workpieceSizeAndCutType": "600 mm x 300 mm",
+    "safetyDeviceStatus": "라이빙 나이프 장착",
+    "otherDevicesUsed": "푸시스틱 (Push Stick), 페더보드 (Feather Board)",
+    "wearingGloves": "예 (YES)",
+    "approximateFeedRate": "보통 (Normal)",
+    "incidentCause": "재료가 흔들림",
+    "incidentDescription": "절단 중 재료가 갑자기 움직였습니다."
+  },
+  "approvedTerms": {
+    "자작합판": "Birch plywood"
+  },
+  "expected": {
+    "title": "Report a Save (Known or Suspected Finger Contact)",
+    "sections": [
+      {
+        "heading": "Incident Information",
+        "fields": [
+          { "label": "Date of Occurence:", "value": "August 2, 2026 at 9:15 AM Korea Standard Time (KST, UTC+9)" },
+          { "label": "Business or School Name (NA if Not Applicable):", "value": "새봄 목공소 [검수]" }
+        ]
+      },
+      {
+        "heading": "People / Contact Information",
+        "fields": [
+          { "label": "Operator Name:", "value": "박민수 [검수]" },
+          { "label": "Name of Person Who Touched the Blade:", "value": "[Needs follow-up]" },
+          { "label": "Phone:", "value": "010-2468-1357" },
+          { "label": "Email:", "value": "[Needs follow-up]" },
+          { "label": "Consent for Promotional Use:", "value": "YES" }
+        ]
+      },
+      {
+        "heading": "Injury Information",
+        "fields": [
+          { "label": "Body Part Contacted (right or left hand, finger, thumb, etc.):", "value": "오른손 검지 [검수]" },
+          { "label": "Was There A Visible Injury Mark?:", "value": "NO" },
+          { "label": "Wound treatment methods:", "value": "병원에서 상처를 소독함 [검수]" },
+          { "label": "Estimate of the injury if it were to have occured while using a non-SawStop saw:", "value": "[Needs follow-up]" }
+        ]
+      },
+      {
+        "heading": "Saw / Cartridge Information",
+        "fields": [
+          { "label": "Saw Serial Number:", "value": "C123456789" },
+          { "label": "Brake Cartridge Serial Number:", "value": "BC-7788" },
+          { "label": "Type of blade being used:", "value": "10\" Standard" },
+          { "label": "Saw Blade Details:", "value": "40T, 3.2 mm kerf" }
+        ]
+      },
+      {
+        "heading": "Material / Setup / Conditions",
+        "fields": [
+          { "label": "Type of Material Being Cut?:", "value": "Birch plywood" },
+          { "label": "Workpiece Size & Cut Type:", "value": "600 mm x 300 mm" },
+          { "label": "Was a Blade Guard, Riving Knife or Splitter in Place? (please specify which, if any):", "value": "라이빙 나이프 장착 [검수]" },
+          { "label": "Were There Other Devices Being Used When the Cut was Made?:", "value": "Push Stick, Feather Board" },
+          { "label": "Was the saw operator wearing gloves at the time?:", "value": "YES" },
+          { "label": "What was the approximate feed rate of the material when the accident occured (inches per second)?:", "value": "Normal" }
+        ]
+      },
+      {
+        "heading": "Incident Description",
+        "fields": [
+          { "label": "Cause of the Incident (Customer Feedback):", "value": "재료가 흔들림 [검수]" },
+          { "label": "To the best of your ability, please describe the circumstances of how the accident happened:", "value": "절단 중 재료가 갑자기 움직였습니다. [검수]" }
+        ]
+      },
+      {
+        "heading": "Attachments",
+        "fields": [
+          { "label": "첨부(선택):", "value": "" }
+        ]
+      }
+    ]
+  }
+}

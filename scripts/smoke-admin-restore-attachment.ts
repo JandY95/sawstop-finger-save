@@ -77,8 +77,27 @@ async function run() {
   const env = {
     NOTION_TOKEN: "test-token",
     NOTION_ACCIDENT_DB_ID: "accident-db-id",
-    NOTION_ATTACHMENT_DB_ID: "attachment-db-id"
-  } as WorkerEnv;
+    NOTION_ATTACHMENT_DB_ID: "attachment-db-id",
+    ATTACHMENT_BUCKET: {
+      async get(key: string) {
+        expect(
+          key === "attachments/accident-page-1/0001_finger.jpg",
+          "restore should read back the exact R2 key"
+        );
+        return {
+          async arrayBuffer() {
+            return new Uint8Array([1, 2, 3]).buffer;
+          }
+        };
+      },
+      async put() {
+        throw new Error("restore smoke must not write R2");
+      },
+      async delete() {
+        throw new Error("restore smoke must not delete R2");
+      }
+    }
+  } as unknown as WorkerEnv;
 
   try {
     globalThis.fetch = originalFetch;
@@ -114,6 +133,43 @@ async function run() {
     console.log("PASS: admin_restore_attachment_missing_page_id");
 
     const mockResponses: Response[] = [
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: {
+          id: "accident-page-1",
+          parent: {
+            type: "database_id",
+            database_id: "accident-db-id"
+          },
+          properties: {}
+        }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: {
+          id: "attachment-page-1",
+          parent: {
+            type: "database_id",
+            database_id: "attachment-db-id"
+          },
+          properties: {
+            [ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]: {
+              relation: [{ id: "accident-page-1" }]
+            },
+            [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
+              status: { name: ATTACHMENT_DB_STATUS.trash }
+            },
+            [ATTACHMENT_DB_PROPERTY_NAMES.r2Key]: {
+              type: "rich_text",
+              rich_text: [
+                { plain_text: "attachments/accident-page-1/0001_finger.jpg" }
+              ]
+            }
+          }
+        }
+      }),
       createMockResponse({
         ok: true,
         status: 200,

@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sawstop-finger-save-staging",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-10",
+  "workers_dev": true,
+  "preview_urls": false,
+  "secrets": {
+    "required": [
+      "NOTION_TOKEN",
+      "NOTION_ACCIDENT_DB_ID",
+      "NOTION_ATTACHMENT_DB_ID",
+      "ADMIN_PASSWORD",
+      "ADMIN_SESSION_SECRET",
+      "TURNSTILE_SECRET_KEY"
+    ]
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "ADMIN_AUTH_LOCK",
+        "class_name": "AdminAuthLock"
+      },
+      {
+        "name": "ADMIN_UPLOAD_COORDINATOR",
+        "class_name": "AdminUploadCoordinator"
+      }
+    ]
+  },
+  "exports": {
+    "AdminAuthLock": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    },
+    "AdminUploadCoordinator": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "r2_buckets": [
+    {
+      "binding": "ATTACHMENT_BUCKET",
+      "bucket_name": "sawstop-attachments-staging"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "ATTACHMENT_PROCESSING_QUEUE",
+        "queue": "sawstop-attachment-processing-staging"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "sawstop-attachment-processing-staging",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "dead_letter_queue": "sawstop-attachment-processing-staging-dlq"
+      }
+    ]
+  }
+}

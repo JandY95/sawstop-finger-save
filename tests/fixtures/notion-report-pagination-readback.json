@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "pageSize": 100,
+  "secondPageCursor": "cursor-page-2",
+  "scenarios": [
+    {
+      "id": "existing_populated_after_100",
+      "existingBody": "populated",
+      "postAppendReadback": "success",
+      "expectedResult": false,
+      "expectedAppendCalls": 0,
+      "expectedSuccessfulAppendResults": 0,
+      "minimumSecondPageReads": 1
+    },
+    {
+      "id": "existing_manual_after_100",
+      "existingBody": "manual",
+      "postAppendReadback": "success",
+      "expectedResult": false,
+      "expectedAppendCalls": 0,
+      "expectedSuccessfulAppendResults": 0,
+      "minimumSecondPageReads": 1
+    },
+    {
+      "id": "legacy_empty_after_100",
+      "existingBody": "legacy_empty",
+      "postAppendReadback": "success",
+      "expectedResult": true,
+      "expectedAppendCalls": 1,
+      "expectedSuccessfulAppendResults": 1,
+      "minimumSecondPageReads": 2
+    },
+    {
+      "id": "missing_report_append_readback_success",
+      "existingBody": "none",
+      "postAppendReadback": "success",
+      "expectedResult": true,
+      "expectedAppendCalls": 1,
+      "expectedSuccessfulAppendResults": 1,
+      "minimumSecondPageReads": 2
+    },
+    {
+      "id": "append_readback_second_page_failure",
+      "existingBody": "none",
+      "postAppendReadback": "fail_second_page",
+      "expectedError": "Notion list block children failed",
+      "expectedAppendCalls": 1,
+      "expectedSuccessfulAppendResults": 0,
+      "minimumSecondPageReads": 2
+    },
+    {
+      "id": "append_readback_canonical_mismatch",
+      "existingBody": "none",
+      "postAppendReadback": "canonical_mismatch",
+      "expectedError": "canonical marker/body mismatch",
+      "expectedAppendCalls": 1,
+      "expectedSuccessfulAppendResults": 0,
+      "minimumSecondPageReads": 2
+    }
+  ]
+}

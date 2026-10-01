@@ -1,6 +1,10 @@
 import {
   BLADE_TYPE_OPTIONS,
+  CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS,
+  CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES,
   CUSTOMER_ATTACHMENT_FIELD_NAME,
+  CUSTOMER_ATTACHMENT_MAX_COUNT,
+  CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES,
   FEED_RATE_OPTIONS,
   GLOVES_OPTIONS,
   OTHER_DEVICE_OPTIONS,
@@ -589,8 +593,29 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             width: 100%;
             aspect-ratio: 1 / 1;
             object-fit: cover;
+            image-orientation: from-image;
             border-radius: 10px;
             background: #f3efe6;
+          }
+          .attachment-preview-fallback {
+            display: grid;
+            align-content: center;
+            gap: 6px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f3efe6;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: center;
+          }
+          .attachment-preview-fallback[hidden] {
+            display: none;
+          }
+          .attachment-preview-fallback strong {
+            color: var(--ink);
           }
           .attachment-preview-name {
             font-size: 13px;
@@ -954,7 +979,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                       name="${CUSTOMER_ATTACHMENT_FIELD_NAME}"
                       type="file"
                       multiple
-                      accept="image/*"
+                      accept="image/*,.heic,.heif"
                     />
                   </div>
                   <div id="customer-attachment-error" class="field-error"></div>
@@ -975,7 +1000,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               <div class="hint">접수 후 접수번호를 바로 확인하실 수 있습니다. 손가락 또는 브레이크 카트리지 사진이 없어도 먼저 접수하실 수 있습니다.</div>
               <div id="customer-submit-error" class="submit-error"></div>
               ${turnstileWidget}
-              <button type="submit">안심하고 접수하기</button>
+              <button id="customer-submit-button" type="submit">접수하기</button>
             </section>
           </form>
           <section id="customer-success-view" class="success-view" hidden>
@@ -1014,6 +1039,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           const attachmentPreview = document.getElementById("customer-attachment-preview");
           const attachmentError = document.getElementById("customer-attachment-error");
           const submitError = document.getElementById("customer-submit-error");
+          const submitButton = document.getElementById("customer-submit-button");
           const successView = document.getElementById("customer-success-view");
           const successReceiptNumber = document.getElementById("customer-success-receipt-number");
           const phoneError = document.getElementById("phone-error");
@@ -1031,13 +1057,27 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           const promotionalConsentInputs = Array.from(document.querySelectorAll('input[name="promotionalConsent"]'));
           const occurredTimeError = document.getElementById("occurred-time-error");
           const selectedFiles = [];
+          const selectedFileHashes = new Map();
+          const selectedAttachmentHashes = new Set();
+          let attachmentAddQueue = Promise.resolve();
+          let customerSubmitInFlight = false;
           const phonePattern = /^(?:010-\\d{4}-\\d{4}|02-\\d{3,4}-\\d{4}|(?:03[1-3]|04[1-4]|05[1-5]|06[1-4])-\\d{3,4}-\\d{4})$/;
           const emailPattern = /^[A-Za-z0-9](?:[A-Za-z0-9._%+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}$/;
           const sawSerialPattern = /^[CPI]\\d{9}$/;
           const landlinePrefixes = ["02", "031", "032", "033", "041", "042", "043", "044", "051", "052", "053", "054", "055", "061", "062", "063", "064"];
           const noOtherDeviceValue = "사용하지 않음 (None)";
-          const maxAttachmentCount = 4;
-          const maxAttachmentBytes = 10 * 1024 * 1024;
+          const maxAttachmentCount = ${CUSTOMER_ATTACHMENT_MAX_COUNT};
+          const maxAttachmentBytes = ${CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES};
+          const allowedAttachmentMimeTypes = ${JSON.stringify(CUSTOMER_ATTACHMENT_ALLOWED_MIME_TYPES)};
+          const allowedAttachmentExtensions = ${JSON.stringify(CUSTOMER_ATTACHMENT_ALLOWED_EXTENSIONS)};
+          const attachmentMimeTypesByExtension = {
+            ".jpg": ["image/jpeg"],
+            ".jpeg": ["image/jpeg"],
+            ".png": ["image/png"],
+            ".webp": ["image/webp"],
+            ".heic": ["image/heic", "image/heif"],
+            ".heif": ["image/heic", "image/heif"]
+          };
           const firstSawSerialCharacterMap = {
             "\\u314a": "C",
             "\\u3154": "P",
@@ -1119,6 +1159,17 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             }
           }
 
+          function setCustomerSubmitInFlight(inFlight) {
+            customerSubmitInFlight = inFlight;
+            if (!submitButton) {
+              return;
+            }
+
+            submitButton.disabled = inFlight;
+            submitButton.textContent = inFlight ? "접수 중입니다..." : "접수하기";
+            submitButton.setAttribute("aria-busy", inFlight ? "true" : "false");
+          }
+
           function setOccurredTimeError(message) {
             if (!occurredTimeError) {
               return;
@@ -1150,13 +1201,76 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             }
           }
 
-          function buildCustomerSubmitFormData() {
+          function buildCustomerSubmitFormData(files) {
             const formData = new FormData(form);
             formData.delete("${CUSTOMER_ATTACHMENT_FIELD_NAME}");
-            selectedFiles.forEach((file) => {
+            files.forEach((file) => {
               formData.append("${CUSTOMER_ATTACHMENT_FIELD_NAME}", file, file.name);
             });
             return formData;
+          }
+
+          function releaseCustomerAttachmentHash(file) {
+            const fileHash = selectedFileHashes.get(file);
+            selectedFileHashes.delete(file);
+            if (fileHash) {
+              selectedAttachmentHashes.delete(fileHash);
+            }
+          }
+
+          function removeSelectedAttachmentAt(index) {
+            const removedFiles = selectedFiles.splice(index, 1);
+            if (removedFiles[0]) {
+              releaseCustomerAttachmentHash(removedFiles[0]);
+            }
+          }
+
+          function applyServerAttachmentRejections(rejectedAttachments, submittedFiles) {
+            if (!Array.isArray(rejectedAttachments)) {
+              return false;
+            }
+
+            const rejectedFiles = new Set();
+            const rejectedMessages = [];
+
+            rejectedAttachments.forEach((rejection) => {
+              if (
+                !rejection ||
+                !Number.isInteger(rejection.index) ||
+                rejection.index < 0 ||
+                typeof rejection.fileName !== "string"
+              ) {
+                return;
+              }
+
+              const submittedFile = submittedFiles[rejection.index];
+              if (!submittedFile || submittedFile.name !== rejection.fileName) {
+                return;
+              }
+
+              rejectedFiles.add(submittedFile);
+              if (typeof rejection.message === "string" && rejection.message.trim()) {
+                rejectedMessages.push(rejection.message.trim());
+              }
+            });
+
+            if (rejectedFiles.size === 0) {
+              return false;
+            }
+
+            for (let index = selectedFiles.length - 1; index >= 0; index -= 1) {
+              if (rejectedFiles.has(selectedFiles[index])) {
+                removeSelectedAttachmentAt(index);
+              }
+            }
+
+            if (attachmentError) {
+              attachmentError.textContent = rejectedMessages.join(" ");
+            }
+            syncAttachmentInputFiles();
+            updateAttachmentCount();
+            renderAttachmentPreview();
+            return true;
           }
 
           function normalizeSawSerialFirstCharacter(character) {
@@ -1256,10 +1370,27 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
 
               const image = document.createElement("img");
               image.alt = file.name;
-              image.src = URL.createObjectURL(file);
-              image.addEventListener("load", () => URL.revokeObjectURL(image.src), {
-                once: true
-              });
+              const previewFallback = document.createElement("div");
+              previewFallback.className = "attachment-preview-fallback";
+              previewFallback.hidden = true;
+              previewFallback.setAttribute("role", "status");
+              previewFallback.innerHTML =
+                "<strong>미리보기를 표시할 수 없습니다.</strong>" +
+                "<span>이 브라우저가 해당 이미지 형식의 미리보기를 지원하지 않을 수 있습니다. 파일은 그대로 첨부됩니다.</span>";
+
+              const objectUrl = URL.createObjectURL(file);
+              const releaseObjectUrl = () => URL.revokeObjectURL(objectUrl);
+              image.src = objectUrl;
+              image.addEventListener("load", releaseObjectUrl, { once: true });
+              image.addEventListener(
+                "error",
+                () => {
+                  releaseObjectUrl();
+                  image.hidden = true;
+                  previewFallback.hidden = false;
+                },
+                { once: true }
+              );
 
               const name = document.createElement("div");
               name.className = "attachment-preview-name";
@@ -1270,7 +1401,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               removeButton.className = "attachment-preview-remove";
               removeButton.textContent = "삭제";
               removeButton.addEventListener("click", () => {
-                selectedFiles.splice(index, 1);
+                removeSelectedAttachmentAt(index);
                 syncAttachmentInputFiles();
                 updateAttachmentCount();
                 clearAttachmentMaxCountErrorIfRoom();
@@ -1278,6 +1409,7 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
               });
 
               card.appendChild(image);
+              card.appendChild(previewFallback);
               card.appendChild(name);
               card.appendChild(removeButton);
               attachmentPreview.appendChild(card);
@@ -1294,36 +1426,139 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             }
           }
 
-          function addFiles(fileList) {
-            const rejectedMessages = [];
-            const incomingFiles = Array.from(fileList || []);
+          function hasAllowedCustomerAttachmentName(fileName) {
+            const normalizedName = fileName.toLowerCase();
+            return allowedAttachmentExtensions.some((extension) =>
+              normalizedName.endsWith(extension)
+            );
+          }
 
-            incomingFiles.forEach((file) => {
-              if (!file.type.startsWith("image/")) {
-                rejectedMessages.push(file.name + ": 이미지 파일만 추가할 수 있습니다.");
-                return;
+          function getCustomerAttachmentExtension(fileName) {
+            const normalizedName = fileName.toLowerCase();
+            return (
+              allowedAttachmentExtensions.find((extension) =>
+                normalizedName.endsWith(extension)
+              ) || ""
+            );
+          }
+
+          function hasAllowedCustomerAttachmentType(file) {
+            const extension = getCustomerAttachmentExtension(file.name);
+            const mimeType = file.type.trim().toLowerCase();
+            if (!extension) {
+              return false;
+            }
+            if (!mimeType) {
+              return true;
+            }
+
+            return (
+              allowedAttachmentMimeTypes.includes(mimeType) &&
+              attachmentMimeTypesByExtension[extension].includes(mimeType)
+            );
+          }
+
+          function getCustomerAttachmentRejection(file, index) {
+            const fileName = file.name || "파일 " + (index + 1);
+
+            if (!hasAllowedCustomerAttachmentName(file.name)) {
+              return {
+                index,
+                fileName,
+                message: fileName + ": 이미지 파일만 업로드할 수 있습니다."
+              };
+            }
+
+            if (!hasAllowedCustomerAttachmentType(file)) {
+              return {
+                index,
+                fileName,
+                message: fileName + ": 파일 이름과 형식이 일치하지 않습니다."
+              };
+            }
+
+            if (file.size <= 0) {
+              return {
+                index,
+                fileName,
+                message: fileName + ": 비어 있는 파일은 업로드할 수 없습니다."
+              };
+            }
+
+            if (file.size > maxAttachmentBytes) {
+              return {
+                index,
+                fileName,
+                message: fileName + ": 각 파일은 10MB 이하만 업로드할 수 있습니다."
+              };
+            }
+
+            return null;
+          }
+
+          async function calculateCustomerAttachmentHash(file) {
+            if (!globalThis.crypto?.subtle || typeof file.arrayBuffer !== "function") {
+              return null;
+            }
+
+            try {
+              const fileBytes = await file.arrayBuffer();
+              const digest = await globalThis.crypto.subtle.digest("SHA-256", fileBytes);
+              return Array.from(new Uint8Array(digest), (byte) =>
+                byte.toString(16).padStart(2, "0")
+              ).join("");
+            } catch {
+              return null;
+            }
+          }
+
+          async function processFiles(incomingFiles) {
+            const rejectedAttachments = [];
+
+            for (let index = 0; index < incomingFiles.length; index += 1) {
+              const file = incomingFiles[index];
+              const rejection = getCustomerAttachmentRejection(file, index);
+              if (rejection) {
+                rejectedAttachments.push(rejection);
+                continue;
               }
 
-              if (file.size > maxAttachmentBytes) {
-                rejectedMessages.push(file.name + ": 10MB 이하 파일만 추가할 수 있습니다.");
-                return;
+              const fileHash = await calculateCustomerAttachmentHash(file);
+              if (fileHash && selectedAttachmentHashes.has(fileHash)) {
+                continue;
               }
 
               if (selectedFiles.length >= maxAttachmentCount) {
-                rejectedMessages.push(file.name + ": 최대 4장까지만 선택할 수 있습니다.");
-                return;
+                rejectedAttachments.push({
+                  index,
+                  fileName: file.name,
+                  message: file.name + ": 사진은 최대 4장까지 첨부할 수 있습니다."
+                });
+                continue;
               }
 
               selectedFiles.push(file);
-            });
+              if (fileHash) {
+                selectedFileHashes.set(file, fileHash);
+                selectedAttachmentHashes.add(fileHash);
+              }
+            }
 
             if (attachmentError) {
-              attachmentError.textContent = rejectedMessages.join(" ");
+              attachmentError.textContent = rejectedAttachments
+                .map((rejection) => rejection.message)
+                .join(" ");
             }
 
             syncAttachmentInputFiles();
             updateAttachmentCount();
             renderAttachmentPreview();
+          }
+
+          function addFiles(fileList) {
+            const incomingFiles = Array.from(fileList || []);
+            attachmentAddQueue = attachmentAddQueue.then(() => processFiles(incomingFiles));
+            return attachmentAddQueue;
           }
 
           function findPhonePrefix(digits) {
@@ -1837,6 +2072,8 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
             form?.reset();
             clearFormErrors();
             selectedFiles.length = 0;
+            selectedFileHashes.clear();
+            selectedAttachmentHashes.clear();
             syncAttachmentInputFiles();
             updateAttachmentCount();
             renderAttachmentPreview();
@@ -2240,6 +2477,11 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
           if (form) {
             form.addEventListener("submit", async (event) => {
               event.preventDefault();
+
+              if (customerSubmitInFlight) {
+                return;
+              }
+
               clearFormErrors();
 
               const submitFieldsValid = validateCustomerSubmitFields();
@@ -2247,11 +2489,14 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                 return;
               }
 
+              setCustomerSubmitInFlight(true);
               try {
+                await attachmentAddQueue;
+                const submittedFiles = selectedFiles.slice();
                 syncAttachmentInputFiles();
                 const response = await fetch(form.action, {
                   method: "POST",
-                  body: buildCustomerSubmitFormData()
+                  body: buildCustomerSubmitFormData(submittedFiles)
                 });
                 const result = await response.json().catch(() => null);
 
@@ -2261,9 +2506,19 @@ export function renderCustomerPage(options: { turnstileSiteKey?: string } = {}) 
                   return;
                 }
 
+                if (
+                  !response.ok &&
+                  applyServerAttachmentRejections(result?.rejectedAttachments, submittedFiles)
+                ) {
+                  setSubmitError(result?.message || "첨부 파일을 확인한 뒤 다시 시도해 주세요.");
+                  return;
+                }
+
                 setSubmitError(result?.message || "접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
               } catch {
                 setSubmitError("접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+              } finally {
+                setCustomerSubmitInFlight(false);
               }
             });
           }

@@ -7,6 +7,11 @@ import {
 } from "../src/constants.ts";
 import type { WorkerEnv } from "../src/types.ts";
 
+const JPEG_BYTES = Uint8Array.from([
+  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10,
+  0x4a, 0x46, 0x49, 0x46, 0x00
+]);
+
 type MockFetchResponseInit = {
   ok: boolean;
   status: number;
@@ -64,6 +69,7 @@ function buildUploadRequest(pageId: string, attachmentType: string, files: File[
 async function run() {
   const originalFetch = globalThis.fetch;
   const bucketKeys: string[] = [];
+  const attachmentCreateBodies: Array<Record<string, unknown>> = [];
   const accidentPatchBodies: Array<Record<string, unknown>> = [];
   const env = {
     NOTION_TOKEN: "test-token",
@@ -87,8 +93,13 @@ async function run() {
         status: 200,
         jsonBody: {
           id: "page-valid",
+          parent: {
+            type: "database_id",
+            database_id: "accident-db-id"
+          },
           properties: {
             [ACCIDENT_DB_PROPERTY_NAMES.receiptNumber]: {
+              type: "title",
               title: [{ plain_text: "20260412-0001" }]
             }
           }
@@ -102,7 +113,7 @@ async function run() {
             {
               properties: {
                 [ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]: {
-                  number: 3
+                  number: 7
                 }
               }
             }
@@ -154,6 +165,12 @@ async function run() {
         };
         accidentPatchBodies.push(body.properties ?? {});
       }
+      if (url.endsWith("/pages") && init?.method === "POST") {
+        const rawBody = typeof init.body === "string" ? init.body : "{}";
+        attachmentCreateBodies.push(
+          JSON.parse(rawBody) as Record<string, unknown>
+        );
+      }
 
       const response = validFetchResponses.shift();
       if (!response) {
@@ -167,7 +184,7 @@ async function run() {
       buildUploadRequest(
         "page-valid",
         ATTACHMENT_TYPE_OPTIONS[0],
-        [new File(["finger-photo"], "finger.jpg", { type: "image/jpeg" })]
+        [new File([JPEG_BYTES], "finger.jpg", { type: "image/jpeg" })]
       ),
       env
     );
@@ -189,6 +206,41 @@ async function run() {
       "valid admin upload result should include attachmentPageCreated=true"
     );
     expect(bucketKeys.length === 1, "valid admin upload should store exactly 1 file in R2");
+    expect(
+      bucketKeys[0]?.startsWith("attachments/page-valid/0008_") === true,
+      "valid admin upload should use pageId as its R2 namespace"
+    );
+    const attachmentProperties = attachmentCreateBodies[0]?.properties as
+      | Record<
+          string,
+          {
+            title?: Array<{ text?: { content?: string } }>;
+            relation?: Array<{ id?: string }>;
+            rich_text?: Array<{ text?: { content?: string } }>;
+            number?: number;
+          }
+        >
+      | undefined;
+    expect(
+      attachmentProperties?.[ATTACHMENT_DB_PROPERTY_NAMES.attachmentId]
+        ?.title?.[0]?.text?.content === "ATT-page-valid-0008",
+      "valid admin upload should use pageId in the attachment ID"
+    );
+    expect(
+      attachmentProperties?.[ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]
+        ?.relation?.[0]?.id === "page-valid",
+      "valid admin upload should keep the selected pageId relation"
+    );
+    expect(
+      attachmentProperties?.[ATTACHMENT_DB_PROPERTY_NAMES.r2Key]
+        ?.rich_text?.[0]?.text?.content === bucketKeys[0],
+      "valid admin upload should store the same final R2 key in Notion"
+    );
+    expect(
+      attachmentProperties?.[ATTACHMENT_DB_PROPERTY_NAMES.displayOrder]
+        ?.number === 8,
+      "valid admin upload should append after prior attachments without applying a lifetime cap"
+    );
     expect(accidentPatchBodies.length >= 1, "valid admin upload should patch accident page");
     expect(
       Boolean(
@@ -203,13 +255,14 @@ async function run() {
       "valid admin upload patch should reset attachment final check to false"
     );
     console.log("PASS: admin_upload_valid");
+    console.log("PASS: admin_upload_request_limit_does_not_cap_prior_attachments");
 
     globalThis.fetch = originalFetch;
     const invalidTypeResponse = await handleAdminUpload(
       buildUploadRequest(
         "page-valid",
         "invalid-type",
-        [new File(["finger-photo"], "finger.jpg", { type: "image/jpeg" })]
+        [new File([JPEG_BYTES], "finger.jpg", { type: "image/jpeg" })]
       ),
       env
     );
@@ -227,7 +280,7 @@ async function run() {
       buildUploadRequest(
         "page-missing",
         ATTACHMENT_TYPE_OPTIONS[0],
-        [new File(["finger-photo"], "finger.jpg", { type: "image/jpeg" })]
+        [new File([JPEG_BYTES], "finger.jpg", { type: "image/jpeg" })]
       ),
       env
     );
