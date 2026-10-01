@@ -1,0 +1,7 @@
+name = "sawstop-t42-browser-run-pdf-fixture"
+main = "browser-run-pdf-fixture-worker.ts"
+compatibility_date = "2026-04-10"
+
+[browser]
+binding = "BROWSER"
+remote = true

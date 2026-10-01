@@ -1,10 +1,13 @@
 name: Deploy Cloudflare Worker
 
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  deploy:
+  verify:
+    name: Verify Worker (no live secrets)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -15,14 +18,57 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run CI verification
-        run: npm run ci
+      - name: Install isolated Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Typecheck Worker
+        run: npm run typecheck:worker
+
+      - name: Run existing regression suite
+        run: npm test
+
+      - name: Run deterministic handler suite
+        run: npm run test:deterministic-handler
+
+      - name: Run isolated browser suite
+        run: npm run test:isolated-browser
+
+      - name: Build Worker bundle without deploying
+        run: ./node_modules/.bin/wrangler deploy --dry-run --config wrangler.toml
+
+  deploy:
+    needs: verify
+    if: ${{ github.event_name == 'workflow_dispatch' && needs.verify.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Require main for Production deploy
+        env:
+          PRODUCTION_REF: ${{ github.ref }}
+        run: |
+          if [ "$PRODUCTION_REF" != "refs/heads/main" ]; then
+            echo "::error::Production deploy is restricted to refs/heads/main."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Deploy with Wrangler
         run: npm run deploy:ci
@@ -35,6 +81,3 @@ jobs:
           NOTION_SETTINGS_DB_ID: ${{ secrets.NOTION_SETTINGS_DB_ID }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
-          # TODO: add additional production-only env vars here when they are locked.
-
-      # TODO: enable push-based deployment after branch and promotion policy are locked.

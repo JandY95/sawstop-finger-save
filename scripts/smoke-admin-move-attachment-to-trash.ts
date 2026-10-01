@@ -140,6 +140,37 @@ async function run() {
       createMockResponse({
         ok: true,
         status: 200,
+        jsonBody: {
+          id: "accident-page-1",
+          parent: {
+            type: "database_id",
+            database_id: "accident-db-id"
+          },
+          properties: {}
+        }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: {
+          id: "attachment-page-1",
+          parent: {
+            type: "database_id",
+            database_id: "attachment-db-id"
+          },
+          properties: {
+            [ATTACHMENT_DB_PROPERTY_NAMES.accidentRelation]: {
+              relation: [{ id: "accident-page-1" }]
+            },
+            [ATTACHMENT_DB_PROPERTY_NAMES.status]: {
+              status: { name: ATTACHMENT_DB_STATUS.current }
+            }
+          }
+        }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
         jsonBody: { id: "attachment-page-1" }
       }),
       createMockResponse({
@@ -247,6 +278,23 @@ async function run() {
       typeof permanentDeleteAtProperty?.date?.start === "string" &&
         permanentDeleteAtProperty.date.start.length > 0,
       "attachment row patch should include permanent delete at datetime"
+    );
+    const trashMovedAtStart = String(trashMovedAtProperty?.date?.start ?? "");
+    const permanentDeleteAtStart = String(
+      permanentDeleteAtProperty?.date?.start ?? ""
+    );
+    const trashMovedAtMs = Date.parse(`${trashMovedAtStart}+09:00`);
+    const permanentDeleteAtMs = Date.parse(`${permanentDeleteAtStart}+09:00`);
+    const retentionMs = permanentDeleteAtMs - trashMovedAtMs;
+    expect(
+      permanentDeleteAtStart.endsWith("T08:00:00"),
+      "permanent delete datetime should use the 08:00 KST cleanup boundary"
+    );
+    expect(
+      Number.isFinite(retentionMs) &&
+        retentionMs >= 7 * 24 * 60 * 60 * 1000 &&
+        retentionMs < 8 * 24 * 60 * 60 * 1000,
+      "permanent delete datetime should be the first 08:00 KST boundary after seven days"
     );
     expect(
       permanentDeleteAtProperty?.date?.time_zone === "Asia/Seoul",

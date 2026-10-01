@@ -3,8 +3,11 @@ import {
   CUSTOMER_FAILURE_MESSAGE
 } from "../constants.ts";
 import {
+  assertAttachmentLifecycleTransition,
   moveAttachmentPageToTrashWithTimestamp,
   recalculateAccidentHasFingerPhoto,
+  reportAttachmentLifecycleError,
+  reportNotionOwnershipError,
   resetAccidentAttachmentFinalCheck,
   updatePageProperties
 } from "../notion.ts";
@@ -60,6 +63,12 @@ export async function handleAdminMoveAttachmentToTrash(
       );
     }
 
+    await assertAttachmentLifecycleTransition(env, {
+      pageId,
+      attachmentPageId,
+      action: "trash"
+    });
+
     await moveAttachmentPageToTrashWithTimestamp(env, {
       attachmentPageId,
       deletionReason
@@ -78,7 +87,31 @@ export async function handleAdminMoveAttachmentToTrash(
       },
       200
     );
-  } catch {
+  } catch (error) {
+    const lifecycleMessage = reportAttachmentLifecycleError(
+      "admin_attachment_trash",
+      error
+    );
+    if (lifecycleMessage) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: lifecycleMessage
+        },
+        409
+      );
+    }
+
+    if (reportNotionOwnershipError("admin_attachment_trash", error)) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: CUSTOMER_FAILURE_MESSAGE
+        },
+        409
+      );
+    }
+
     return jsonResponse(
       {
         ok: false,

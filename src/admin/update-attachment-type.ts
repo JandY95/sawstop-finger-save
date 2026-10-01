@@ -3,7 +3,10 @@ import {
   CUSTOMER_FAILURE_MESSAGE
 } from "../constants.ts";
 import {
+  assertAttachmentLifecycleTransition,
   recalculateAccidentHasFingerPhoto,
+  reportAttachmentLifecycleError,
+  reportNotionOwnershipError,
   resetAccidentAttachmentFinalCheck,
   updateAttachmentPageType,
   updatePageProperties
@@ -60,6 +63,12 @@ export async function handleAdminUpdateAttachmentType(
       );
     }
 
+    await assertAttachmentLifecycleTransition(env, {
+      pageId,
+      attachmentPageId,
+      action: "type"
+    });
+
     await updateAttachmentPageType(env, {
       attachmentPageId,
       attachmentType
@@ -78,7 +87,31 @@ export async function handleAdminUpdateAttachmentType(
       },
       200
     );
-  } catch {
+  } catch (error) {
+    const lifecycleMessage = reportAttachmentLifecycleError(
+      "admin_attachment_type",
+      error
+    );
+    if (lifecycleMessage) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: lifecycleMessage
+        },
+        409
+      );
+    }
+
+    if (reportNotionOwnershipError("admin_attachment_type", error)) {
+      return jsonResponse(
+        {
+          ok: false,
+          message: CUSTOMER_FAILURE_MESSAGE
+        },
+        409
+      );
+    }
+
     return jsonResponse(
       {
         ok: false,

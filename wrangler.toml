@@ -2,6 +2,12 @@ name = "sawstop-finger-save"
 main = "src/index.ts"
 compatibility_date = "2026-04-10"
 
+[browser]
+binding = "BROWSER"
+remote = true
+
+[vars]
+TURNSTILE_SITE_KEY = "0x4AAAAAADVwGf_ZW6nQsPwy"
 
 [durable_objects]
 bindings = [
@@ -16,9 +22,6 @@ new_sqlite_classes = ["AdminAuthLock"]
 [[migrations]]
 tag = "v2-admin-upload-coordinator"
 new_sqlite_classes = ["AdminUploadCoordinator"]
-
-[vars]
-TURNSTILE_SITE_KEY = "0x4AAAAAADVwGf_ZW6nQsPwy"
 
 [[r2_buckets]]
 binding = "ATTACHMENT_BUCKET"

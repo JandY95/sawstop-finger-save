@@ -1,0 +1,28 @@
+{
+  "approval": {
+    "schemaVersion": "sawstop.report_translation_operator_approval.v1",
+    "approvalId": "fixture-approval-t38e-001",
+    "decision": "approved",
+    "scope": "single_incident_single_generation",
+    "approvedAt": "2026-08-02T03:00:00.000Z"
+  },
+  "preApplicationState": {
+    "reportBody": "existing manual report body",
+    "status": "진행중",
+    "draftRequest": true,
+    "englishReviewComplete": false,
+    "outputReviewComplete": true,
+    "attachmentReviewComplete": true
+  },
+  "expected": {
+    "codexDisplayName": "Codex CLI 전문 영문화",
+    "localDisplayName": "로컬 보수적 영문화",
+    "unapprovedRunnerCalls": 0,
+    "approvedRunnerCalls": 1,
+    "approvalReuseRunnerCalls": 0,
+    "stateChangeRunnerCalls": 0,
+    "externalNetworkCalls": 0,
+    "notionMutationsBeforeApplicationApproval": 0,
+    "otherProviderFallbackCalls": 0
+  }
+}

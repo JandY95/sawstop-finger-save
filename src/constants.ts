@@ -46,8 +46,29 @@ export const ATTACHMENT_DB_PROPERTY_NAMES = {
 } as const;
 
 export const ACCIDENT_DB_PREPARED_PROPERTY_NAMES = {
-  attachmentFinalCheck: "첨부 최종 확인 완료"
+  englishReviewComplete: "영문 검수 완료",
+  outputCheckComplete: "출력 확인 완료",
+  attachmentFinalCheck: "첨부 최종 확인 완료",
+  englishDraftRequest: "영문 초안 생성 요청",
+  autoSendReady: "발송 준비 완료(자동)"
 } as const;
+
+export const ACCIDENT_MANUAL_SEND_PROPERTY_NAMES = {
+  completedAt: "발송 완료 시각",
+  failureMemo: "발송 실패 메모"
+} as const;
+
+export const ACCIDENT_REVIEW_CHECKBOX_PROPERTY_NAMES = {
+  englishReviewComplete:
+    ACCIDENT_DB_PREPARED_PROPERTY_NAMES.englishReviewComplete,
+  attachmentFinalCheck:
+    ACCIDENT_DB_PREPARED_PROPERTY_NAMES.attachmentFinalCheck,
+  outputCheckComplete:
+    ACCIDENT_DB_PREPARED_PROPERTY_NAMES.outputCheckComplete
+} as const;
+
+export const ACCIDENT_REPORT_DRAFT_MARKER =
+  "Report a Save (Known or Suspected Finger Contact)";
 
 export const ATTACHMENT_DB_LIVE_DATE_PROPERTY_NAMES = {
   trashMovedAt: "휴지통 이동 시각",
@@ -120,6 +141,8 @@ export const NOTION_API_VERSION = "2022-06-28";
 export const SUBMIT_ROUTE = "/submit";
 export const ADMIN_ACCIDENT_SEARCH_ROUTE = "/admin/accidents/search";
 export const ADMIN_ACCIDENT_STATUS_UPDATE_ROUTE = "/admin/accidents/status";
+export const ADMIN_REVIEW_CHECKBOXES_ROUTE =
+  "/admin/accidents/review-checkboxes";
 export const ADMIN_ATTACHMENT_LIST_ROUTE = "/admin/attachments/list";
 export const ADMIN_UPLOAD_ROUTE = "/admin/upload";
 export const ADMIN_ATTACHMENT_TYPE_UPDATE_ROUTE = "/admin/attachments/type";
@@ -129,6 +152,9 @@ export const ADMIN_ATTACHMENT_FIFO_PROCESS_ROUTE = "/admin/attachments/fifo/proc
 // TODO(open issue): 관리자 보완 업로드의 "업로드 출처" 속성명과 허용값은
 // 라이브 첨부 DB 스키마 확정 전까지 runtime write 대상으로 사용하지 않는다.
 export const ADMIN_REPORT_ROUTE = "/admin/report";
+export const ADMIN_REPORT_PDF_ROUTE = "/admin/report/pdf";
+export const ADMIN_MANUAL_SEND_PACKAGE_ROUTE = "/admin/manual-send";
+export const ADMIN_MANUAL_SEND_RESULT_ROUTE = "/admin/accidents/manual-send-result";
 export const ADMIN_PAGE_ROUTE = "/admin";
 export const ADMIN_LOGIN_ROUTE = "/admin/login";
 export const ADMIN_LOGOUT_ROUTE = "/admin/logout";
@@ -136,7 +162,9 @@ export const ADMIN_SESSION_COOKIE_NAME = "__Host-sawstop-admin-session";
 export const ADMIN_LOGIN_STATE_COOKIE_NAME = "__Host-sawstop-admin-login-state";
 export const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
 export const ADMIN_LOGIN_FAILURE_LIMIT = 5;
-export const ADMIN_LOGIN_LOCK_SECONDS = 60 * 15;
+export const ADMIN_LOGIN_FAILURE_WINDOW_SECONDS = 60 * 10;
+export const ADMIN_LOGIN_LOCK_SECONDS = 60 * 10;
+export const ADMIN_AUTH_LOCK_GLOBAL_NAME = "admin-account";
 export const CUSTOMER_ATTACHMENT_FIELD_NAME = "attachments";
 export const CUSTOMER_ATTACHMENT_MAX_COUNT = 4;
 export const CUSTOMER_ATTACHMENT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;

@@ -70,6 +70,11 @@ function buildPageResponse(status: string) {
     ok: true,
     status: 200,
     jsonBody: {
+      id: "accident-page-1",
+      parent: {
+        type: "database_id",
+        database_id: "accident-db-id"
+      },
       properties: {
         [ACCIDENT_DB_PROPERTY_NAMES.status]: {
           status: { name: status }
@@ -135,21 +140,58 @@ async function run() {
     const accidentPatchBodies: Array<Record<string, unknown>> = [];
     const mockResponses: Response[] = [
       buildPageResponse(ACCIDENT_STATUS.received),
+      buildPageResponse(ACCIDENT_STATUS.received),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { results: [] }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { results: Array.from({ length: 16 }, (_, index) => ({ id: `block-${index}` })) }
+      }),
+      createMockResponse({
+        ok: true,
+        status: 200,
+        jsonBody: { id: "accident-page-1" }
+      }),
       createMockResponse({
         ok: true,
         status: 200,
         jsonBody: { id: "accident-page-1" }
       })
     ];
+    let appendedReportChildren: unknown[] = [];
 
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
+      if (init?.method === "PATCH" && url.endsWith("/blocks/accident-page-1/children")) {
+        const rawBody = typeof init.body === "string" ? init.body : "{}";
+        const body = JSON.parse(rawBody) as { children?: unknown[] };
+        appendedReportChildren = body.children ?? [];
+      }
       if (init?.method === "PATCH" && url.endsWith("/pages/accident-page-1")) {
         const rawBody = typeof init.body === "string" ? init.body : "{}";
         const body = JSON.parse(rawBody) as {
           properties?: Record<string, unknown>;
         };
         accidentPatchBodies.push(body.properties ?? {});
+      }
+      if (
+        init?.method === "GET" &&
+        url.includes("/blocks/accident-page-1/children?") &&
+        appendedReportChildren.length > 0
+      ) {
+        return createMockResponse({
+          ok: true,
+          status: 200,
+          jsonBody: {
+            results: appendedReportChildren,
+            has_more: false,
+            next_cursor: null
+          }
+        });
       }
 
       const response = mockResponses.shift();
@@ -172,9 +214,10 @@ async function run() {
     expect(successResponse.status === 200, "status update should return 200");
     expect(successBody.ok === true, "status update should return ok=true");
     expect(successBody.status === ACCIDENT_STATUS.inProgress, "status update should return new status");
-    expect(accidentPatchBodies.length === 1, "accident page should be patched once");
+    expect(accidentPatchBodies.length === 2, "accident page should be patched twice: review reset then status");
+    const mergedPatchBody = Object.assign({}, ...accidentPatchBodies);
     expect(
-      JSON.stringify(accidentPatchBodies[0]?.[ACCIDENT_DB_PROPERTY_NAMES.status]) ===
+      JSON.stringify(mergedPatchBody[ACCIDENT_DB_PROPERTY_NAMES.status]) ===
         JSON.stringify({ status: { name: ACCIDENT_STATUS.inProgress } }),
       "accident patch should include target status"
     );

@@ -52,12 +52,29 @@ async function run() {
   const originalFetch = globalThis.fetch;
   const env = {
     NOTION_TOKEN: "test-token",
+    NOTION_ACCIDENT_DB_ID: "accident-db-id",
     NOTION_ATTACHMENT_DB_ID: "attachment-db-id"
   } as WorkerEnv;
 
   try {
-    globalThis.fetch = (async () =>
-      createMockResponse({
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/pages/page-valid") && init?.method === "GET") {
+        return createMockResponse({
+          ok: true,
+          status: 200,
+          jsonBody: {
+            id: "page-valid",
+            parent: {
+              type: "database_id",
+              database_id: "accident-db-id"
+            },
+            properties: {}
+          }
+        });
+      }
+
+      return createMockResponse({
         ok: true,
         status: 200,
         jsonBody: {
@@ -118,7 +135,8 @@ async function run() {
             }
           ]
         }
-      })) as typeof fetch;
+      });
+    }) as typeof fetch;
 
     const successResponse = await handleAdminAttachmentList(
       new Request("http://localhost/admin/attachments/list?pageId=page-valid"),
@@ -148,6 +166,12 @@ async function run() {
     expect(
       attachment?.deletionReason === ATTACHMENT_DELETE_REASON_OPTIONS[0],
       "attachment list should include deletionReason"
+    );
+    expect(
+      !JSON.stringify(successBody).includes("R2 Key") &&
+        !JSON.stringify(successBody).includes("r2Key") &&
+        !JSON.stringify(successBody).includes("attachments/page-valid/"),
+      "attachment list should not expose an internal R2 key"
     );
     expect(
       pendingAttachment?.attachmentPageId === "attachment-page-2",

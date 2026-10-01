@@ -1,12 +1,16 @@
 import { R2_ATTACHMENTS_PREFIX, R2_TMP_PREFIX } from "./constants.ts";
+import {
+  runExternalCallWithRetry,
+  type ExternalRetryDependencies
+} from "./external-retry.ts";
 import type { WorkerEnv } from "./types.ts";
 
 export function sanitizeAttachmentFileName(fileName: string) {
   return fileName.replace(/[^\w.-]+/g, "_");
 }
 
-function buildTmpAttachmentKey(
-  receiptNumber: string,
+export function buildTmpAttachmentKey(
+  pageId: string,
   seq: number,
   originalFileName: string
 ) {
@@ -14,38 +18,38 @@ function buildTmpAttachmentKey(
   const timestamp = Date.now();
   const sanitizedFileName = sanitizeAttachmentFileName(originalFileName);
 
-  return `${R2_TMP_PREFIX}/${receiptNumber}/${seq4}_${timestamp}_${sanitizedFileName}`;
+  return `${R2_TMP_PREFIX}/${pageId}/${seq4}_${timestamp}_${sanitizedFileName}`;
 }
 
-function buildFinalAttachmentKey(receiptNumber: string, tmpKey: string) {
+export function buildFinalAttachmentKey(pageId: string, tmpKey: string) {
   const fileName = tmpKey.split("/").pop();
   if (!fileName) {
     throw new Error(`Invalid tmp attachment key: ${tmpKey}`);
   }
 
-  return `${R2_ATTACHMENTS_PREFIX}/${receiptNumber}/${fileName}`;
+  return `${R2_ATTACHMENTS_PREFIX}/${pageId}/${fileName}`;
 }
 
-function buildAdminFinalAttachmentKey(
-  receiptNumber: string,
+export function buildAdminFinalAttachmentKey(
+  pageId: string,
   seq: number,
-  originalFileName: string
+  originalFileName: string,
+  timestamp = Date.now()
 ) {
   const seq4 = String(seq).padStart(4, "0");
-  const timestamp = Date.now();
   const sanitizedFileName = sanitizeAttachmentFileName(originalFileName);
 
-  return `${R2_ATTACHMENTS_PREFIX}/${receiptNumber}/${seq4}_${timestamp}_${sanitizedFileName}`;
+  return `${R2_ATTACHMENTS_PREFIX}/${pageId}/${seq4}_${timestamp}_${sanitizedFileName}`;
 }
 
 export async function uploadAttachmentToTmpR2(
   env: WorkerEnv,
   {
-    receiptNumber,
+    pageId,
     seq,
     file
   }: {
-    receiptNumber: string;
+    pageId: string;
     seq: number;
     file: {
       name: string;
@@ -53,15 +57,20 @@ export async function uploadAttachmentToTmpR2(
       size: number;
       bytes: ArrayBuffer;
     };
-  }
+  },
+  retryDependencies?: ExternalRetryDependencies
 ) {
-  const tmpKey = buildTmpAttachmentKey(receiptNumber, seq, file.name);
+  const tmpKey = buildTmpAttachmentKey(pageId, seq, file.name);
 
-  await env.ATTACHMENT_BUCKET.put(tmpKey, file.bytes, {
-    httpMetadata: {
-      contentType: file.type
-    }
-  });
+  await runExternalCallWithRetry(
+    "r2",
+    () => env.ATTACHMENT_BUCKET.put(tmpKey, file.bytes, {
+      httpMetadata: {
+        contentType: file.type
+      }
+    }),
+    retryDependencies
+  );
 
   return {
     tmpKey
@@ -71,15 +80,19 @@ export async function uploadAttachmentToTmpR2(
 export async function promoteTmpAttachmentToFinalR2(
   env: WorkerEnv,
   {
-    receiptNumber,
+    finalKey,
     tmpKey
   }: {
-    receiptNumber: string;
+    finalKey: string;
     tmpKey: string;
-  }
+  },
+  retryDependencies?: ExternalRetryDependencies
 ) {
-  const finalKey = buildFinalAttachmentKey(receiptNumber, tmpKey);
-  const existingFinal = await env.ATTACHMENT_BUCKET.get(finalKey);
+  const existingFinal = await runExternalCallWithRetry(
+    "r2",
+    () => env.ATTACHMENT_BUCKET.get(finalKey),
+    retryDependencies
+  );
   if (existingFinal) {
     return {
       finalKey,
@@ -87,16 +100,25 @@ export async function promoteTmpAttachmentToFinalR2(
     };
   }
 
-  const tmpObject = await env.ATTACHMENT_BUCKET.get(tmpKey);
+  const tmpObject = await runExternalCallWithRetry(
+    "r2",
+    () => env.ATTACHMENT_BUCKET.get(tmpKey),
+    retryDependencies
+  );
   if (!tmpObject) {
     throw new Error(`Missing tmp attachment object: ${tmpKey}`);
   }
 
-  await env.ATTACHMENT_BUCKET.put(finalKey, await tmpObject.arrayBuffer(), {
-    httpMetadata: {
-      contentType: tmpObject.httpMetadata?.contentType
-    }
-  });
+  const tmpBytes = await tmpObject.arrayBuffer();
+  await runExternalCallWithRetry(
+    "r2",
+    () => env.ATTACHMENT_BUCKET.put(finalKey, tmpBytes, {
+      httpMetadata: {
+        contentType: tmpObject.httpMetadata?.contentType
+      }
+    }),
+    retryDependencies
+  );
   await env.ATTACHMENT_BUCKET.delete(tmpKey);
 
   return {
@@ -108,26 +130,69 @@ export async function promoteTmpAttachmentToFinalR2(
 export async function uploadAdminAttachmentToFinalR2(
   env: WorkerEnv,
   {
-    receiptNumber,
+    pageId,
     seq,
-    file
+    file,
+    finalKey: reservedFinalKey
   }: {
-    receiptNumber: string;
+    pageId: string;
     seq: number;
     file: File;
-  }
+    finalKey?: string;
+  },
+  retryDependencies?: ExternalRetryDependencies
 ) {
-  const finalKey = buildAdminFinalAttachmentKey(receiptNumber, seq, file.name);
+  const finalKey =
+    reservedFinalKey ?? buildAdminFinalAttachmentKey(pageId, seq, file.name);
+  const existingObject = await runExternalCallWithRetry(
+    "r2",
+    () => env.ATTACHMENT_BUCKET.get(finalKey),
+    retryDependencies
+  );
+  if (existingObject) {
+    return {
+      finalKey
+    };
+  }
 
-  await env.ATTACHMENT_BUCKET.put(finalKey, file, {
-    httpMetadata: {
-      contentType: file.type
-    }
-  });
+  await runExternalCallWithRetry(
+    "r2",
+    () => env.ATTACHMENT_BUCKET.put(finalKey, file, {
+      httpMetadata: {
+        contentType: file.type
+      }
+    }),
+    retryDependencies
+  );
 
   return {
     finalKey
   };
+}
+
+export async function confirmAdminAttachmentPreservedForRecovery(
+  env: WorkerEnv,
+  {
+    pageId,
+    finalKey
+  }: {
+    pageId: string;
+    finalKey: string;
+  },
+  retryDependencies?: ExternalRetryDependencies
+) {
+  const expectedPrefix = `${R2_ATTACHMENTS_PREFIX}/${pageId}/`;
+  if (!finalKey.startsWith(expectedPrefix) || finalKey.length <= expectedPrefix.length) {
+    throw new Error("Admin attachment recovery key does not match its accident page");
+  }
+
+  return (
+    await runExternalCallWithRetry(
+      "r2",
+      () => env.ATTACHMENT_BUCKET.get(finalKey),
+      retryDependencies
+    )
+  ) !== null;
 }
 
 export async function deleteFinalAttachmentFromR2(env: WorkerEnv, finalKey: string) {
@@ -143,5 +208,33 @@ export async function deleteFinalAttachmentFromR2(env: WorkerEnv, finalKey: stri
 
   return {
     existed: true
+  };
+}
+
+export async function readFinalAttachmentFromR2(
+  env: WorkerEnv,
+  finalKey: string,
+  retryDependencies?: ExternalRetryDependencies
+) {
+  const normalizedKey = finalKey.trim();
+  if (
+    !normalizedKey.startsWith(`${R2_ATTACHMENTS_PREFIX}/`) ||
+    normalizedKey.length <= R2_ATTACHMENTS_PREFIX.length + 1
+  ) {
+    return null;
+  }
+
+  const object = await runExternalCallWithRetry(
+    "r2",
+    () => env.ATTACHMENT_BUCKET.get(normalizedKey),
+    retryDependencies
+  );
+  if (!object) {
+    return null;
+  }
+
+  return {
+    bytes: await object.arrayBuffer(),
+    contentType: object.httpMetadata?.contentType?.trim().toLowerCase() ?? null
   };
 }
