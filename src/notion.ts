@@ -8,7 +8,8 @@ import {
   ATTACHMENT_TRASH_RETENTION_DAYS,
   ATTACHMENT_TYPE_OPTIONS,
   NOTION_API_BASE_URL,
-  NOTION_API_VERSION
+  NOTION_API_VERSION,
+  STAGING_SAW_SERIAL_MASTER_DB_ID
 } from "./constants.ts";
 import type {
   AdminAttachmentListItem,
@@ -546,6 +547,44 @@ export async function getAccidentPageReportData(env: WorkerEnv, pageId: string) 
     blocks,
     properties: extractAccidentReportProperties(pageProperties)
   };
+}
+
+export async function classifySawSerialImport(
+  env: WorkerEnv,
+  sawSerialNumber: string
+): Promise<"에스오엔지산업" | "타사" | "확인 필요"> {
+  const token = getRequiredEnv(env, "NOTION_TOKEN");
+
+  try {
+    const response = await fetch(
+      `${NOTION_API_BASE_URL}/databases/${STAGING_SAW_SERIAL_MASTER_DB_ID}/query`,
+      {
+        method: "POST",
+        headers: getNotionHeaders(token),
+        body: JSON.stringify({
+          page_size: 1,
+          filter: {
+            property: "Serial Number",
+            title: { equals: sawSerialNumber }
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error(
+        "Saw serial master lookup failed",
+        await readNotionError(response)
+      );
+      return "확인 필요";
+    }
+
+    const data = (await response.json()) as { results?: unknown[] };
+    return (data.results?.length ?? 0) > 0 ? "에스오엔지산업" : "타사";
+  } catch (error) {
+    console.error("Saw serial master lookup failed", error);
+    return "확인 필요";
+  }
 }
 
 export function getAccidentDatabaseParent(env: WorkerEnv): NotionAccidentDbParent {

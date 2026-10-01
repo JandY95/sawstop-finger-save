@@ -8,7 +8,7 @@ import {
 } from "./constants";
 import type { NormalizedSubmitInput, SubmitValidationResult } from "./types";
 
-const SAW_SERIAL_NUMBER_PATTERN = /^[CPI]\d{9}$/;
+const SAW_SERIAL_NUMBER_PATTERN = /^(?:[CI]\d{9}|P(?:\d{9,10}|\d{4}BB\d{6}))$/;
 const PHONE_PATTERN = /^(?:010-\d{4}-\d{4}|02-\d{3,4}-\d{4}|(?:03[1-3]|04[1-4]|05[1-5]|06[1-4])-\d{3,4}-\d{4})$/;
 const EMAIL_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9._%+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
 const OCCURRENCE_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;

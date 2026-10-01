@@ -28,6 +28,19 @@ function toRichText(content: string) {
   };
 }
 
+function toStyledSerialRichText(content: string, isOtherImport: boolean) {
+  return {
+    rich_text: [
+      {
+        text: { content },
+        ...(isOtherImport
+          ? { annotations: { bold: true, color: "red" } }
+          : {})
+      }
+    ]
+  };
+}
+
 function toSelect(name: string) {
   return {
     select: { name }
@@ -66,7 +79,8 @@ function buildInitialAttachmentUploadStatus(attachmentCount?: number) {
 
 export function buildAccidentDbProperties({
   receiptNumber,
-  normalized
+  normalized,
+  sawImportClassification = "확인 필요"
 }: BuildAccidentDbPropertiesInput): NotionAccidentDbPropertiesPayload {
   const properties: NotionAccidentDbPropertiesPayload = {
     [ACCIDENT_DB_PROPERTY_NAMES.receiptNumber]: toTitle(receiptNumber),
@@ -93,8 +107,12 @@ export function buildAccidentDbProperties({
     [ACCIDENT_DB_PROPERTY_NAMES.visibleInjuryMark]: toSelect(
       normalized.visibleInjuryMark
     ),
-    [ACCIDENT_DB_PROPERTY_NAMES.sawSerialNumber]: toRichText(
-      normalized.sawSerialNumber
+    [ACCIDENT_DB_PROPERTY_NAMES.sawSerialNumber]: toStyledSerialRichText(
+      normalized.sawSerialNumber,
+      sawImportClassification === "타사"
+    ),
+    [ACCIDENT_DB_PROPERTY_NAMES.sawImportClassification]: toSelect(
+      sawImportClassification
     ),
     [ACCIDENT_DB_PROPERTY_NAMES.materialType]: toRichText(
       normalized.materialType
